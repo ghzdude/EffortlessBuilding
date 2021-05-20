@@ -112,7 +112,11 @@ public class EventHandler {
 			BuildModes.onBlockBroken(event.getPlayer(), event.getPos(), false);
 
 			//Add to undo stack in client
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()), new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.getDefaultState()));
+			if (event.getPlayer() instanceof ServerPlayerEntity && event.getState() != null && event.getPos() != null) {
+				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
+				if (packetTarget != null)
+					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.getDefaultState()));
+			}
 		}
 	}
 
