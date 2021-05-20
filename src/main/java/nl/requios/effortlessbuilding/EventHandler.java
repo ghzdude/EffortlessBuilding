@@ -8,6 +8,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -35,6 +36,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
+		if (event.getObject() instanceof FakePlayer) return;
 		if (event.getObject() instanceof PlayerEntity) {
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_mode"), new ModeCapabilityManager.Provider());
@@ -62,6 +64,8 @@ public class EventHandler {
 		if (event.getWorld().isRemote()) return;
 
 		if (!(event.getEntity() instanceof PlayerEntity)) return;
+
+		if (event.getEntity() instanceof FakePlayer) return;
 
 		//Cancel event if necessary
 		ServerPlayerEntity player = ((ServerPlayerEntity) event.getEntity());
@@ -94,6 +98,8 @@ public class EventHandler {
 	public static void onBlockBroken(BlockEvent.BreakEvent event) {
 		if (event.getWorld().isRemote()) return;
 
+		if (event.getPlayer() instanceof FakePlayer) return;
+
 		//Cancel event if necessary
 		//If cant break far then dont cancel event ever
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(event.getPlayer()).getBuildMode();
@@ -114,6 +120,8 @@ public class EventHandler {
 	public static void breakSpeed(PlayerEvent.BreakSpeed event) {
 		//Disable if config says so
 		if (!BuildConfig.survivalBalancers.increasedMiningTime.get()) return;
+
+		if (event.getPlayer() instanceof FakePlayer) return;
 
 		PlayerEntity player = event.getPlayer();
 		World world = player.world;
@@ -149,6 +157,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+		if (event.getPlayer() instanceof FakePlayer) return;
 		PlayerEntity player = event.getPlayer();
 		ModifierSettingsManager.handleNewPlayer(player);
 		ModeSettingsManager.handleNewPlayer(player);
@@ -156,6 +165,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+		if (event.getPlayer() instanceof FakePlayer) return;
 		PlayerEntity player = event.getPlayer();
 		if (player.getEntityWorld().isRemote) return;
 
@@ -165,6 +175,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+		if (event.getPlayer() instanceof FakePlayer) return;
 		PlayerEntity player = event.getPlayer();
 		ModifierSettingsManager.handleNewPlayer(player);
 		ModeSettingsManager.handleNewPlayer(player);
@@ -172,6 +183,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+		if (event.getPlayer() instanceof FakePlayer) return;
 		PlayerEntity player = event.getPlayer();
 		if (player.getEntityWorld().isRemote) return;
 
@@ -196,6 +208,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerClone(PlayerEvent.Clone event) {
+		if (event.getPlayer() instanceof FakePlayer) return;
 		//Attach capabilities on death, otherwise crash
 		PlayerEntity oldPlayer = event.getOriginal();
 		oldPlayer.revive();
