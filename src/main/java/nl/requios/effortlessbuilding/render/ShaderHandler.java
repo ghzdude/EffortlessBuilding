@@ -12,7 +12,7 @@
  */
 package nl.requios.effortlessbuilding.render;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import nl.requios.effortlessbuilding.BuildConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;

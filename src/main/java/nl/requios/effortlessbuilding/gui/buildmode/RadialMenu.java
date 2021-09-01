@@ -1,21 +1,21 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
 import com.google.common.base.Stopwatch;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.gui.screens.Screen;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.Direction;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.core.Direction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.ModClientEventHandler;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
@@ -52,7 +52,7 @@ public class RadialMenu extends Screen {
 	private Stopwatch lastChange = Stopwatch.createStarted();
 
 	public RadialMenu() {
-		super(new TranslationTextComponent("effortlessbuilding.screen.radial_menu"));
+		super(new TranslatableComponent("effortlessbuilding.screen.radial_menu"));
 	}
 
 	private float clampVis(final float f) {
@@ -85,7 +85,7 @@ public class RadialMenu extends Screen {
 	}
 
 	@Override
-	public void render(MatrixStack ms, final int mouseX, final int mouseY, final float partialTicks) {
+	public void render(PoseStack ms, final int mouseX, final int mouseY, final float partialTicks) {
 		if (!isVisible()) return;
 
 		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(Minecraft.getInstance().player).getBuildMode();
@@ -103,10 +103,10 @@ public class RadialMenu extends Screen {
 		RenderSystem.disableAlphaTest();
 		RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
 		RenderSystem.shadeModel(GL11.GL_SMOOTH);
-		final Tessellator tessellator = Tessellator.getInstance();
+		final Tesselator tessellator = Tesselator.getInstance();
 		final BufferBuilder buffer = tessellator.getBuilder();
 
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+		buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 
 		final double middleX = width / 2.0;
 		final double middleY = height / 2.0;
@@ -268,9 +268,9 @@ public class RadialMenu extends Screen {
 		RenderSystem.color3f(1f, 1f, 1f);
 		RenderSystem.disableBlend();
 		RenderSystem.enableAlphaTest();
-		mc.getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+		mc.getTextureManager().bind(TextureAtlas.LOCATION_BLOCKS);
 
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+		buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
 		//Draw buildmode icons
 		for (final MenuRegion menuRegion : modes) {
@@ -363,7 +363,7 @@ public class RadialMenu extends Screen {
 		//Draw action text
 		for (final MenuButton button : buttons) {
 			if (button.highlighted) {
-				String text = TextFormatting.AQUA + button.name;
+				String text = ChatFormatting.AQUA + button.name;
 				int wrap = 120;
 				String keybind = ""; // FIXME
 				String keybindFormatted = "";
@@ -390,7 +390,7 @@ public class RadialMenu extends Screen {
 					}
 				}
 				if (!keybind.isEmpty())
-					keybindFormatted = TextFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
+					keybindFormatted = ChatFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
 
 				if (button.textSide == Direction.WEST) {
 
@@ -445,8 +445,8 @@ public class RadialMenu extends Screen {
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		EffortlessBuilding.log("mouse clicked");
 
-		KeyBinding.setAll();
-		KeyBinding.set(ClientProxy.keyBindings[3].getKey(), true);
+		KeyMapping.setAll();
+		KeyMapping.set(ClientProxy.keyBindings[3].getKey(), true);
 
 		if (mouseButton == 0) {
 			this.minecraft.setScreen(null);

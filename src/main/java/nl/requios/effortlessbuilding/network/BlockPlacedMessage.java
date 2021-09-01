@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
@@ -22,26 +22,26 @@ public class BlockPlacedMessage {
 	private final boolean blockHit;
 	private final BlockPos blockPos;
 	private final Direction sideHit;
-	private final Vector3d hitVec;
+	private final Vec3 hitVec;
 	private final boolean placeStartPos; //prevent double placing in normal mode
 
 	public BlockPlacedMessage() {
 		this.blockHit = false;
 		this.blockPos = BlockPos.ZERO;
 		this.sideHit = Direction.UP;
-		this.hitVec = new Vector3d(0, 0, 0);
+		this.hitVec = new Vec3(0, 0, 0);
 		this.placeStartPos = true;
 	}
 
-	public BlockPlacedMessage(BlockRayTraceResult result, boolean placeStartPos) {
-		this.blockHit = result.getType() == RayTraceResult.Type.BLOCK;
+	public BlockPlacedMessage(BlockHitResult result, boolean placeStartPos) {
+		this.blockHit = result.getType() == HitResult.Type.BLOCK;
 		this.blockPos = result.getBlockPos();
 		this.sideHit = result.getDirection();
 		this.hitVec = result.getLocation();
 		this.placeStartPos = placeStartPos;
 	}
 
-	public BlockPlacedMessage(boolean blockHit, BlockPos blockPos, Direction sideHit, Vector3d hitVec, boolean placeStartPos) {
+	public BlockPlacedMessage(boolean blockHit, BlockPos blockPos, Direction sideHit, Vec3 hitVec, boolean placeStartPos) {
 		this.blockHit = blockHit;
 		this.blockPos = blockPos;
 		this.sideHit = sideHit;
@@ -49,7 +49,7 @@ public class BlockPlacedMessage {
 		this.placeStartPos = placeStartPos;
 	}
 
-	public static void encode(BlockPlacedMessage message, PacketBuffer buf) {
+	public static void encode(BlockPlacedMessage message, FriendlyByteBuf buf) {
 		buf.writeBoolean(message.blockHit);
 		buf.writeInt(message.blockPos.getX());
 		buf.writeInt(message.blockPos.getY());
@@ -61,11 +61,11 @@ public class BlockPlacedMessage {
 		buf.writeBoolean(message.placeStartPos);
 	}
 
-	public static BlockPlacedMessage decode(PacketBuffer buf) {
+	public static BlockPlacedMessage decode(FriendlyByteBuf buf) {
 		boolean blockHit = buf.readBoolean();
 		BlockPos blockPos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
 		Direction sideHit = Direction.from3DDataValue(buf.readInt());
-		Vector3d hitVec = new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+		Vec3 hitVec = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
 		boolean placeStartPos = buf.readBoolean();
 		return new BlockPlacedMessage(blockHit, blockPos, sideHit, hitVec, placeStartPos);
 	}
@@ -82,7 +82,7 @@ public class BlockPlacedMessage {
 		return sideHit;
 	}
 
-	public Vector3d getHitVec() {
+	public Vec3 getHitVec() {
 		return hitVec;
 	}
 

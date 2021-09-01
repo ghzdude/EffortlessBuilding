@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -16,24 +16,24 @@ public abstract class BaseBuildMode implements IBuildMode {
 	protected Dictionary<UUID, Integer> rightClickServerTable = new Hashtable<>();
 	protected Dictionary<UUID, BlockPos> firstPosTable = new Hashtable<>();
 	protected Dictionary<UUID, Direction> sideHitTable = new Hashtable<>();
-	protected Dictionary<UUID, Vector3d> hitVecTable = new Hashtable<>();
+	protected Dictionary<UUID, Vec3> hitVecTable = new Hashtable<>();
 
 	@Override
-	public void initialize(PlayerEntity player) {
+	public void initialize(Player player) {
 		rightClickClientTable.put(player.getUUID(), 0);
 		rightClickServerTable.put(player.getUUID(), 0);
 		firstPosTable.put(player.getUUID(), BlockPos.ZERO);
 		sideHitTable.put(player.getUUID(), Direction.UP);
-		hitVecTable.put(player.getUUID(), Vector3d.ZERO);
+		hitVecTable.put(player.getUUID(), Vec3.ZERO);
 	}
 
 	@Override
-	public Direction getSideHit(PlayerEntity player) {
+	public Direction getSideHit(Player player) {
 		return sideHitTable.get(player.getUUID());
 	}
 
 	@Override
-	public Vector3d getHitVec(PlayerEntity player) {
+	public Vec3 getHitVec(Player player) {
 		return hitVecTable.get(player.getUUID());
 	}
 }

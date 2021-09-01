@@ -1,22 +1,22 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.list.ExtendedList;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
@@ -36,7 +36,7 @@ public class PlayerSettingsGui extends Screen {
 	private Button closeButton;
 
 	public PlayerSettingsGui() {
-		super(new TranslationTextComponent("effortlessbuilding.screen.player_settings"));
+		super(new TranslatableComponent("effortlessbuilding.screen.player_settings"));
 	}
 
 	@Override
@@ -50,19 +50,19 @@ public class PlayerSettingsGui extends Screen {
 		shaderTypeList = new ShaderTypeList(this.minecraft);
 		this.children.add(shaderTypeList);
 		//TODO set selected name
-		ITextComponent currentShaderName = ShaderType.DISSOLVE_BLUE.name;
+		Component currentShaderName = ShaderType.DISSOLVE_BLUE.name;
 		shaderTypeButton = new ExtendedButton(right - 180, yy, 180, 20, currentShaderName, (button) -> {
 			showShaderList = !showShaderList;
 		});
 		addButton(shaderTypeButton);
 
 		yy += 50;
-		Slider slider = new Slider(right - 200, yy, 200, 20, StringTextComponent.EMPTY, StringTextComponent.EMPTY, 0.5, 2.0, 1.0, true, true, (button) -> {
+		Slider slider = new Slider(right - 200, yy, 200, 20, TextComponent.EMPTY, TextComponent.EMPTY, 0.5, 2.0, 1.0, true, true, (button) -> {
 
 		});
 		addButton(slider);
 
-		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, new StringTextComponent("Done"), (button) -> this.minecraft.player.closeContainer());
+		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, new TextComponent("Done"), (button) -> this.minecraft.player.closeContainer());
 		addButton(closeButton);
 	}
 
@@ -72,7 +72,7 @@ public class PlayerSettingsGui extends Screen {
 	}
 
 	@Override
-	public void render(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
 		this.renderBackground(ms);
 
 		int yy = top;
@@ -107,20 +107,20 @@ public class PlayerSettingsGui extends Screen {
 		DISSOLVE_BLUE("Dissolve Blue"),
 		DISSOLVE_ORANGE("Dissolve Orange");
 
-		public ITextComponent name;
+		public Component name;
 
-		ShaderType(ITextComponent name) {
+		ShaderType(Component name) {
 			this.name = name;
 		}
 
 		ShaderType(String name) {
-			this.name = new StringTextComponent(name);
+			this.name = new TextComponent(name);
 		}
 	}
 
 	//Inspired by LanguageScreen
 	@OnlyIn(Dist.CLIENT)
-	class ShaderTypeList extends ExtendedList<PlayerSettingsGui.ShaderTypeList.ShaderTypeEntry> {
+	class ShaderTypeList extends ObjectSelectionList<PlayerSettingsGui.ShaderTypeList.ShaderTypeEntry> {
 
 		public ShaderTypeList(Minecraft mcIn) {
 			super(mcIn, 180, 140, top + 20, top + 100, 18);
@@ -149,7 +149,7 @@ public class PlayerSettingsGui extends Screen {
 		@Override
 		public void setSelected(PlayerSettingsGui.ShaderTypeList.ShaderTypeEntry selected) {
 			super.setSelected(selected);
-			Minecraft.getInstance().getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			EffortlessBuilding.log("Selected shader " + selected.shaderType.name);
 			shaderTypeButton.setMessage(selected.shaderType.name);
 //            showShaderList = false;
@@ -196,18 +196,18 @@ public class PlayerSettingsGui extends Screen {
 
 		//From AbstractList, disabled parts
 		@Override
-		public void render(MatrixStack ms, int p_render_1_, int p_render_2_, float p_render_3_) {
+		public void render(PoseStack ms, int p_render_1_, int p_render_2_, float p_render_3_) {
 			this.renderBackground(ms);
 			int i = this.getScrollbarPosition();
 			int j = i + 6;
-			Tessellator tessellator = Tessellator.getInstance();
+			Tesselator tessellator = Tesselator.getInstance();
 			BufferBuilder bufferbuilder = tessellator.getBuilder();
 //            this.minecraft.getTextureManager().bindTexture(AbstractGui.BACKGROUND_LOCATION);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
 			RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 			float f = 32.0F;
-			bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+			bufferbuilder.begin(7, DefaultVertexFormat.POSITION_COLOR);
 			bufferbuilder.vertex(this.x0, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
 			bufferbuilder.vertex(this.x1, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
 			bufferbuilder.vertex(this.x1, this.y0, 0.0D).color(20, 20, 20, 180).endVertex();
@@ -246,25 +246,25 @@ public class PlayerSettingsGui extends Screen {
 			int j1 = this.getMaxScroll();
 			if (j1 > 0) {
 				int k1 = (int) ((float) ((this.y1 - this.y0) * (this.y1 - this.y0)) / (float) this.getMaxPosition());
-				k1 = MathHelper.clamp(k1, 32, this.y1 - this.y0 - 8);
+				k1 = Mth.clamp(k1, 32, this.y1 - this.y0 - 8);
 				int l1 = (int) this.getScrollAmount() * (this.y1 - this.y0 - k1) / j1 + this.y0;
 				if (l1 < this.y0) {
 					l1 = this.y0;
 				}
 
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+				bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
 				bufferbuilder.vertex(i, this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
 				bufferbuilder.vertex(j, this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
 				bufferbuilder.vertex(j, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
 				bufferbuilder.vertex(i, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
 				tessellator.end();
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+				bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
 				bufferbuilder.vertex(i, l1 + k1, 0.0D).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
 				bufferbuilder.vertex(j, l1 + k1, 0.0D).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
 				bufferbuilder.vertex(j, l1, 0.0D).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
 				bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
 				tessellator.end();
-				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+				bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
 				bufferbuilder.vertex(i, l1 + k1 - 1, 0.0D).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
 				bufferbuilder.vertex(j - 1, l1 + k1 - 1, 0.0D).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
 				bufferbuilder.vertex(j - 1, l1, 0.0D).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
@@ -284,7 +284,7 @@ public class PlayerSettingsGui extends Screen {
 		}
 
 		@OnlyIn(Dist.CLIENT)
-		public class ShaderTypeEntry extends ExtendedList.AbstractListEntry<ShaderTypeEntry> {
+		public class ShaderTypeEntry extends ObjectSelectionList.Entry<ShaderTypeEntry> {
 			private final ShaderType shaderType;
 
 			public ShaderTypeEntry(ShaderType shaderType) {
@@ -292,7 +292,7 @@ public class PlayerSettingsGui extends Screen {
 			}
 
 			@Override
-			public void render(MatrixStack ms, int itemIndex, int rowTop, int rowLeft, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean hovered, float partialTicks) {
+			public void render(PoseStack ms, int itemIndex, int rowTop, int rowLeft, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean hovered, float partialTicks) {
 				if (rowTop + 10 > ShaderTypeList.this.y0 && rowTop + rowHeight - 5 < ShaderTypeList.this.y1)
 					drawString(ms, font, shaderType.name, ShaderTypeList.this.x0 + 8, rowTop + 4, 0xFFFFFF);
 			}

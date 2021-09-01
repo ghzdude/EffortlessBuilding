@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.buildmode.buildmodes;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
 import nl.requios.effortlessbuilding.buildmode.ThreeClicksBuildMode;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Cylinder extends ThreeClicksBuildMode {
 
-	public static List<BlockPos> getCylinderBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
+	public static List<BlockPos> getCylinderBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
 		List<BlockPos> list = new ArrayList<>();
 
 		//Get circle blocks (using CIRCLE_START and FILL options built-in)
@@ -29,22 +29,22 @@ public class Cylinder extends ThreeClicksBuildMode {
 	}
 
 	@Override
-	public BlockPos findSecondPos(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
+	public BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace) {
 		return Floor.findFloor(player, firstPos, skipRaytrace);
 	}
 
 	@Override
-	public BlockPos findThirdPos(PlayerEntity player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
+	public BlockPos findThirdPos(Player player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
 		return findHeight(player, secondPos, skipRaytrace);
 	}
 
 	@Override
-	public List<BlockPos> getIntermediateBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public List<BlockPos> getIntermediateBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {
 		return Circle.getCircleBlocks(player, x1, y1, z1, x2, y2, z2);
 	}
 
 	@Override
-	public List<BlockPos> getFinalBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
+	public List<BlockPos> getFinalBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
 		return getCylinderBlocks(player, x1, y1, z1, x2, y2, z2, x3, y3, z3);
 	}
 }

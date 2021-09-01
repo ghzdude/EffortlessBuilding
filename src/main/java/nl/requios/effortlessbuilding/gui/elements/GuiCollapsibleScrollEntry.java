@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -14,7 +14,7 @@ import java.util.List;
 public abstract class GuiCollapsibleScrollEntry implements GuiScrollPane.IScrollEntry {
 
 	public GuiScrollPane scrollPane;
-	protected FontRenderer font;
+	protected Font font;
 	protected Minecraft mc;
 
 	protected boolean isCollapsed = true;
@@ -27,7 +27,7 @@ public abstract class GuiCollapsibleScrollEntry implements GuiScrollPane.IScroll
 	}
 
 	@Override
-	public void init(List<Widget> buttonList) {
+	public void init(List<AbstractWidget> buttonList) {
 		left = scrollPane.getWidth() / 2 - 140;
 		right = scrollPane.getWidth() / 2 + 140;
 		top = scrollPane.getHeight() / 2 - 100;
@@ -39,7 +39,7 @@ public abstract class GuiCollapsibleScrollEntry implements GuiScrollPane.IScroll
 	}
 
 	@Override
-	public void drawTooltip(MatrixStack ms, Screen guiScreen, int mouseX, int mouseY) {
+	public void drawTooltip(PoseStack ms, Screen guiScreen, int mouseX, int mouseY) {
 	}
 
 	@Override

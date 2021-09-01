@@ -1,42 +1,42 @@
 package nl.requios.effortlessbuilding.gui;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.ClickType;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Hand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
 
-public class RandomizerBagContainer extends Container {
+public class RandomizerBagContainer extends AbstractContainerMenu {
 
 	private static final int INV_START = ItemRandomizerBag.INV_SIZE, INV_END = INV_START + 26,
 		HOTBAR_START = INV_END + 1, HOTBAR_END = HOTBAR_START + 8;
 	private final IItemHandler bagInventory;
 
-	public RandomizerBagContainer(ContainerType<?> type, int id){
+	public RandomizerBagContainer(MenuType<?> type, int id){
 		super(type, id);
 		bagInventory = null;
 	}
 
 	//Client
-	public RandomizerBagContainer(int id, PlayerInventory playerInventory, PacketBuffer packetBuffer) {
+	public RandomizerBagContainer(int id, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
 		this(id, playerInventory);
 	}
 
 	//Server?
-	public RandomizerBagContainer(int containerId, PlayerInventory playerInventory) {
+	public RandomizerBagContainer(int containerId, Inventory playerInventory) {
 		this(containerId, playerInventory, new ItemStackHandler(ItemRandomizerBag.INV_SIZE));
 	}
 
-	public RandomizerBagContainer(int containerId, PlayerInventory playerInventory, IItemHandler inventory) {
+	public RandomizerBagContainer(int containerId, Inventory playerInventory, IItemHandler inventory) {
 		super(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), containerId);
 		bagInventory = inventory;
 
@@ -59,7 +59,7 @@ public class RandomizerBagContainer extends Container {
 	}
 
 	@Override
-	public boolean stillValid(PlayerEntity playerIn) {
+	public boolean stillValid(Player playerIn) {
 		return true;
 	}
 
@@ -71,7 +71,7 @@ public class RandomizerBagContainer extends Container {
 	}
 
 	@Override
-	public ItemStack quickMoveStack(PlayerEntity playerIn, int slotIndex) {
+	public ItemStack quickMoveStack(Player playerIn, int slotIndex) {
 		ItemStack itemstack = ItemStack.EMPTY;
 		Slot slot = this.slots.get(slotIndex);
 
@@ -124,9 +124,9 @@ public class RandomizerBagContainer extends Container {
 	 * be able to save properly
 	 */
 	@Override
-	public ItemStack clicked(int slot, int dragType, ClickType clickTypeIn, PlayerEntity player) {
+	public ItemStack clicked(int slot, int dragType, ClickType clickTypeIn, Player player) {
 		// this will prevent the player from interacting with the item that opened the inventory:
-		if (slot >= 0 && getSlot(slot) != null && getSlot(slot).getItem().equals(player.getItemInHand(Hand.MAIN_HAND))) {
+		if (slot >= 0 && getSlot(slot) != null && getSlot(slot).getItem().equals(player.getItemInHand(InteractionHand.MAIN_HAND))) {
 			return ItemStack.EMPTY;
 		}
 		return super.clicked(slot, dragType, clickTypeIn, player);
@@ -136,7 +136,7 @@ public class RandomizerBagContainer extends Container {
 	 * Callback for when the crafting gui is closed.
 	 */
 	@Override
-	public void removed(PlayerEntity player) {
+	public void removed(Player player) {
 		super.removed(player);
 		if (!player.level.isClientSide) {
 			broadcastChanges();

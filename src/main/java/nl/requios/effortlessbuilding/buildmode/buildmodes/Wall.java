@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.buildmode.buildmodes;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.TwoClicksBuildMode;
@@ -13,18 +13,18 @@ import java.util.List;
 
 public class Wall extends TwoClicksBuildMode {
 
-	public static BlockPos findWall(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
-		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
+	public static BlockPos findWall(Player player, BlockPos firstPos, boolean skipRaytrace) {
+		Vec3 look = BuildModes.getPlayerLookVec(player);
+		Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<Criteria> criteriaList = new ArrayList<>(3);
 
 		//X
-		Vector3d xBound = BuildModes.findXBound(firstPos.getX(), start, look);
+		Vec3 xBound = BuildModes.findXBound(firstPos.getX(), start, look);
 		criteriaList.add(new Criteria(xBound, firstPos, start, look));
 
 		//Z
-		Vector3d zBound = BuildModes.findZBound(firstPos.getZ(), start, look);
+		Vec3 zBound = BuildModes.findZBound(firstPos.getZ(), start, look);
 		criteriaList.add(new Criteria(zBound, firstPos, start, look));
 
 		//Remove invalid criteria
@@ -51,7 +51,7 @@ public class Wall extends TwoClicksBuildMode {
 		return new BlockPos(selected.planeBound);
 	}
 
-	public static List<BlockPos> getWallBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public static List<BlockPos> getWallBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {
 		List<BlockPos> list = new ArrayList<>();
 
 		if (x1 == x2) {
@@ -104,30 +104,30 @@ public class Wall extends TwoClicksBuildMode {
 	}
 
 	@Override
-	protected BlockPos findSecondPos(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
+	protected BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace) {
 		return findWall(player, firstPos, skipRaytrace);
 	}
 
 	@Override
-	protected List<BlockPos> getAllBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2) {
+	protected List<BlockPos> getAllBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {
 		return getWallBlocks(player, x1, y1, z1, x2, y2, z2);
 	}
 
 	static class Criteria {
-		Vector3d planeBound;
+		Vec3 planeBound;
 		double distToPlayerSq;
 		double angle;
 
-		Criteria(Vector3d planeBound, BlockPos firstPos, Vector3d start, Vector3d look) {
+		Criteria(Vec3 planeBound, BlockPos firstPos, Vec3 start, Vec3 look) {
 			this.planeBound = planeBound;
 			this.distToPlayerSq = this.planeBound.subtract(start).lengthSqr();
-			Vector3d wall = this.planeBound.subtract(Vector3d.atLowerCornerOf(firstPos));
+			Vec3 wall = this.planeBound.subtract(Vec3.atLowerCornerOf(firstPos));
 			this.angle = wall.x * look.x + wall.z * look.z; //dot product ignoring y (looking up/down should not affect this angle)
 		}
 
 		//check if its not behind the player and its not too close and not too far
 		//also check if raytrace from player to block does not intersect blocks
-		public boolean isValid(Vector3d start, Vector3d look, int reach, PlayerEntity player, boolean skipRaytrace) {
+		public boolean isValid(Vec3 start, Vec3 look, int reach, Player player, boolean skipRaytrace) {
 
 			return BuildModes.isCriteriaValid(start, look, reach, player, skipRaytrace, planeBound, planeBound, distToPlayerSq);
 		}

@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.Vec3i;
 import net.minecraftforge.items.IItemHandler;
 import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
 
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class Array {
 
-	public static List<BlockPos> findCoordinates(PlayerEntity player, BlockPos startPos) {
+	public static List<BlockPos> findCoordinates(Player player, BlockPos startPos) {
 		List<BlockPos> coordinates = new ArrayList<>();
 
 		//find arraysettings for the player
@@ -24,7 +24,7 @@ public class Array {
 		if (!isEnabled(a)) return coordinates;
 
 		BlockPos pos = startPos;
-		Vector3i offset = new Vector3i(a.offset.getX(), a.offset.getY(), a.offset.getZ());
+		Vec3i offset = new Vec3i(a.offset.getX(), a.offset.getY(), a.offset.getZ());
 
 		for (int i = 0; i < a.count; i++) {
 			pos = pos.offset(offset);
@@ -34,7 +34,7 @@ public class Array {
 		return coordinates;
 	}
 
-	public static List<BlockState> findBlockStates(PlayerEntity player, BlockPos startPos, BlockState blockState, ItemStack itemStack, List<ItemStack> itemStacks) {
+	public static List<BlockState> findBlockStates(Player player, BlockPos startPos, BlockState blockState, ItemStack itemStack, List<ItemStack> itemStacks) {
 		List<BlockState> blockStates = new ArrayList<>();
 
 		//find arraysettings for the player that placed the block
@@ -42,7 +42,7 @@ public class Array {
 		if (!isEnabled(a)) return blockStates;
 
 		BlockPos pos = startPos;
-		Vector3i offset = new Vector3i(a.offset.getX(), a.offset.getY(), a.offset.getZ());
+		Vec3i offset = new Vec3i(a.offset.getX(), a.offset.getY(), a.offset.getZ());
 
 		//Randomizer bag synergy
 		IItemHandler bagInventory = null;
@@ -57,7 +57,7 @@ public class Array {
 			if (bagInventory != null) {
 				itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
 				blockState = BuildModifiers
-					.getBlockStateFromItem(itemStack, player, startPos, Direction.UP, new Vector3d(0, 0, 0), Hand.MAIN_HAND);
+					.getBlockStateFromItem(itemStack, player, startPos, Direction.UP, new Vec3(0, 0, 0), InteractionHand.MAIN_HAND);
 			}
 
 			//blockState = blockState.getBlock().getStateForPlacement(player.world, pos, )

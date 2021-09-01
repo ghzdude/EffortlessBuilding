@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -26,11 +26,11 @@ public class RequestLookAtMessage {
 		this.placeStartPos = placeStartPos;
 	}
 
-	public static void encode(RequestLookAtMessage message, PacketBuffer buf) {
+	public static void encode(RequestLookAtMessage message, FriendlyByteBuf buf) {
 		buf.writeBoolean(message.placeStartPos);
 	}
 
-	public static RequestLookAtMessage decode(PacketBuffer buf) {
+	public static RequestLookAtMessage decode(FriendlyByteBuf buf) {
 		boolean placeStartPos = buf.readBoolean();
 		return new RequestLookAtMessage(placeStartPos);
 	}
@@ -45,12 +45,12 @@ public class RequestLookAtMessage {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside
 					//Send back your info
-					PlayerEntity player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+					Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
 					//Prevent double placing in normal mode with placeStartPos false
 					//Unless QuickReplace is on, then we do need to place start pos.
-					if (ClientProxy.previousLookAt.getType() == RayTraceResult.Type.BLOCK) {
-						PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage((BlockRayTraceResult) ClientProxy.previousLookAt, message.getPlaceStartPos()));
+					if (ClientProxy.previousLookAt.getType() == HitResult.Type.BLOCK) {
+						PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage((BlockHitResult) ClientProxy.previousLookAt, message.getPlaceStartPos()));
 					} else {
 						PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage());
 					}

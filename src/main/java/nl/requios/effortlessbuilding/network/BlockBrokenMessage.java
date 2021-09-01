@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
@@ -20,30 +20,30 @@ public class BlockBrokenMessage {
 	private final boolean blockHit;
 	private final BlockPos blockPos;
 	private final Direction sideHit;
-	private final Vector3d hitVec;
+	private final Vec3 hitVec;
 
 	public BlockBrokenMessage() {
 		this.blockHit = false;
 		this.blockPos = BlockPos.ZERO;
 		this.sideHit = Direction.UP;
-		this.hitVec = new Vector3d(0, 0, 0);
+		this.hitVec = new Vec3(0, 0, 0);
 	}
 
-	public BlockBrokenMessage(BlockRayTraceResult result) {
-		this.blockHit = result.getType() == RayTraceResult.Type.BLOCK;
+	public BlockBrokenMessage(BlockHitResult result) {
+		this.blockHit = result.getType() == HitResult.Type.BLOCK;
 		this.blockPos = result.getBlockPos();
 		this.sideHit = result.getDirection();
 		this.hitVec = result.getLocation();
 	}
 
-	public BlockBrokenMessage(boolean blockHit, BlockPos blockPos, Direction sideHit, Vector3d hitVec) {
+	public BlockBrokenMessage(boolean blockHit, BlockPos blockPos, Direction sideHit, Vec3 hitVec) {
 		this.blockHit = blockHit;
 		this.blockPos = blockPos;
 		this.sideHit = sideHit;
 		this.hitVec = hitVec;
 	}
 
-	public static void encode(BlockBrokenMessage message, PacketBuffer buf) {
+	public static void encode(BlockBrokenMessage message, FriendlyByteBuf buf) {
 		buf.writeBoolean(message.blockHit);
 		buf.writeInt(message.blockPos.getX());
 		buf.writeInt(message.blockPos.getY());
@@ -54,11 +54,11 @@ public class BlockBrokenMessage {
 		buf.writeDouble(message.hitVec.z);
 	}
 
-	public static BlockBrokenMessage decode(PacketBuffer buf) {
+	public static BlockBrokenMessage decode(FriendlyByteBuf buf) {
 		boolean blockHit = buf.readBoolean();
 		BlockPos blockPos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
 		Direction sideHit = Direction.from3DDataValue(buf.readInt());
-		Vector3d hitVec = new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+		Vec3 hitVec = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
 		return new BlockBrokenMessage(blockHit, blockPos, sideHit, hitVec);
 	}
 
@@ -74,7 +74,7 @@ public class BlockBrokenMessage {
 		return sideHit;
 	}
 
-	public Vector3d getHitVec() {
+	public Vec3 getHitVec() {
 		return hitVec;
 	}
 

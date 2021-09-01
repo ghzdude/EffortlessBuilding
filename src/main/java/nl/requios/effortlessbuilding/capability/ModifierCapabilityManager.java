@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding.capability;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
@@ -61,8 +61,8 @@ public class ModifierCapabilityManager {
 
 	public static class Storage implements Capability.IStorage<IModifierCapability> {
 		@Override
-		public INBT writeNBT(Capability<IModifierCapability> capability, IModifierCapability instance, Direction side) {
-			CompoundNBT compound = new CompoundNBT();
+		public Tag writeNBT(Capability<IModifierCapability> capability, IModifierCapability instance, Direction side) {
+			CompoundTag compound = new CompoundTag();
 			ModifierSettings modifierSettings = instance.getModifierData();
 			if (modifierSettings == null) modifierSettings = new ModifierSettings();
 
@@ -110,12 +110,12 @@ public class ModifierCapabilityManager {
 		}
 
 		@Override
-		public void readNBT(Capability<IModifierCapability> capability, IModifierCapability instance, Direction side, INBT nbt) {
-			CompoundNBT compound = (CompoundNBT) nbt;
+		public void readNBT(Capability<IModifierCapability> capability, IModifierCapability instance, Direction side, Tag nbt) {
+			CompoundTag compound = (CompoundTag) nbt;
 
 			//MIRROR
 			boolean mirrorEnabled = compound.getBoolean("mirrorEnabled");
-			Vector3d mirrorPosition = new Vector3d(
+			Vec3 mirrorPosition = new Vec3(
 				compound.getDouble("mirrorPosX"),
 				compound.getDouble("mirrorPosY"),
 				compound.getDouble("mirrorPosZ"));
@@ -142,7 +142,7 @@ public class ModifierCapabilityManager {
 
 			//RADIAL MIRROR
 			boolean radialMirrorEnabled = compound.getBoolean("radialMirrorEnabled");
-			Vector3d radialMirrorPosition = new Vector3d(
+			Vec3 radialMirrorPosition = new Vec3(
 				compound.getDouble("radialMirrorPosX"),
 				compound.getDouble("radialMirrorPosY"),
 				compound.getDouble("radialMirrorPosZ"));
@@ -159,7 +159,7 @@ public class ModifierCapabilityManager {
 		}
 	}
 
-	public static class Provider implements ICapabilitySerializable<INBT> {
+	public static class Provider implements ICapabilitySerializable<Tag> {
 
 		IModifierCapability inst = modifierCapability.getDefaultInstance();
 
@@ -170,12 +170,12 @@ public class ModifierCapabilityManager {
 		}
 
 		@Override
-		public INBT serializeNBT() {
+		public Tag serializeNBT() {
 			return modifierCapability.getStorage().writeNBT(modifierCapability, inst, null);
 		}
 
 		@Override
-		public void deserializeNBT(INBT nbt) {
+		public void deserializeNBT(Tag nbt) {
 			modifierCapability.getStorage().readNBT(modifierCapability, inst, null, nbt);
 		}
 

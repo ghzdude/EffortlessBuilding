@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -33,7 +33,7 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void init(List<Widget> buttons) {
+	public void init(List<AbstractWidget> buttons) {
 		super.init(buttons);
 
 		int y = top;
@@ -49,23 +49,23 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 		y = top + 20;
 		textArrayOffsetX = new GuiNumberField(font, buttons, left + 70, y, 50, 18);
 		textArrayOffsetX.setNumber(0);
-		textArrayOffsetX.setTooltip(new StringTextComponent("How much each copy is shifted."));
+		textArrayOffsetX.setTooltip(new TextComponent("How much each copy is shifted."));
 		arrayNumberFieldList.add(textArrayOffsetX);
 
 		textArrayOffsetY = new GuiNumberField(font, buttons, left + 140, y, 50, 18);
 		textArrayOffsetY.setNumber(0);
-		textArrayOffsetY.setTooltip(new StringTextComponent("How much each copy is shifted."));
+		textArrayOffsetY.setTooltip(new TextComponent("How much each copy is shifted."));
 		arrayNumberFieldList.add(textArrayOffsetY);
 
 		textArrayOffsetZ = new GuiNumberField(font, buttons, left + 210, y, 50, 18);
 		textArrayOffsetZ.setNumber(0);
-		textArrayOffsetZ.setTooltip(new StringTextComponent("How much each copy is shifted."));
+		textArrayOffsetZ.setTooltip(new TextComponent("How much each copy is shifted."));
 		arrayNumberFieldList.add(textArrayOffsetZ);
 
 		y = top + 50;
 		textArrayCount = new GuiNumberField(font, buttons, left + 55, y, 50, 18);
 		textArrayCount.setNumber(5);
-		textArrayCount.setTooltip(new StringTextComponent("How many copies should be made."));
+		textArrayCount.setTooltip(new TextComponent("How many copies should be made."));
 		arrayNumberFieldList.add(textArrayCount);
 
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(mc.player);
@@ -86,7 +86,7 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void drawEntry(MatrixStack ms, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY,
+	public void drawEntry(PoseStack ms, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY,
 						  boolean isSelected, float partialTicks) {
 		int yy = y;
 		int offset = 8;
@@ -111,8 +111,8 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 
 			int currentReach = Math.max(-1, getArrayReach());
 			int maxReach = ReachHelper.getMaxReach(mc.player);
-			TextFormatting reachColor = isCurrentReachValid(currentReach, maxReach) ? TextFormatting.GRAY : TextFormatting.RED;
-			String reachText = "Reach: " + reachColor + currentReach + TextFormatting.GRAY + "/" + TextFormatting.GRAY + maxReach;
+			ChatFormatting reachColor = isCurrentReachValid(currentReach, maxReach) ? ChatFormatting.GRAY : ChatFormatting.RED;
+			String reachText = "Reach: " + reachColor + currentReach + ChatFormatting.GRAY + "/" + ChatFormatting.GRAY + maxReach;
 			font.draw(ms, reachText, left + 176 + offset, yy + 5, 0xFFFFFF);
 
 			arrayNumberFieldList.forEach(numberField -> numberField.drawNumberField(ms, mouseX, mouseY, partialTicks));
@@ -123,7 +123,7 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 
 	}
 
-	public void drawTooltip(MatrixStack ms, Screen guiScreen, int mouseX, int mouseY) {
+	public void drawTooltip(PoseStack ms, Screen guiScreen, int mouseX, int mouseY) {
 		//Draw tooltips last
 		if (buttonArrayEnabled.isChecked()) {
 			arrayNumberFieldList.forEach(numberField -> numberField.drawTooltip(ms, scrollPane.parent, mouseX, mouseY));

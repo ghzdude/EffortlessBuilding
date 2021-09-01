@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -35,7 +35,7 @@ public class AddUndoMessage {
 		this.newBlockState = newBlockState;
 	}
 
-	public static void encode(AddUndoMessage message, PacketBuffer buf) {
+	public static void encode(AddUndoMessage message, FriendlyByteBuf buf) {
 		buf.writeInt(message.coordinate.getX());
 		buf.writeInt(message.coordinate.getY());
 		buf.writeInt(message.coordinate.getZ());
@@ -43,7 +43,7 @@ public class AddUndoMessage {
 		buf.writeInt(Block.getId(message.newBlockState));
 	}
 
-	public static AddUndoMessage decode(PacketBuffer buf) {
+	public static AddUndoMessage decode(FriendlyByteBuf buf) {
 		BlockPos coordinate = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
 		BlockState previousBlockState = Block.stateById(buf.readInt());
 		BlockState newBlockState = Block.stateById(buf.readInt());
@@ -68,7 +68,7 @@ public class AddUndoMessage {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside
 
-					PlayerEntity player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+					Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 					//Add to undo stack clientside
 					//Only the appropriate player that needs to add this to the undo stack gets this message
 					UndoRedo.addUndo(player, new BlockSet(
@@ -81,7 +81,7 @@ public class AddUndoMessage {
 						new ArrayList<BlockState>() {{
 							add(message.getNewBlockState());
 						}},
-						new Vector3d(0, 0, 0),
+						new Vec3(0, 0, 0),
 						message.getCoordinate(), message.getCoordinate()));
 				}
 			});

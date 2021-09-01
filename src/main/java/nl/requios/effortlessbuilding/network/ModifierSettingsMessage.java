@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
@@ -31,7 +31,7 @@ public class ModifierSettingsMessage {
 		this.modifierSettings = modifierSettings;
 	}
 
-	public static void encode(ModifierSettingsMessage message, PacketBuffer buf) {
+	public static void encode(ModifierSettingsMessage message, FriendlyByteBuf buf) {
 		//MIRROR
 		Mirror.MirrorSettings m = message.modifierSettings.getMirrorSettings();
 		buf.writeBoolean(m != null);
@@ -79,12 +79,12 @@ public class ModifierSettingsMessage {
 		}
 	}
 
-	public static ModifierSettingsMessage decode(PacketBuffer buf) {
+	public static ModifierSettingsMessage decode(FriendlyByteBuf buf) {
 		//MIRROR
 		Mirror.MirrorSettings m = new Mirror.MirrorSettings();
 		if (buf.readBoolean()) {
 			boolean mirrorEnabled = buf.readBoolean();
-			Vector3d mirrorPosition = new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+			Vec3 mirrorPosition = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
 			boolean mirrorX = buf.readBoolean();
 			boolean mirrorY = buf.readBoolean();
 			boolean mirrorZ = buf.readBoolean();
@@ -112,7 +112,7 @@ public class ModifierSettingsMessage {
 		RadialMirror.RadialMirrorSettings r = new RadialMirror.RadialMirrorSettings();
 		if (buf.readBoolean()) {
 			boolean radialMirrorEnabled = buf.readBoolean();
-			Vector3d radialMirrorPosition = new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+			Vec3 radialMirrorPosition = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
 			int radialMirrorSlices = buf.readInt();
 			boolean radialMirrorAlternate = buf.readBoolean();
 			int radialMirrorRadius = buf.readInt();
@@ -129,7 +129,7 @@ public class ModifierSettingsMessage {
 	public static class Handler {
 		public static void handle(ModifierSettingsMessage message, Supplier<NetworkEvent.Context> ctx) {
 			ctx.get().enqueueWork(() -> {
-				PlayerEntity player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+				Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
 				// Sanitize
 				ModifierSettingsManager.sanitize(message.modifierSettings, player);

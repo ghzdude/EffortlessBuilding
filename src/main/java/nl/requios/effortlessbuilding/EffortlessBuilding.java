@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -59,8 +59,8 @@ public class EffortlessBuilding {
 		ITEM_REACH_UPGRADE_2,
 		ITEM_REACH_UPGRADE_3
 	};
-	public static final DeferredRegister<ContainerType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, EffortlessBuilding.MODID);
-	public static final RegistryObject<ContainerType<RandomizerBagContainer>> RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("randomizer_bag", () -> registerContainer(RandomizerBagContainer::new));
+	public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, EffortlessBuilding.MODID);
+	public static final RegistryObject<MenuType<RandomizerBagContainer>> RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("randomizer_bag", () -> registerContainer(RandomizerBagContainer::new));
 	public static final ResourceLocation RANDOMIZER_BAG_GUI = new ResourceLocation(EffortlessBuilding.MODID, "randomizer_bag");
 	public static EffortlessBuilding instance;
 	public static IProxy proxy = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
@@ -86,8 +86,8 @@ public class EffortlessBuilding {
 		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
 
-	public static <T extends Container> ContainerType<T> registerContainer(IContainerFactory<T> fact){
-		ContainerType<T> type = new ContainerType<T>(fact);
+	public static <T extends AbstractContainerMenu> MenuType<T> registerContainer(IContainerFactory<T> fact){
+		MenuType<T> type = new MenuType<T>(fact);
 		return type;
 	}
 
@@ -95,16 +95,16 @@ public class EffortlessBuilding {
 		logger.info(msg);
 	}
 
-	public static void log(PlayerEntity player, String msg) {
+	public static void log(Player player, String msg) {
 		log(player, msg, false);
 	}
 
-	public static void log(PlayerEntity player, String msg, boolean actionBar) {
-		player.displayClientMessage(new StringTextComponent(msg), actionBar);
+	public static void log(Player player, String msg, boolean actionBar) {
+		player.displayClientMessage(new TextComponent(msg), actionBar);
 	}
 
 	//Log with translation supported, call either on client or server (which then sends a message)
-	public static void logTranslate(PlayerEntity player, String prefix, String translationKey, String suffix, boolean actionBar) {
+	public static void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar) {
 		proxy.logTranslate(player, prefix, translationKey, suffix, actionBar);
 	}
 

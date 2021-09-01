@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -20,7 +20,7 @@ public class ModifierSettingsManager {
 	//Retrieves the buildsettings of a player through the modifierCapability capability
 	//Never returns null
 	@Nonnull
-	public static ModifierSettings getModifierSettings(PlayerEntity player) {
+	public static ModifierSettings getModifierSettings(Player player) {
 		LazyOptional<ModifierCapabilityManager.IModifierCapability> modifierCapability =
 			player.getCapability(ModifierCapabilityManager.modifierCapability, null);
 
@@ -38,7 +38,7 @@ public class ModifierSettingsManager {
 //        throw new IllegalArgumentException("Player does not have modifierCapability capability");
 	}
 
-	public static void setModifierSettings(PlayerEntity player, ModifierSettings modifierSettings) {
+	public static void setModifierSettings(Player player, ModifierSettings modifierSettings) {
 		if (player == null) {
 			EffortlessBuilding.log("Cannot set buildsettings, player is null");
 			return;
@@ -56,7 +56,7 @@ public class ModifierSettingsManager {
 		}
 	}
 
-	public static String sanitize(ModifierSettings modifierSettings, PlayerEntity player) {
+	public static String sanitize(ModifierSettings modifierSettings, Player player) {
 		int maxReach = ReachHelper.getMaxReach(player);
 		String error = "";
 
@@ -110,7 +110,7 @@ public class ModifierSettingsManager {
 		return error;
 	}
 
-	public static void handleNewPlayer(PlayerEntity player) {
+	public static void handleNewPlayer(Player player) {
 		//Makes sure player has modifier settings (if it doesnt it will create it)
 		getModifierSettings(player);
 
@@ -118,7 +118,7 @@ public class ModifierSettingsManager {
 		if (!player.level.isClientSide) {
 			//Send to client
 			ModifierSettingsMessage msg = new ModifierSettingsMessage(getModifierSettings(player));
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), msg);
+			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), msg);
 		}
 	}
 

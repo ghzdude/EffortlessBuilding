@@ -1,19 +1,19 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.helper.InventoryHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
@@ -28,12 +28,12 @@ import java.util.List;
 public class BuildModifiers {
 
 	//Called from BuildModes
-	public static void onBlockPlaced(PlayerEntity player, List<BlockPos> startCoordinates, Direction sideHit, Vector3d hitVec, boolean placeStartPos) {
-		World world = player.level;
+	public static void onBlockPlaced(Player player, List<BlockPos> startCoordinates, Direction sideHit, Vec3 hitVec, boolean placeStartPos) {
+		Level world = player.level;
 		ItemRandomizerBag.renewRandomness();
 
 		//Format hitvec to 0.x
-		hitVec = new Vector3d(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
+		hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
 
 		//find coordinates and blockstates
 		List<BlockPos> coordinates = findCoordinates(player, startCoordinates);
@@ -95,8 +95,8 @@ public class BuildModifiers {
 		}
 	}
 
-	public static void onBlockBroken(PlayerEntity player, List<BlockPos> startCoordinates, boolean breakStartPos) {
-		World world = player.level;
+	public static void onBlockBroken(Player player, List<BlockPos> startCoordinates, boolean breakStartPos) {
+		Level world = player.level;
 
 		List<BlockPos> coordinates = findCoordinates(player, startCoordinates);
 
@@ -146,12 +146,12 @@ public class BuildModifiers {
 		//add to undo stack
 		BlockPos firstPos = startCoordinates.get(0);
 		BlockPos secondPos = startCoordinates.get(startCoordinates.size() - 1);
-		Vector3d hitVec = new Vector3d(0.5, 0.5, 0.5);
+		Vec3 hitVec = new Vec3(0.5, 0.5, 0.5);
 		UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, hitVec, firstPos, secondPos));
 
 	}
 
-	public static List<BlockPos> findCoordinates(PlayerEntity player, List<BlockPos> posList) {
+	public static List<BlockPos> findCoordinates(Player player, List<BlockPos> posList) {
 		List<BlockPos> coordinates = new ArrayList<>();
 		//Add current blocks being placed too
 		coordinates.addAll(posList);
@@ -172,18 +172,18 @@ public class BuildModifiers {
 		return coordinates;
 	}
 
-	public static List<BlockPos> findCoordinates(PlayerEntity player, BlockPos blockPos) {
+	public static List<BlockPos> findCoordinates(Player player, BlockPos blockPos) {
 		return findCoordinates(player, new ArrayList<>(Collections.singletonList(blockPos)));
 	}
 
-	public static List<BlockState> findBlockStates(PlayerEntity player, List<BlockPos> posList, Vector3d hitVec, Direction facing, List<ItemStack> itemStacks) {
+	public static List<BlockState> findBlockStates(Player player, List<BlockPos> posList, Vec3 hitVec, Direction facing, List<ItemStack> itemStacks) {
 		List<BlockState> blockStates = new ArrayList<>();
 		itemStacks.clear();
 
 		//Get itemstack
-		ItemStack itemStack = player.getItemInHand(Hand.MAIN_HAND);
+		ItemStack itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
 		if (itemStack.isEmpty() || !CompatHelper.isItemBlockProxy(itemStack)) {
-			itemStack = player.getItemInHand(Hand.OFF_HAND);
+			itemStack = player.getItemInHand(InteractionHand.OFF_HAND);
 		}
 		if (itemStack.isEmpty() || !CompatHelper.isItemBlockProxy(itemStack)) {
 			return blockStates;
@@ -198,13 +198,13 @@ public class BuildModifiers {
 		//Add blocks in posList first
 		for (BlockPos blockPos : posList) {
 			if (!(itemStack.getItem() instanceof BlockItem)) itemBlock = CompatHelper.getItemBlockFromStack(itemStack);
-			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, Hand.MAIN_HAND);
+			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, InteractionHand.MAIN_HAND);
 			blockStates.add(blockState);
 			itemStacks.add(itemBlock);
 		}
 
 		for (BlockPos blockPos : posList) {
-			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, Hand.MAIN_HAND);
+			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, InteractionHand.MAIN_HAND);
 
 			List<BlockState> arrayBlockStates = Array.findBlockStates(player, blockPos, blockState, itemStack, itemStacks);
 			blockStates.addAll(arrayBlockStates);
@@ -239,8 +239,8 @@ public class BuildModifiers {
 			modifierSettings.doQuickReplace();
 	}
 
-	public static BlockState getBlockStateFromItem(ItemStack itemStack, PlayerEntity player, BlockPos blockPos, Direction facing, Vector3d hitVec, Hand hand) {
-		return Block.byItem(itemStack.getItem()).getStateForPlacement(new BlockItemUseContext(new ItemUseContext(player, hand, new BlockRayTraceResult(hitVec, facing, blockPos, false))));
+	public static BlockState getBlockStateFromItem(ItemStack itemStack, Player player, BlockPos blockPos, Direction facing, Vec3 hitVec, InteractionHand hand) {
+		return Block.byItem(itemStack.getItem()).getStateForPlacement(new BlockPlaceContext(new UseOnContext(player, hand, new BlockHitResult(hitVec, facing, blockPos, false))));
 	}
 
 	//Returns true if equal (or both null)

@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.buildmode.buildmodes;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ThreeClicksBuildMode;
 
@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Sphere extends ThreeClicksBuildMode {
 
-	public static List<BlockPos> getSphereBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
+	public static List<BlockPos> getSphereBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
 		List<BlockPos> list = new ArrayList<>();
 
 		float centerX = x1;
@@ -29,9 +29,9 @@ public class Sphere extends ThreeClicksBuildMode {
 			z1 = (int) (centerZ - (z2 - centerZ));
 		}
 
-		float radiusX = MathHelper.abs(x2 - centerX);
-		float radiusY = MathHelper.abs(y3 - centerY);
-		float radiusZ = MathHelper.abs(z2 - centerZ);
+		float radiusX = Mth.abs(x2 - centerX);
+		float radiusY = Mth.abs(y3 - centerY);
+		float radiusZ = Mth.abs(z2 - centerZ);
 
 		if (ModeOptions.getFill() == ModeOptions.ActionEnum.FULL)
 			addSphereBlocks(list, x1, y1, z1, x3, y3, z3, centerX, centerY, centerZ, radiusX, radiusY, radiusZ);
@@ -76,7 +76,7 @@ public class Sphere extends ThreeClicksBuildMode {
 	}
 
 	private static float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
-		return MathHelper.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
+		return Mth.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
 	}
 
 	public static float calculateSpheroidRadius(float centerX, float centerY, float centerZ, float radiusX, float radiusY, float radiusZ, int x, int y, int z) {
@@ -89,22 +89,22 @@ public class Sphere extends ThreeClicksBuildMode {
 	}
 
 	@Override
-	public BlockPos findSecondPos(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
+	public BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace) {
 		return Floor.findFloor(player, firstPos, skipRaytrace);
 	}
 
 	@Override
-	public BlockPos findThirdPos(PlayerEntity player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
+	public BlockPos findThirdPos(Player player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
 		return findHeight(player, secondPos, skipRaytrace);
 	}
 
 	@Override
-	public List<BlockPos> getIntermediateBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public List<BlockPos> getIntermediateBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {
 		return Circle.getCircleBlocks(player, x1, y1, z1, x2, y2, z2);
 	}
 
 	@Override
-	public List<BlockPos> getFinalBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
+	public List<BlockPos> getFinalBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
 		return getSphereBlocks(player, x1, y1, z1, x2, y2, z2, x3, y3, z3);
 	}
 }

@@ -1,15 +1,15 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerLevel;
 import nl.requios.effortlessbuilding.BuildConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.helper.FixedStack;
@@ -29,7 +29,7 @@ public class UndoRedo {
 	private static final Map<UUID, FixedStack<BlockSet>> redoStacksServer = new HashMap<>();
 
 	//add to undo stack
-	public static void addUndo(PlayerEntity player, BlockSet blockSet) {
+	public static void addUndo(Player player, BlockSet blockSet) {
 		Map<UUID, FixedStack<BlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
 
 		//Assert coordinates is as long as previous and new blockstate lists
@@ -56,7 +56,7 @@ public class UndoRedo {
 		undoStacks.get(player.getUUID()).push(blockSet);
 	}
 
-	private static void addRedo(PlayerEntity player, BlockSet blockSet) {
+	private static void addRedo(Player player, BlockSet blockSet) {
 		Map<UUID, FixedStack<BlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
 
 		//(No asserts necessary, it's private)
@@ -69,7 +69,7 @@ public class UndoRedo {
 		redoStacks.get(player.getUUID()).push(blockSet);
 	}
 
-	public static boolean undo(PlayerEntity player) {
+	public static boolean undo(Player player) {
 		Map<UUID, FixedStack<BlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
 
 		if (!undoStacks.containsKey(player.getUUID())) return false;
@@ -82,7 +82,7 @@ public class UndoRedo {
 		List<BlockPos> coordinates = blockSet.getCoordinates();
 		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
 		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
-		Vector3d hitVec = blockSet.getHitVec();
+		Vec3 hitVec = blockSet.getHitVec();
 
 		//Find up to date itemstacks in player inventory
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
@@ -129,7 +129,7 @@ public class UndoRedo {
 		return true;
 	}
 
-	public static boolean redo(PlayerEntity player) {
+	public static boolean redo(Player player) {
 		Map<UUID, FixedStack<BlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
 
 		if (!redoStacks.containsKey(player.getUUID())) return false;
@@ -142,7 +142,7 @@ public class UndoRedo {
 		List<BlockPos> coordinates = blockSet.getCoordinates();
 		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
 		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
-		Vector3d hitVec = blockSet.getHitVec();
+		Vec3 hitVec = blockSet.getHitVec();
 
 		//Find up to date itemstacks in player inventory
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
@@ -188,7 +188,7 @@ public class UndoRedo {
 		return true;
 	}
 
-	public static void clear(PlayerEntity player) {
+	public static void clear(Player player) {
 		Map<UUID, FixedStack<BlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
 		Map<UUID, FixedStack<BlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
 		if (undoStacks.containsKey(player.getUUID())) {
@@ -199,7 +199,7 @@ public class UndoRedo {
 		}
 	}
 
-	private static List<ItemStack> findItemStacksInInventory(PlayerEntity player, List<BlockState> blockStates) {
+	private static List<ItemStack> findItemStacksInInventory(Player player, List<BlockState> blockStates) {
 		List<ItemStack> itemStacks = new ArrayList<>(blockStates.size());
 		for (BlockState blockState : blockStates) {
 			itemStacks.add(findItemStackInInventory(player, blockState));
@@ -207,7 +207,7 @@ public class UndoRedo {
 		return itemStacks;
 	}
 
-	private static ItemStack findItemStackInInventory(PlayerEntity player, BlockState blockState) {
+	private static ItemStack findItemStackInInventory(Player player, BlockState blockState) {
 		ItemStack itemStack = ItemStack.EMPTY;
 		if (blockState == null) return itemStack;
 
@@ -221,7 +221,7 @@ public class UndoRedo {
 		if (itemStack.isEmpty()) {
 			//Cannot check drops on clientside because loot tables are server only
 			if (!player.level.isClientSide) {
-				List<ItemStack> itemsDropped = Block.getDrops(blockState, (ServerWorld) player.level, BlockPos.ZERO, null);
+				List<ItemStack> itemsDropped = Block.getDrops(blockState, (ServerLevel) player.level, BlockPos.ZERO, null);
 				for (ItemStack itemStackDropped : itemsDropped) {
 					if (itemStackDropped.getItem() instanceof BlockItem) {
 						Block block = ((BlockItem) itemStackDropped.getItem()).getBlock();

@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.buildmodes.*;
 import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
@@ -26,16 +26,16 @@ public class BuildModes {
 
 	//Static variables are shared between client and server in singleplayer
 	//We need them separate
-	public static Dictionary<PlayerEntity, Boolean> currentlyBreakingClient = new Hashtable<>();
-	public static Dictionary<PlayerEntity, Boolean> currentlyBreakingServer = new Hashtable<>();
+	public static Dictionary<Player, Boolean> currentlyBreakingClient = new Hashtable<>();
+	public static Dictionary<Player, Boolean> currentlyBreakingServer = new Hashtable<>();
 
 	//Uses a network message to get the previous raytraceresult from the player
 	//The server could keep track of all raytraceresults but this might lag with many players
 	//Raytraceresult is needed for sideHit and hitVec
-	public static void onBlockPlacedMessage(PlayerEntity player, BlockPlacedMessage message) {
+	public static void onBlockPlacedMessage(Player player, BlockPlacedMessage message) {
 
 		//Check if not in the middle of breaking
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		if (currentlyBreaking.get(player) != null && currentlyBreaking.get(player)) {
 			//Cancel breaking
 			initializeMode(player);
@@ -90,7 +90,7 @@ public class BuildModes {
 		Direction sideHit = buildMode.instance.getSideHit(player);
 		if (sideHit == null) sideHit = message.getSideHit();
 
-		Vector3d hitVec = buildMode.instance.getHitVec(player);
+		Vec3 hitVec = buildMode.instance.getHitVec(player);
 		if (hitVec == null) hitVec = message.getHitVec();
 
 		BuildModifiers.onBlockPlaced(player, coordinates, sideHit, hitVec, message.getPlaceStartPos());
@@ -102,15 +102,15 @@ public class BuildModes {
 	}
 
 	//Use a network message to break blocks in the distance using clientside mouse input
-	public static void onBlockBrokenMessage(PlayerEntity player, BlockBrokenMessage message) {
+	public static void onBlockBrokenMessage(Player player, BlockBrokenMessage message) {
 		BlockPos startPos = message.isBlockHit() ? message.getBlockPos() : null;
 		onBlockBroken(player, startPos, true);
 	}
 
-	public static void onBlockBroken(PlayerEntity player, BlockPos startPos, boolean breakStartPos) {
+	public static void onBlockBroken(Player player, BlockPos startPos, boolean breakStartPos) {
 
 		//Check if not in the middle of placing
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		if (currentlyBreaking.get(player) != null && !currentlyBreaking.get(player)) {
 			//Cancel placing
 			initializeMode(player);
@@ -128,7 +128,7 @@ public class BuildModes {
 
 		//Get coordinates
 		BuildModeEnum buildMode = modeSettings.getBuildMode();
-		List<BlockPos> coordinates = buildMode.instance.onRightClick(player, startPos, Direction.UP, Vector3d.ZERO, true);
+		List<BlockPos> coordinates = buildMode.instance.onRightClick(player, startPos, Direction.UP, Vec3.ZERO, true);
 
 		if (coordinates.isEmpty()) {
 			currentlyBreaking.put(player, true);
@@ -143,7 +143,7 @@ public class BuildModes {
 		currentlyBreaking.remove(player);
 	}
 
-	public static List<BlockPos> findCoordinates(PlayerEntity player, BlockPos startPos, boolean skipRaytrace) {
+	public static List<BlockPos> findCoordinates(Player player, BlockPos startPos, boolean skipRaytrace) {
 		List<BlockPos> coordinates = new ArrayList<>();
 
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
@@ -152,61 +152,61 @@ public class BuildModes {
 		return coordinates;
 	}
 
-	public static void initializeMode(PlayerEntity player) {
+	public static void initializeMode(Player player) {
 		//Resetting mode, so not placing or breaking
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		currentlyBreaking.remove(player);
 
 		ModeSettingsManager.getModeSettings(player).getBuildMode().instance.initialize(player);
 	}
 
-	public static boolean isCurrentlyPlacing(PlayerEntity player) {
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
+	public static boolean isCurrentlyPlacing(Player player) {
+		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		return currentlyBreaking.get(player) != null && !currentlyBreaking.get(player);
 	}
 
-	public static boolean isCurrentlyBreaking(PlayerEntity player) {
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
+	public static boolean isCurrentlyBreaking(Player player) {
+		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		return currentlyBreaking.get(player) != null && currentlyBreaking.get(player);
 	}
 
 	//Either placing or breaking
-	public static boolean isActive(PlayerEntity player) {
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
+	public static boolean isActive(Player player) {
+		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		return currentlyBreaking.get(player) != null;
 	}
 
 	//Find coordinates on a line bound by a plane
-	public static Vector3d findXBound(double x, Vector3d start, Vector3d look) {
+	public static Vec3 findXBound(double x, Vec3 start, Vec3 look) {
 		//then y and z are
 		double y = (x - start.x) / look.x * look.y + start.y;
 		double z = (x - start.x) / look.x * look.z + start.z;
 
-		return new Vector3d(x, y, z);
+		return new Vec3(x, y, z);
 	}
 
 
 	//-- Common build mode functionality --//
 
-	public static Vector3d findYBound(double y, Vector3d start, Vector3d look) {
+	public static Vec3 findYBound(double y, Vec3 start, Vec3 look) {
 		//then x and z are
 		double x = (y - start.y) / look.y * look.x + start.x;
 		double z = (y - start.y) / look.y * look.z + start.z;
 
-		return new Vector3d(x, y, z);
+		return new Vec3(x, y, z);
 	}
 
-	public static Vector3d findZBound(double z, Vector3d start, Vector3d look) {
+	public static Vec3 findZBound(double z, Vec3 start, Vec3 look) {
 		//then x and y are
 		double x = (z - start.z) / look.z * look.x + start.x;
 		double y = (z - start.z) / look.z * look.y + start.y;
 
-		return new Vector3d(x, y, z);
+		return new Vec3(x, y, z);
 	}
 
 	//Use this instead of player.getLookVec() in any buildmodes code
-	public static Vector3d getPlayerLookVec(PlayerEntity player) {
-		Vector3d lookVec = player.getLookAngle();
+	public static Vec3 getPlayerLookVec(Player player) {
+		Vec3 lookVec = player.getLookAngle();
 		double x = lookVec.x;
 		double y = lookVec.y;
 		double z = lookVec.z;
@@ -226,16 +226,16 @@ public class BuildModes {
 		if (Math.abs(z - 1.0) < 0.0001) z = 0.9999;
 		if (Math.abs(z + 1.0) < 0.0001) z = -0.9999;
 
-		return new Vector3d(x, y, z);
+		return new Vec3(x, y, z);
 	}
 
-	public static boolean isCriteriaValid(Vector3d start, Vector3d look, int reach, PlayerEntity player, boolean skipRaytrace, Vector3d lineBound, Vector3d planeBound, double distToPlayerSq) {
+	public static boolean isCriteriaValid(Vec3 start, Vec3 look, int reach, Player player, boolean skipRaytrace, Vec3 lineBound, Vec3 planeBound, double distToPlayerSq) {
 		boolean intersects = false;
 		if (!skipRaytrace) {
 			//collision within a 1 block radius to selected is fine
-			RayTraceContext rayTraceContext = new RayTraceContext(start, lineBound, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player);
-			RayTraceResult rayTraceResult = player.level.clip(rayTraceContext);
-			intersects = rayTraceResult != null && rayTraceResult.getType() == RayTraceResult.Type.BLOCK &&
+			ClipContext rayTraceContext = new ClipContext(start, lineBound, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player);
+			HitResult rayTraceResult = player.level.clip(rayTraceContext);
+			intersects = rayTraceResult != null && rayTraceResult.getType() == HitResult.Type.BLOCK &&
 				planeBound.subtract(rayTraceResult.getLocation()).lengthSqr() > 4;
 		}
 

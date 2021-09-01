@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.ChatFormatting;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
@@ -60,7 +60,7 @@ public class ModeOptions {
 	}
 
 	//Called on both client and server
-	public static void performAction(PlayerEntity player, ActionEnum action) {
+	public static void performAction(Player player, ActionEnum action) {
 		if (action == null) return;
 
 		switch (action) {
@@ -73,7 +73,7 @@ public class ModeOptions {
 			case REPLACE:
 				ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 				modifierSettings.setQuickReplace(!modifierSettings.doQuickReplace());
-				EffortlessBuilding.log(player, "Set " + TextFormatting.GOLD + "Quick Replace " + TextFormatting.RESET + (
+				EffortlessBuilding.log(player, "Set " + ChatFormatting.GOLD + "Quick Replace " + ChatFormatting.RESET + (
 					modifierSettings.doQuickReplace() ? "on" : "off"), true);
 				break;
 			case OPEN_MODIFIER_SETTINGS:

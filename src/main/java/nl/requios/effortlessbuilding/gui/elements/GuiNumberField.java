@@ -1,16 +1,16 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -24,31 +24,31 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class GuiNumberField extends AbstractGui {
+public class GuiNumberField extends GuiComponent {
 
 	public int x, y, width, height;
 	public int buttonWidth = 10;
 
-	protected TextFieldWidget textField;
+	protected EditBox textField;
 	protected Button minusButton, plusButton;
 
-	List<ITextComponent> tooltip = new ArrayList<>();
+	List<Component> tooltip = new ArrayList<>();
 
-	public GuiNumberField(FontRenderer font, List<Widget> buttonList, int x, int y, int width, int height) {
+	public GuiNumberField(Font font, List<AbstractWidget> buttonList, int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 
-		textField = new TextFieldWidget(font, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2, StringTextComponent.EMPTY);
-		minusButton = new Button(x, y - 1, buttonWidth, height + 2, new StringTextComponent("-"), button -> {
+		textField = new EditBox(font, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2, TextComponent.EMPTY);
+		minusButton = new Button(x, y - 1, buttonWidth, height + 2, new TextComponent("-"), button -> {
 			float valueChanged = 1f;
 			if (Screen.hasControlDown()) valueChanged = 5f;
 			if (Screen.hasShiftDown()) valueChanged = 10f;
 
 			setNumber(getNumber() - valueChanged);
 		});
-		plusButton = new Button(x + width - buttonWidth, y - 1, buttonWidth, height + 2, new StringTextComponent("+"), button -> {
+		plusButton = new Button(x + width - buttonWidth, y - 1, buttonWidth, height + 2, new TextComponent("+"), button -> {
 			float valueChanged = 1f;
 			if (Screen.hasControlDown()) valueChanged = 5f;
 			if (Screen.hasShiftDown()) valueChanged = 10f;
@@ -73,11 +73,11 @@ public class GuiNumberField extends AbstractGui {
 		textField.setValue(DecimalFormat.getInstance().format(number));
 	}
 
-	public void setTooltip(ITextComponent tooltip) {
+	public void setTooltip(Component tooltip) {
 		setTooltip(Collections.singletonList(tooltip));
 	}
 
-	public void setTooltip(List<ITextComponent> tooltip) {
+	public void setTooltip(List<Component> tooltip) {
 		this.tooltip = tooltip;
 	}
 
@@ -97,7 +97,7 @@ public class GuiNumberField extends AbstractGui {
 		return result;
 	}
 
-	public void drawNumberField(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void drawNumberField(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
 		textField.y = y + 1;
 		minusButton.y = y - 1;
 		plusButton.y = y - 1;
@@ -107,14 +107,14 @@ public class GuiNumberField extends AbstractGui {
 		plusButton.render(ms, mouseX, mouseY, partialTicks);
 	}
 
-	public void drawTooltip(MatrixStack ms, Screen screen, int mouseX, int mouseY) {
+	public void drawTooltip(PoseStack ms, Screen screen, int mouseX, int mouseY) {
 		boolean insideTextField = mouseX >= x + buttonWidth && mouseX < x + width - buttonWidth && mouseY >= y && mouseY < y + height;
 		boolean insideMinusButton = mouseX >= x && mouseX < x + buttonWidth && mouseY >= y && mouseY < y + height;
 		boolean insidePlusButton = mouseX >= x + width - buttonWidth && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
 		// List<String> textLines = new ArrayList<>();
 
-		List<ITextComponent> textLines = new ArrayList<>();
+		List<Component> textLines = new ArrayList<>();
 
 
 		if (insideTextField) {
@@ -123,17 +123,17 @@ public class GuiNumberField extends AbstractGui {
 		}
 
 		if (insideMinusButton) {
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("shift ").withStyle(TextFormatting.AQUA)).append("for ")
-				.append(new StringTextComponent("10").withStyle(TextFormatting.RED)));
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("ctrl ").withStyle(TextFormatting.AQUA)).append("for ")
-				.append(new StringTextComponent("5").withStyle(TextFormatting.RED)));
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("shift ").withStyle(ChatFormatting.AQUA)).append("for ")
+				.append(new TextComponent("10").withStyle(ChatFormatting.RED)));
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("ctrl ").withStyle(ChatFormatting.AQUA)).append("for ")
+				.append(new TextComponent("5").withStyle(ChatFormatting.RED)));
 		}
 
 		if (insidePlusButton) {
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("shift ").withStyle(TextFormatting.DARK_GREEN)).append("for ")
-				.append(new StringTextComponent("10").withStyle(TextFormatting.RED)));
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("ctrl ").withStyle(TextFormatting.DARK_GREEN)).append("for ")
-				.append(new StringTextComponent("5").withStyle(TextFormatting.RED)));
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("shift ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
+				.append(new TextComponent("10").withStyle(ChatFormatting.RED)));
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("ctrl ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
+				.append(new TextComponent("5").withStyle(ChatFormatting.RED)));
 		}
 
 		screen.renderComponentTooltip(ms, textLines, mouseX - 10, mouseY + 25);

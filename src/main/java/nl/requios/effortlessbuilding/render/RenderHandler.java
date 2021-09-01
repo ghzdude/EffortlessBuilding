@@ -1,23 +1,23 @@
 package nl.requios.effortlessbuilding.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.block.BlockState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -35,6 +35,10 @@ import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+
 /***
  * Main render class for Effortless Building
  */
@@ -46,17 +50,17 @@ public class RenderHandler {
 		if (event.getPhase() != EventPriority.NORMAL)
 			return;
 
-		MatrixStack matrixStack = event.getMatrixStack();
-		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuilder();
-		IRenderTypeBuffer.Impl renderTypeBuffer = IRenderTypeBuffer.immediate(bufferBuilder);
+		PoseStack matrixStack = event.getMatrixStack();
+		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(bufferBuilder);
 		if (renderTypeBuffer == null)
 			return;
 
-		PlayerEntity player = Minecraft.getInstance().player;
+		Player player = Minecraft.getInstance().player;
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-		Vector3d projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
 		matrixStack.pushPose();
 		matrixStack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
@@ -74,7 +78,7 @@ public class RenderHandler {
 	//Display Radial Menu
 	public static void onRenderGameOverlay(final RenderGameOverlayEvent.Post event) {
 		Minecraft mc = Minecraft.getInstance();
-		ClientPlayerEntity player = mc.player;
+		LocalPlayer player = mc.player;
 
 		//check if chisel and bits tool in hand (and has menu)
 //        final boolean hasChiselInHand = CompatHelper.chiselsAndBitsProxy.isHoldingChiselTool(EnumHand.MAIN_HAND);
@@ -129,7 +133,7 @@ public class RenderHandler {
 				}
 
 				if (mc.mouseHandler.isMouseGrabbed()) {
-					KeyBinding.releaseAll();
+					KeyMapping.releaseAll();
 				}
 
 				final int mouseX = ((int) mc.mouseHandler.xpos()) * scaledWidth / mc.getWindow().getWidth();
@@ -149,28 +153,28 @@ public class RenderHandler {
 	public static void playRadialMenuSound() {
 		final float volume = 0.1f;
 		if (volume >= 0.0001f) {
-			SimpleSound sound = new SimpleSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, volume, 1.0f, Minecraft.getInstance().player.blockPosition());
+			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, volume, 1.0f, Minecraft.getInstance().player.blockPosition());
 			Minecraft.getInstance().getSoundManager().play(sound);
 		}
 	}
 
-	protected static IVertexBuilder beginLines(IRenderTypeBuffer.Impl renderTypeBuffer) {
+	protected static VertexConsumer beginLines(MultiBufferSource.BufferSource renderTypeBuffer) {
 		return renderTypeBuffer.getBuffer(BuildRenderTypes.LINES);
 	}
 
-	protected static void endLines(IRenderTypeBuffer.Impl renderTypeBuffer) {
+	protected static void endLines(MultiBufferSource.BufferSource renderTypeBuffer) {
 		renderTypeBuffer.endBatch();
 	}
 
-	protected static IVertexBuilder beginPlanes(IRenderTypeBuffer.Impl renderTypeBuffer) {
+	protected static VertexConsumer beginPlanes(MultiBufferSource.BufferSource renderTypeBuffer) {
 		return renderTypeBuffer.getBuffer(BuildRenderTypes.PLANES);
 	}
 
-	protected static void endPlanes(IRenderTypeBuffer.Impl renderTypeBuffer) {
+	protected static void endPlanes(MultiBufferSource.BufferSource renderTypeBuffer) {
 		renderTypeBuffer.endBatch();
 	}
 
-	protected static void renderBlockPreview(MatrixStack matrixStack, IRenderTypeBuffer.Impl renderTypeBuffer, BlockRendererDispatcher dispatcher,
+	protected static void renderBlockPreview(PoseStack matrixStack, MultiBufferSource.BufferSource renderTypeBuffer, BlockRenderDispatcher dispatcher,
 											 BlockPos blockPos, BlockState blockState, float dissolve, BlockPos firstPos, BlockPos secondPos, boolean red) {
 		if (blockState == null) return;
 
@@ -182,13 +186,13 @@ public class RenderHandler {
 
 		//Begin block preview rendering
 		RenderType blockPreviewRenderType = BuildRenderTypes.getBlockPreviewRenderType(dissolve, blockPos, firstPos, secondPos, red);
-		IVertexBuilder buffer = renderTypeBuffer.getBuffer(blockPreviewRenderType);
+		VertexConsumer buffer = renderTypeBuffer.getBuffer(blockPreviewRenderType);
 
 //        MinecraftServer server = Minecraft.getInstance().getIntegratedServer();
 //        World world = DimensionManager.getWorld(server, DimensionType.OVERWORLD, false, true);
 
 		try {
-			IBakedModel model = dispatcher.getBlockModel(blockState);
+			BakedModel model = dispatcher.getBlockModel(blockState);
 			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer,
 				blockState, model, 1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY);
 //        blockRendererDispatcher.getBlockModelRenderer().renderModel(world, blockRendererDispatcher.getModelForState(blockState),
@@ -199,10 +203,10 @@ public class RenderHandler {
 			//Render outline as backup, escape out of the current renderstack
 			matrixStack.popPose();
 			renderTypeBuffer.endBatch();
-			IVertexBuilder lineBuffer = beginLines(renderTypeBuffer);
-			renderBlockOutline(matrixStack, lineBuffer, blockPos, new Vector3d(1f, 1f, 1f));
+			VertexConsumer lineBuffer = beginLines(renderTypeBuffer);
+			renderBlockOutline(matrixStack, lineBuffer, blockPos, new Vec3(1f, 1f, 1f));
 			endLines(renderTypeBuffer);
-			buffer = renderTypeBuffer.getBuffer(Atlases.translucentCullBlockSheet()); //any type will do, as long as we have something on the stack
+			buffer = renderTypeBuffer.getBuffer(Sheets.translucentCullBlockSheet()); //any type will do, as long as we have something on the stack
 			matrixStack.pushPose();
 		}
 
@@ -210,22 +214,22 @@ public class RenderHandler {
 		matrixStack.popPose();
 	}
 
-	protected static void renderBlockOutline(MatrixStack matrixStack, IVertexBuilder buffer, BlockPos pos, Vector3d color) {
+	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos, Vec3 color) {
 		renderBlockOutline(matrixStack, buffer, pos, pos, color);
 	}
 
 	//Renders outline. Pos1 has to be minimal x,y,z and pos2 maximal x,y,z
-	protected static void renderBlockOutline(MatrixStack matrixStack, IVertexBuilder buffer, BlockPos pos1, BlockPos pos2, Vector3d color) {
-		AxisAlignedBB aabb = new AxisAlignedBB(pos1, pos2.offset(1, 1, 1)).inflate(0.0020000000949949026);
+	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos1, BlockPos pos2, Vec3 color) {
+		AABB aabb = new AABB(pos1, pos2.offset(1, 1, 1)).inflate(0.0020000000949949026);
 
-		WorldRenderer.renderLineBox(matrixStack, buffer, aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
+		LevelRenderer.renderLineBox(matrixStack, buffer, aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
 //        WorldRenderer.drawSelectionBoundingBox(aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
 	}
 
 	//Renders outline with given bounding box
-	protected static void renderBlockOutline(MatrixStack matrixStack, IVertexBuilder buffer, BlockPos pos, VoxelShape collisionShape, Vector3d color) {
+	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos, VoxelShape collisionShape, Vec3 color) {
 //        WorldRenderer.drawShape(collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
-		WorldRenderer.renderVoxelShape(matrixStack, buffer, collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
+		LevelRenderer.renderVoxelShape(matrixStack, buffer, collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
 	}
 
 	//TODO 1.14

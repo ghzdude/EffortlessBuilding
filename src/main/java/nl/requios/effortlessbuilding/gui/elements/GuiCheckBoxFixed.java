@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.fml.client.gui.GuiUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,7 +17,7 @@ public class GuiCheckBoxFixed extends Button {
 	private boolean isChecked;
 
 	public GuiCheckBoxFixed(int xPos, int yPos, String displayString, boolean isChecked) {
-		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, new StringTextComponent(displayString), b -> {
+		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, new TextComponent(displayString), b -> {
 		});
 		this.isChecked = isChecked;
 		this.boxWidth = 11;
@@ -26,7 +26,7 @@ public class GuiCheckBoxFixed extends Button {
 	}
 
 	@Override
-	public void renderButton(MatrixStack ms, int mouseX, int mouseY, float partial) {
+	public void renderButton(PoseStack ms, int mouseX, int mouseY, float partial) {
 		if (this.visible) {
 			Minecraft mc = Minecraft.getInstance();
 			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.boxWidth && mouseY < this.y + this.height;

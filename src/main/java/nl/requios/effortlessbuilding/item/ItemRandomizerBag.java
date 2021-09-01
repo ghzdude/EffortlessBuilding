@@ -1,29 +1,29 @@
 package nl.requios.effortlessbuilding.item;
 
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -43,6 +43,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class ItemRandomizerBag extends Item {
@@ -52,7 +58,7 @@ public class ItemRandomizerBag extends Item {
 	private static final Random rand = new Random(currentSeed);
 
 	public ItemRandomizerBag() {
-		super(new Item.Properties().tab(ItemGroup.TAB_TOOLS).stacksTo(1));
+		super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
 
 		this.setRegistryName(EffortlessBuilding.MODID, "randomizer_bag");
 	}
@@ -122,40 +128,40 @@ public class ItemRandomizerBag extends Item {
 	}
 
 	@Override
-	public ActionResultType useOn(ItemUseContext ctx) {
-		PlayerEntity player = ctx.getPlayer();
-		World world = ctx.getLevel();
+	public InteractionResult useOn(UseOnContext ctx) {
+		Player player = ctx.getPlayer();
+		Level world = ctx.getLevel();
 		BlockPos pos = ctx.getClickedPos();
 		Direction facing = ctx.getClickedFace();
 		ItemStack item = ctx.getItemInHand();
-		Vector3d hitVec = ctx.getClickLocation();
+		Vec3 hitVec = ctx.getClickLocation();
 
-		if (player == null) return ActionResultType.FAIL;
+		if (player == null) return InteractionResult.FAIL;
 
 		if (ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown()) { //ctx.isPlacerSneaking()
-			if (world.isClientSide) return ActionResultType.SUCCESS;
+			if (world.isClientSide) return InteractionResult.SUCCESS;
 			//Open inventory
-			NetworkHooks.openGui((ServerPlayerEntity) player, new ContainerProvider(item));
+			NetworkHooks.openGui((ServerPlayer) player, new ContainerProvider(item));
 		} else {
-			if (world.isClientSide) return ActionResultType.SUCCESS;
+			if (world.isClientSide) return InteractionResult.SUCCESS;
 
 			//Only place manually if in normal vanilla mode
 			BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 			ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 			if (buildMode != BuildModes.BuildModeEnum.NORMAL || modifierSettings.doQuickReplace()) {
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 			}
 
 			//Use item
 			//Get bag inventory
 			//TODO offhand support
-			ItemStack bag = player.getItemInHand(Hand.MAIN_HAND);
+			ItemStack bag = player.getItemInHand(InteractionHand.MAIN_HAND);
 			IItemHandler bagInventory = getBagInventory(bag);
 			if (bagInventory == null)
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 
 			ItemStack toPlace = pickRandomStack(bagInventory);
-			if (toPlace.isEmpty()) return ActionResultType.FAIL;
+			if (toPlace.isEmpty()) return InteractionResult.FAIL;
 
 			//Previously: use onItemUse to place block (no synergy)
 			//bag.setItemDamage(toPlace.getMetadata());
@@ -166,7 +172,7 @@ public class ItemRandomizerBag extends Item {
 				pos = pos.relative(facing);
 			}
 
-			BlockItemUseContext blockItemUseContext = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(hitVec, facing, pos, false)));
+			BlockPlaceContext blockItemUseContext = new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(hitVec, facing, pos, false)));
 			BlockState blockState = Block.byItem(toPlace.getItem()).getStateForPlacement(blockItemUseContext);
 
 			SurvivalHelper.placeBlock(world, player, pos, blockState, toPlace, facing, hitVec, false, false, true);
@@ -178,30 +184,30 @@ public class ItemRandomizerBag extends Item {
 //            Mirror.onBlockPlaced(placeEvent);
 //            Array.onBlockPlaced(placeEvent);
 		}
-		return ActionResultType.SUCCESS;
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override
-	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 		ItemStack bag = player.getItemInHand(hand);
 
 		if (player.isShiftKeyDown()) {
-			if (world.isClientSide) return new ActionResult<>(ActionResultType.SUCCESS, bag);
+			if (world.isClientSide) return new InteractionResultHolder<>(InteractionResult.SUCCESS, bag);
 			//Open inventory
-			NetworkHooks.openGui((ServerPlayerEntity) player, new ContainerProvider(bag));
+			NetworkHooks.openGui((ServerPlayer) player, new ContainerProvider(bag));
 		} else {
 			//Use item
 			//Get bag inventory
 			IItemHandler bagInventory = getBagInventory(bag);
 			if (bagInventory == null)
-				return new ActionResult<>(ActionResultType.FAIL, bag);
+				return new InteractionResultHolder<>(InteractionResult.FAIL, bag);
 
 			ItemStack toUse = pickRandomStack(bagInventory);
-			if (toUse.isEmpty()) return new ActionResult<>(ActionResultType.FAIL, bag);
+			if (toUse.isEmpty()) return new InteractionResultHolder<>(InteractionResult.FAIL, bag);
 
 			return toUse.use(world, player, hand);
 		}
-		return new ActionResult<>(ActionResultType.PASS, bag);
+		return new InteractionResultHolder<>(InteractionResult.PASS, bag);
 	}
 
 	@Override
@@ -211,16 +217,16 @@ public class ItemRandomizerBag extends Item {
 
 	@Nullable
 	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
+	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
 		return new ItemHandlerCapabilityProvider();
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-		tooltip.add(new StringTextComponent(TextFormatting.BLUE + "Rightclick" + TextFormatting.GRAY + " to place a random block"));
-		tooltip.add(new StringTextComponent(TextFormatting.BLUE + "Sneak + rightclick" + TextFormatting.GRAY + " to open inventory"));
+	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
+		tooltip.add(new TextComponent(ChatFormatting.BLUE + "Rightclick" + ChatFormatting.GRAY + " to place a random block"));
+		tooltip.add(new TextComponent(ChatFormatting.BLUE + "Sneak + rightclick" + ChatFormatting.GRAY + " to open inventory"));
 		if (world != null && world.players().size() > 1) {
-			tooltip.add(new StringTextComponent(TextFormatting.YELLOW + "Experimental on servers: may lose inventory"));
+			tooltip.add(new TextComponent(ChatFormatting.YELLOW + "Experimental on servers: may lose inventory"));
 		}
 	}
 
@@ -229,7 +235,7 @@ public class ItemRandomizerBag extends Item {
 		return this.getRegistryName().toString();
 	}
 
-	public static class ContainerProvider implements INamedContainerProvider {
+	public static class ContainerProvider implements MenuProvider {
 
 		private final ItemStack bag;
 
@@ -238,13 +244,13 @@ public class ItemRandomizerBag extends Item {
 		}
 
 		@Override
-		public ITextComponent getDisplayName() {
-			return new TranslationTextComponent("effortlessbuilding.screen.randomizer_bag");
+		public Component getDisplayName() {
+			return new TranslatableComponent("effortlessbuilding.screen.randomizer_bag");
 		}
 
 		@Nullable
 		@Override
-		public Container createMenu(int containerId, PlayerInventory playerInventory, PlayerEntity player) {
+		public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
 			return new RandomizerBagContainer(containerId, playerInventory, ItemRandomizerBag.getBagInventory(bag));
 		}
 	}

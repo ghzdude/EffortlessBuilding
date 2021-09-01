@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.proxy;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -22,12 +22,12 @@ public class ServerProxy implements IProxy {
 	public void clientSetup(FMLClientSetupEvent event) {
 	}
 
-	public PlayerEntity getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {
+	public Player getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {
 		return ctx.get().getSender();
 	}
 
 	@Override
-	public void logTranslate(PlayerEntity player, String prefix, String translationKey, String suffix, boolean actionBar) {
-		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new TranslatedLogMessage(prefix, translationKey, suffix, actionBar));
+	public void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar) {
+		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new TranslatedLogMessage(prefix, translationKey, suffix, actionBar));
 	}
 }

@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
@@ -22,11 +22,11 @@ public class ModeActionMessage {
 		this.action = action;
 	}
 
-	public static void encode(ModeActionMessage message, PacketBuffer buf) {
+	public static void encode(ModeActionMessage message, FriendlyByteBuf buf) {
 		buf.writeInt(message.action.ordinal());
 	}
 
-	public static ModeActionMessage decode(PacketBuffer buf) {
+	public static ModeActionMessage decode(FriendlyByteBuf buf) {
 		ModeOptions.ActionEnum action = ModeOptions.ActionEnum.values()[buf.readInt()];
 		return new ModeActionMessage(action);
 	}
@@ -34,7 +34,7 @@ public class ModeActionMessage {
 	public static class Handler {
 		public static void handle(ModeActionMessage message, Supplier<NetworkEvent.Context> ctx) {
 			ctx.get().enqueueWork(() -> {
-				PlayerEntity player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+				Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
 				ModeOptions.performAction(player, message.action);
 			});

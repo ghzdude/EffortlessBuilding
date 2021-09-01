@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -37,7 +37,7 @@ public class EventHandler {
 	@SubscribeEvent
 	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
 		if (event.getObject() instanceof FakePlayer) return;
-		if (event.getObject() instanceof PlayerEntity) {
+		if (event.getObject() instanceof Player) {
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_mode"), new ModeCapabilityManager.Provider());
 		}
@@ -63,12 +63,12 @@ public class EventHandler {
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
 		if (event.getWorld().isClientSide()) return;
 
-		if (!(event.getEntity() instanceof PlayerEntity)) return;
+		if (!(event.getEntity() instanceof Player)) return;
 
 		if (event.getEntity() instanceof FakePlayer) return;
 
 		//Cancel event if necessary
-		ServerPlayerEntity player = ((ServerPlayerEntity) event.getEntity());
+		ServerPlayer player = ((ServerPlayer) event.getEntity());
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
@@ -112,8 +112,8 @@ public class EventHandler {
 			BuildModes.onBlockBroken(event.getPlayer(), event.getPos(), false);
 
 			//Add to undo stack in client
-			if (event.getPlayer() instanceof ServerPlayerEntity && event.getState() != null && event.getPos() != null) {
-				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
+			if (event.getPlayer() instanceof ServerPlayer && event.getState() != null && event.getPos() != null) {
+				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer());
 				if (packetTarget != null)
 					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.defaultBlockState()));
 			}
@@ -127,8 +127,8 @@ public class EventHandler {
 
 		if (event.getPlayer() instanceof FakePlayer) return;
 
-		PlayerEntity player = event.getPlayer();
-		World world = player.level;
+		Player player = event.getPlayer();
+		Level world = player.level;
 		BlockPos pos = event.getPos();
 
 		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
@@ -162,7 +162,7 @@ public class EventHandler {
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		ModifierSettingsManager.handleNewPlayer(player);
 		ModeSettingsManager.handleNewPlayer(player);
 	}
@@ -170,17 +170,17 @@ public class EventHandler {
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		if (player.getCommandSenderWorld().isClientSide) return;
 
 		UndoRedo.clear(player);
-		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new ClearUndoMessage());
+		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ClearUndoMessage());
 	}
 
 	@SubscribeEvent
 	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		ModifierSettingsManager.handleNewPlayer(player);
 		ModeSettingsManager.handleNewPlayer(player);
 	}
@@ -188,7 +188,7 @@ public class EventHandler {
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		if (player.getCommandSenderWorld().isClientSide) return;
 
 		//Set build mode to normal
@@ -207,17 +207,17 @@ public class EventHandler {
 		ModeSettingsManager.handleNewPlayer(player);
 
 		UndoRedo.clear(player);
-		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new ClearUndoMessage());
+		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ClearUndoMessage());
 	}
 
 	@SubscribeEvent
 	public static void onPlayerClone(PlayerEvent.Clone event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
 		//Attach capabilities on death, otherwise crash
-		PlayerEntity oldPlayer = event.getOriginal();
+		Player oldPlayer = event.getOriginal();
 		oldPlayer.revive();
 
-		PlayerEntity newPlayer = event.getPlayer();
+		Player newPlayer = event.getPlayer();
 		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
 		ModeSettingsManager.setModeSettings(newPlayer, ModeSettingsManager.getModeSettings(oldPlayer));
 	}

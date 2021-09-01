@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -29,7 +29,7 @@ public class ModifierSettingsGui extends Screen {
 	private RadialMirrorSettingsGui radialMirrorSettingsGui;
 
 	public ModifierSettingsGui() {
-		super(new TranslationTextComponent("effortlessbuilding.screen.modifier_settings"));
+		super(new TranslatableComponent("effortlessbuilding.screen.modifier_settings"));
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class ModifierSettingsGui extends Screen {
 
 		//Close button
 		int y = height - 26;
-		buttonClose = new Button(width / 2 - 100, y, 200, 20, new StringTextComponent("Close"), (button) -> {
+		buttonClose = new Button(width / 2 - 100, y, 200, 20, new TextComponent("Close"), (button) -> {
 			Minecraft.getInstance().player.closeContainer();
 		});
 		buttons.add(buttonClose);
@@ -67,7 +67,7 @@ public class ModifierSettingsGui extends Screen {
 	@Override
 	//Set colors using GL11, use the fontObj field to display text
 	//Use drawTexturedModalRect() to transfers areas of a texture resource to the screen
-	public void render(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
 		this.renderBackground(ms);
 
 		scrollPane.render(ms, mouseX, mouseY, partialTicks);

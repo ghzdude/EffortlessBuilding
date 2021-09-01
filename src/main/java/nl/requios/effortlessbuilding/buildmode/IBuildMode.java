@@ -1,25 +1,25 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 public interface IBuildMode {
 
 	//Fired when a player selects a buildmode and when it needs to initializeMode
-	void initialize(PlayerEntity player);
+	void initialize(Player player);
 
 	//Fired when a block would be placed
 	//Return a list of coordinates where you want to place blocks
-	List<BlockPos> onRightClick(PlayerEntity player, BlockPos blockPos, Direction sideHit, Vector3d hitVec, boolean skipRaytrace);
+	List<BlockPos> onRightClick(Player player, BlockPos blockPos, Direction sideHit, Vec3 hitVec, boolean skipRaytrace);
 
 	//Fired continuously for visualization purposes
-	List<BlockPos> findCoordinates(PlayerEntity player, BlockPos blockPos, boolean skipRaytrace);
+	List<BlockPos> findCoordinates(Player player, BlockPos blockPos, boolean skipRaytrace);
 
-	Direction getSideHit(PlayerEntity player);
+	Direction getSideHit(Player player);
 
-	Vector3d getHitVec(PlayerEntity player);
+	Vec3 getHitVec(Player player);
 }

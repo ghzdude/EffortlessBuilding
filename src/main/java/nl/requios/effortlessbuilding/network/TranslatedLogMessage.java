@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -28,14 +28,14 @@ public class TranslatedLogMessage {
 		this.actionBar = actionBar;
 	}
 
-	public static void encode(TranslatedLogMessage message, PacketBuffer buf) {
+	public static void encode(TranslatedLogMessage message, FriendlyByteBuf buf) {
 		buf.writeUtf(message.prefix);
 		buf.writeUtf(message.translationKey);
 		buf.writeUtf(message.suffix);
 		buf.writeBoolean(message.actionBar);
 	}
 
-	public static TranslatedLogMessage decode(PacketBuffer buf) {
+	public static TranslatedLogMessage decode(FriendlyByteBuf buf) {
 		return new TranslatedLogMessage(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean());
 	}
 
@@ -61,7 +61,7 @@ public class TranslatedLogMessage {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside
 
-					PlayerEntity player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+					Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 					EffortlessBuilding.logTranslate(player, message.prefix, message.translationKey, message.suffix, message.actionBar);
 				}
 			});

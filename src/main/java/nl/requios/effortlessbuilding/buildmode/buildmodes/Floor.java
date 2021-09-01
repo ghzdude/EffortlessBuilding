@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.buildmode.buildmodes;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.TwoClicksBuildMode;
@@ -13,14 +13,14 @@ import java.util.List;
 
 public class Floor extends TwoClicksBuildMode {
 
-	public static BlockPos findFloor(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
-		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
+	public static BlockPos findFloor(Player player, BlockPos firstPos, boolean skipRaytrace) {
+		Vec3 look = BuildModes.getPlayerLookVec(player);
+		Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<Criteria> criteriaList = new ArrayList<>(3);
 
 		//Y
-		Vector3d yBound = BuildModes.findYBound(firstPos.getY(), start, look);
+		Vec3 yBound = BuildModes.findYBound(firstPos.getY(), start, look);
 		criteriaList.add(new Criteria(yBound, start));
 
 		//Remove invalid criteria
@@ -36,7 +36,7 @@ public class Floor extends TwoClicksBuildMode {
 		return new BlockPos(selected.planeBound);
 	}
 
-	public static List<BlockPos> getFloorBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public static List<BlockPos> getFloorBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {
 		List<BlockPos> list = new ArrayList<>();
 
 		if (ModeOptions.getFill() == ModeOptions.ActionEnum.FULL)
@@ -66,27 +66,27 @@ public class Floor extends TwoClicksBuildMode {
 	}
 
 	@Override
-	protected BlockPos findSecondPos(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
+	protected BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace) {
 		return findFloor(player, firstPos, skipRaytrace);
 	}
 
 	@Override
-	protected List<BlockPos> getAllBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2) {
+	protected List<BlockPos> getAllBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {
 		return getFloorBlocks(player, x1, y1, z1, x2, y2, z2);
 	}
 
 	static class Criteria {
-		Vector3d planeBound;
+		Vec3 planeBound;
 		double distToPlayerSq;
 
-		Criteria(Vector3d planeBound, Vector3d start) {
+		Criteria(Vec3 planeBound, Vec3 start) {
 			this.planeBound = planeBound;
 			this.distToPlayerSq = this.planeBound.subtract(start).lengthSqr();
 		}
 
 		//check if its not behind the player and its not too close and not too far
 		//also check if raytrace from player to block does not intersect blocks
-		public boolean isValid(Vector3d start, Vector3d look, int reach, PlayerEntity player, boolean skipRaytrace) {
+		public boolean isValid(Vec3 start, Vec3 look, int reach, Player player, boolean skipRaytrace) {
 
 			return BuildModes.isCriteriaValid(start, look, reach, player, skipRaytrace, planeBound, planeBound, distToPlayerSq);
 		}

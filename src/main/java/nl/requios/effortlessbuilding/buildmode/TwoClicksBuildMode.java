@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public abstract class TwoClicksBuildMode extends BaseBuildMode {
 
 	@Override
-	public List<BlockPos> onRightClick(PlayerEntity player, BlockPos blockPos, Direction sideHit, Vector3d hitVec, boolean skipRaytrace) {
+	public List<BlockPos> onRightClick(Player player, BlockPos blockPos, Direction sideHit, Vec3 hitVec, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
 
 		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
@@ -44,7 +44,7 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public List<BlockPos> findCoordinates(PlayerEntity player, BlockPos blockPos, boolean skipRaytrace) {
+	public List<BlockPos> findCoordinates(Player player, BlockPos blockPos, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
 		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
 		int rightClickNr = rightClickTable.get(player.getUUID());
@@ -79,8 +79,8 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	}
 
 	//Finds the place of the second block pos based on criteria (floor must be on same height as first click, wall on same plane etc)
-	protected abstract BlockPos findSecondPos(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace);
+	protected abstract BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace);
 
 	//After first and second pos are known, we want all the blocks
-	protected abstract List<BlockPos> getAllBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2);
+	protected abstract List<BlockPos> getAllBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2);
 }

@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -40,7 +40,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void init(List<Widget> buttonList) {
+	public void init(List<AbstractWidget> buttonList) {
 		super.init(buttonList);
 
 		int y = top - 2;
@@ -57,17 +57,17 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		textMirrorPosX = new GuiNumberField(font, buttonList, left + 58, y, 62, 18);
 		textMirrorPosX.setNumber(0);
 		textMirrorPosX.setTooltip(
-			Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
+			Arrays.asList(new TextComponent("The position of the mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosX);
 
 		textMirrorPosY = new GuiNumberField(font, buttonList, left + 138, y, 62, 18);
 		textMirrorPosY.setNumber(64);
-		textMirrorPosY.setTooltip(Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
+		textMirrorPosY.setTooltip(Arrays.asList(new TextComponent("The position of the mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosY);
 
 		textMirrorPosZ = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
 		textMirrorPosZ.setNumber(0);
-		textMirrorPosZ.setTooltip(Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
+		textMirrorPosZ.setTooltip(Arrays.asList(new TextComponent("The position of the mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosZ);
 
 		y = top + 50;
@@ -84,53 +84,53 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		textMirrorRadius = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
 		textMirrorRadius.setNumber(50);
 		//TODO change to diameter (remove /2)
-		textMirrorRadius.setTooltip(Arrays.asList(new StringTextComponent("How far the mirror reaches in any direction."),
-			new StringTextComponent("Max: ").withStyle(TextFormatting.GRAY).append(new StringTextComponent(String.valueOf(ReachHelper.getMaxReach(mc.player) / 2)).withStyle(TextFormatting.GOLD)),
-			new StringTextComponent("Upgradeable in survival with reach upgrades.").withStyle(TextFormatting.GRAY)));
+		textMirrorRadius.setTooltip(Arrays.asList(new TextComponent("How far the mirror reaches in any direction."),
+			new TextComponent("Max: ").withStyle(ChatFormatting.GRAY).append(new TextComponent(String.valueOf(ReachHelper.getMaxReach(mc.player) / 2)).withStyle(ChatFormatting.GOLD)),
+			new TextComponent("Upgradeable in survival with reach upgrades.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorRadius);
 
 		y = top + 72;
 		buttonCurrentPosition = new GuiIconButton(left + 5, y, 0, 0, BUILDING_ICONS, button -> {
-			Vector3d pos = new Vector3d(Math.floor(mc.player.getX()) + 0.5, Math.floor(mc.player.getY()) + 0.5, Math.floor(mc.player.getZ()) + 0.5);
+			Vec3 pos = new Vec3(Math.floor(mc.player.getX()) + 0.5, Math.floor(mc.player.getY()) + 0.5, Math.floor(mc.player.getZ()) + 0.5);
 			textMirrorPosX.setNumber(pos.x);
 			textMirrorPosY.setNumber(pos.y);
 			textMirrorPosZ.setNumber(pos.z);
 		});
-		buttonCurrentPosition.setTooltip(new StringTextComponent("Set mirror position to current player position"));
+		buttonCurrentPosition.setTooltip(new TextComponent("Set mirror position to current player position"));
 		mirrorIconButtonList.add(buttonCurrentPosition);
 
 		buttonToggleOdd = new GuiIconButton(left + 35, y, 0, 20, BUILDING_ICONS, button -> {
 			toggleOdd = !toggleOdd;
 			buttonToggleOdd.setUseAlternateIcon(toggleOdd);
 			if (toggleOdd) {
-				buttonToggleOdd.setTooltip(Arrays.asList(new StringTextComponent("Set mirror position to corner of block"), new StringTextComponent("for even numbered builds")));
+				buttonToggleOdd.setTooltip(Arrays.asList(new TextComponent("Set mirror position to corner of block"), new TextComponent("for even numbered builds")));
 				textMirrorPosX.setNumber(textMirrorPosX.getNumber() + 0.5);
 				textMirrorPosY.setNumber(textMirrorPosY.getNumber() + 0.5);
 				textMirrorPosZ.setNumber(textMirrorPosZ.getNumber() + 0.5);
 			} else {
-				buttonToggleOdd.setTooltip(Arrays.asList(new StringTextComponent("Set mirror position to middle of block"), new StringTextComponent("for odd numbered builds")));
+				buttonToggleOdd.setTooltip(Arrays.asList(new TextComponent("Set mirror position to middle of block"), new TextComponent("for odd numbered builds")));
 				textMirrorPosX.setNumber(Math.floor(textMirrorPosX.getNumber()));
 				textMirrorPosY.setNumber(Math.floor(textMirrorPosY.getNumber()));
 				textMirrorPosZ.setNumber(Math.floor(textMirrorPosZ.getNumber()));
 			}
 		});
-		buttonToggleOdd.setTooltip(Arrays.asList(new StringTextComponent("Set mirror position to middle of block"), new StringTextComponent("for odd numbered builds")));
+		buttonToggleOdd.setTooltip(Arrays.asList(new TextComponent("Set mirror position to middle of block"), new TextComponent("for odd numbered builds")));
 		mirrorIconButtonList.add(buttonToggleOdd);
 
 		buttonDrawLines = new GuiIconButton(left + 65, y, 0, 40, BUILDING_ICONS, button -> {
 			drawLines = !drawLines;
 			buttonDrawLines.setUseAlternateIcon(drawLines);
-			buttonDrawLines.setTooltip(new StringTextComponent(drawLines ? "Hide lines" : "Show lines"));
+			buttonDrawLines.setTooltip(new TextComponent(drawLines ? "Hide lines" : "Show lines"));
 		});
-		buttonDrawLines.setTooltip(new StringTextComponent("Show lines"));
+		buttonDrawLines.setTooltip(new TextComponent("Show lines"));
 		mirrorIconButtonList.add(buttonDrawLines);
 
 		buttonDrawPlanes = new GuiIconButton(left + 95, y, 0, 60, BUILDING_ICONS, button -> {
 			drawPlanes = !drawPlanes;
 			buttonDrawPlanes.setUseAlternateIcon(drawPlanes);
-			buttonDrawPlanes.setTooltip(new StringTextComponent(drawPlanes ? "Hide area" : "Show area"));
+			buttonDrawPlanes.setTooltip(new TextComponent(drawPlanes ? "Hide area" : "Show area"));
 		});
-		buttonDrawPlanes.setTooltip(new StringTextComponent("Show area"));
+		buttonDrawPlanes.setTooltip(new TextComponent("Show area"));
 		mirrorIconButtonList.add(buttonDrawPlanes);
 
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(mc.player);
@@ -148,14 +148,14 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 			drawPlanes = m.drawPlanes;
 			buttonDrawLines.setUseAlternateIcon(drawLines);
 			buttonDrawPlanes.setUseAlternateIcon(drawPlanes);
-			buttonDrawLines.setTooltip(new StringTextComponent(drawLines ? "Hide lines" : "Show lines"));
-			buttonDrawPlanes.setTooltip(new StringTextComponent(drawPlanes ? "Hide area" : "Show area"));
+			buttonDrawLines.setTooltip(new TextComponent(drawLines ? "Hide lines" : "Show lines"));
+			buttonDrawPlanes.setTooltip(new TextComponent(drawPlanes ? "Hide area" : "Show area"));
 			if (textMirrorPosX.getNumber() == Math.floor(textMirrorPosX.getNumber())) {
 				toggleOdd = false;
-				buttonToggleOdd.setTooltip(Arrays.asList(new StringTextComponent("Set mirror position to middle of block"), new StringTextComponent("for odd numbered builds")));
+				buttonToggleOdd.setTooltip(Arrays.asList(new TextComponent("Set mirror position to middle of block"), new TextComponent("for odd numbered builds")));
 			} else {
 				toggleOdd = true;
-				buttonToggleOdd.setTooltip(Arrays.asList(new StringTextComponent("Set mirror position to corner of block"), new StringTextComponent("for even numbered builds")));
+				buttonToggleOdd.setTooltip(Arrays.asList(new TextComponent("Set mirror position to corner of block"), new TextComponent("for even numbered builds")));
 			}
 			buttonToggleOdd.setUseAlternateIcon(toggleOdd);
 		}
@@ -173,7 +173,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void drawEntry(MatrixStack ms, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY,
+	public void drawEntry(PoseStack ms, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY,
 						  boolean isSelected, float partialTicks) {
 
 		int yy = y;
@@ -217,7 +217,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 
 	}
 
-	public void drawTooltip(MatrixStack ms, Screen guiScreen, int mouseX, int mouseY) {
+	public void drawTooltip(PoseStack ms, Screen guiScreen, int mouseX, int mouseY) {
 		//Draw tooltips last
 		if (buttonMirrorEnabled.isChecked()) {
 			mirrorIconButtonList.forEach(iconButton -> iconButton.drawTooltip(ms, scrollPane.parent, mouseX, mouseY));
@@ -251,9 +251,9 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	public Mirror.MirrorSettings getMirrorSettings() {
 		boolean mirrorEnabled = buttonMirrorEnabled.isChecked();
 
-		Vector3d mirrorPos = new Vector3d(0, 64, 0);
+		Vec3 mirrorPos = new Vec3(0, 64, 0);
 		try {
-			mirrorPos = new Vector3d(textMirrorPosX.getNumber(), textMirrorPosY.getNumber(), textMirrorPosZ.getNumber());
+			mirrorPos = new Vec3(textMirrorPosX.getNumber(), textMirrorPosY.getNumber(), textMirrorPosZ.getNumber());
 		} catch (NumberFormatException | NullPointerException ex) {
 			EffortlessBuilding.log(mc.player, "Mirror position not a valid number.");
 		}

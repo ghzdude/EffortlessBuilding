@@ -1,12 +1,12 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -21,15 +21,15 @@ public class GuiIconButton extends Button {
 
 	private final ResourceLocation resourceLocation;
 	private final int iconX, iconY, iconWidth, iconHeight, iconAltX, iconAltY;
-	List<ITextComponent> tooltip = new ArrayList<>();
+	List<Component> tooltip = new ArrayList<>();
 	private boolean useAltIcon = false;
 
-	public GuiIconButton(int x, int y, int iconX, int iconY, ResourceLocation resourceLocation, Button.IPressable onPress) {
+	public GuiIconButton(int x, int y, int iconX, int iconY, ResourceLocation resourceLocation, Button.OnPress onPress) {
 		this(x, y, 20, 20, iconX, iconY, 20, 20, 20, 0, resourceLocation, onPress);
 	}
 
-	public GuiIconButton(int x, int y, int width, int height, int iconX, int iconY, int iconWidth, int iconHeight, int iconAltX, int iconAltY, ResourceLocation resourceLocation, Button.IPressable onPress) {
-		super(x, y, width, height, StringTextComponent.EMPTY, onPress);
+	public GuiIconButton(int x, int y, int width, int height, int iconX, int iconY, int iconWidth, int iconHeight, int iconAltX, int iconAltY, ResourceLocation resourceLocation, Button.OnPress onPress) {
+		super(x, y, width, height, TextComponent.EMPTY, onPress);
 		this.iconX = iconX;
 		this.iconY = iconY;
 		this.iconWidth = iconWidth;
@@ -39,11 +39,11 @@ public class GuiIconButton extends Button {
 		this.resourceLocation = resourceLocation;
 	}
 
-	public void setTooltip(ITextComponent tooltip) {
+	public void setTooltip(Component tooltip) {
 		setTooltip(Collections.singletonList(tooltip));
 	}
 
-	public void setTooltip(List<ITextComponent> tooltip) {
+	public void setTooltip(List<Component> tooltip) {
 		this.tooltip = tooltip;
 	}
 
@@ -52,7 +52,7 @@ public class GuiIconButton extends Button {
 	}
 
 	@Override
-	public void render(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
 		super.render(ms, mouseX, mouseY, partialTicks);
 		if (this.visible) {
 			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
@@ -70,7 +70,7 @@ public class GuiIconButton extends Button {
 		}
 	}
 
-	public void drawTooltip(MatrixStack ms, Screen screen, int mouseX, int mouseY) {
+	public void drawTooltip(PoseStack ms, Screen screen, int mouseX, int mouseY) {
 		boolean flag = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
 		if (flag) {

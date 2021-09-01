@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 
 import java.util.*;
@@ -12,18 +12,18 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	protected Dictionary<UUID, BlockPos> secondPosTable = new Hashtable<>();
 
 	//Finds height after floor has been chosen in buildmodes with 3 clicks
-	public static BlockPos findHeight(PlayerEntity player, BlockPos secondPos, boolean skipRaytrace) {
-		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
+	public static BlockPos findHeight(Player player, BlockPos secondPos, boolean skipRaytrace) {
+		Vec3 look = BuildModes.getPlayerLookVec(player);
+		Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<HeightCriteria> criteriaList = new ArrayList<>(3);
 
 		//X
-		Vector3d xBound = BuildModes.findXBound(secondPos.getX(), start, look);
+		Vec3 xBound = BuildModes.findXBound(secondPos.getX(), start, look);
 		criteriaList.add(new HeightCriteria(xBound, secondPos, start));
 
 		//Z
-		Vector3d zBound = BuildModes.findZBound(secondPos.getZ(), start, look);
+		Vec3 zBound = BuildModes.findZBound(secondPos.getZ(), start, look);
 		criteriaList.add(new HeightCriteria(zBound, secondPos, start));
 
 		//Remove invalid criteria
@@ -56,13 +56,13 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public void initialize(PlayerEntity player) {
+	public void initialize(Player player) {
 		super.initialize(player);
 		secondPosTable.put(player.getUUID(), BlockPos.ZERO);
 	}
 
 	@Override
-	public List<BlockPos> onRightClick(PlayerEntity player, BlockPos blockPos, Direction sideHit, Vector3d hitVec, boolean skipRaytrace) {
+	public List<BlockPos> onRightClick(Player player, BlockPos blockPos, Direction sideHit, Vec3 hitVec, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
 
 		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
@@ -104,7 +104,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public List<BlockPos> findCoordinates(PlayerEntity player, BlockPos blockPos, boolean skipRaytrace) {
+	public List<BlockPos> findCoordinates(Player player, BlockPos blockPos, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
 		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
 		int rightClickNr = rightClickTable.get(player.getUUID());
@@ -173,24 +173,24 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	}
 
 	//Finds the place of the second block pos
-	protected abstract BlockPos findSecondPos(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace);
+	protected abstract BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace);
 
 	//Finds the place of the third block pos
-	protected abstract BlockPos findThirdPos(PlayerEntity player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace);
+	protected abstract BlockPos findThirdPos(Player player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace);
 
 	//After first and second pos are known, we want to visualize the blocks in a way (like floor for cube)
-	protected abstract List<BlockPos> getIntermediateBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2);
+	protected abstract List<BlockPos> getIntermediateBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2);
 
 	//After first, second and third pos are known, we want all the blocks
-	protected abstract List<BlockPos> getFinalBlocks(PlayerEntity player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3);
+	protected abstract List<BlockPos> getFinalBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3);
 
 	static class HeightCriteria {
-		Vector3d planeBound;
-		Vector3d lineBound;
+		Vec3 planeBound;
+		Vec3 lineBound;
 		double distToLineSq;
 		double distToPlayerSq;
 
-		HeightCriteria(Vector3d planeBound, BlockPos secondPos, Vector3d start) {
+		HeightCriteria(Vec3 planeBound, BlockPos secondPos, Vec3 start) {
 			this.planeBound = planeBound;
 			this.lineBound = toLongestLine(this.planeBound, secondPos);
 			this.distToLineSq = this.lineBound.subtract(this.planeBound).lengthSqr();
@@ -198,14 +198,14 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 		}
 
 		//Make it from a plane into a line, on y axis only
-		private Vector3d toLongestLine(Vector3d boundVec, BlockPos secondPos) {
+		private Vec3 toLongestLine(Vec3 boundVec, BlockPos secondPos) {
 			BlockPos bound = new BlockPos(boundVec);
-			return new Vector3d(secondPos.getX(), bound.getY(), secondPos.getZ());
+			return new Vec3(secondPos.getX(), bound.getY(), secondPos.getZ());
 		}
 
 		//check if its not behind the player and its not too close and not too far
 		//also check if raytrace from player to block does not intersect blocks
-		public boolean isValid(Vector3d start, Vector3d look, int reach, PlayerEntity player, boolean skipRaytrace) {
+		public boolean isValid(Vec3 start, Vec3 look, int reach, Player player, boolean skipRaytrace) {
 
 			return BuildModes.isCriteriaValid(start, look, reach, player, skipRaytrace, lineBound, planeBound, distToPlayerSq);
 		}

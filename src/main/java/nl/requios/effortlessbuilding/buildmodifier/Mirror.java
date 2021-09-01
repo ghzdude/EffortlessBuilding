@@ -1,23 +1,29 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
 import net.minecraft.block.*;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.properties.Half;
-import net.minecraft.state.properties.SlabType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.state.BlockState;
+
 public class Mirror {
 
-	public static List<BlockPos> findCoordinates(PlayerEntity player, BlockPos startPos) {
+	public static List<BlockPos> findCoordinates(Player player, BlockPos startPos) {
 		List<BlockPos> coordinates = new ArrayList<>();
 
 		//find mirrorsettings for the player
@@ -57,7 +63,7 @@ public class Mirror {
 		coordinates.add(newBlockPos);
 	}
 
-	public static List<BlockState> findBlockStates(PlayerEntity player, BlockPos startPos, BlockState blockState, ItemStack itemStack, List<ItemStack> itemStacks) {
+	public static List<BlockState> findBlockStates(Player player, BlockPos startPos, BlockState blockState, ItemStack itemStack, List<ItemStack> itemStacks) {
 		List<BlockState> blockStates = new ArrayList<>();
 
 		//find mirrorsettings for the player
@@ -71,17 +77,17 @@ public class Mirror {
 		}
 
 		if (m.mirrorX)
-			blockStateMirrorX(player, m, startPos, blockState, bagInventory, itemStack, Hand.MAIN_HAND, blockStates, itemStacks);
+			blockStateMirrorX(player, m, startPos, blockState, bagInventory, itemStack, InteractionHand.MAIN_HAND, blockStates, itemStacks);
 		if (m.mirrorY)
-			blockStateMirrorY(player, m, startPos, blockState, bagInventory, itemStack, Hand.MAIN_HAND, blockStates, itemStacks);
+			blockStateMirrorY(player, m, startPos, blockState, bagInventory, itemStack, InteractionHand.MAIN_HAND, blockStates, itemStacks);
 		if (m.mirrorZ)
-			blockStateMirrorZ(player, m, startPos, blockState, bagInventory, itemStack, Hand.MAIN_HAND, blockStates, itemStacks);
+			blockStateMirrorZ(player, m, startPos, blockState, bagInventory, itemStack, InteractionHand.MAIN_HAND, blockStates, itemStacks);
 
 		return blockStates;
 	}
 
-	private static void blockStateMirrorX(PlayerEntity player, MirrorSettings m, BlockPos oldBlockPos, BlockState oldBlockState,
-										  IItemHandler bagInventory, ItemStack itemStack, Hand hand, List<BlockState> blockStates, List<ItemStack> itemStacks) {
+	private static void blockStateMirrorX(Player player, MirrorSettings m, BlockPos oldBlockPos, BlockState oldBlockState,
+										  IItemHandler bagInventory, ItemStack itemStack, InteractionHand hand, List<BlockState> blockStates, List<ItemStack> itemStacks) {
 		//find mirror position
 		double x = m.position.x + (m.position.x - oldBlockPos.getX() - 0.5);
 		BlockPos newBlockPos = new BlockPos(x, oldBlockPos.getY(), oldBlockPos.getZ());
@@ -89,11 +95,11 @@ public class Mirror {
 		//Randomizer bag synergy
 		if (bagInventory != null) {
 			itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
-			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vector3d(0, 0, 0), hand);
+			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
 		//Find blockstate
-		BlockState newBlockState = oldBlockState == null ? null : oldBlockState.mirror(net.minecraft.util.Mirror.FRONT_BACK);
+		BlockState newBlockState = oldBlockState == null ? null : oldBlockState.mirror(net.minecraft.world.level.block.Mirror.FRONT_BACK);
 
 		//Store blockstate and itemstack
 		blockStates.add(newBlockState);
@@ -105,8 +111,8 @@ public class Mirror {
 			blockStateMirrorZ(player, m, newBlockPos, newBlockState, bagInventory, itemStack, hand, blockStates, itemStacks);
 	}
 
-	private static void blockStateMirrorY(PlayerEntity player, MirrorSettings m, BlockPos oldBlockPos, BlockState oldBlockState,
-										  IItemHandler bagInventory, ItemStack itemStack, Hand hand, List<BlockState> blockStates, List<ItemStack> itemStacks) {
+	private static void blockStateMirrorY(Player player, MirrorSettings m, BlockPos oldBlockPos, BlockState oldBlockState,
+										  IItemHandler bagInventory, ItemStack itemStack, InteractionHand hand, List<BlockState> blockStates, List<ItemStack> itemStacks) {
 		//find mirror position
 		double y = m.position.y + (m.position.y - oldBlockPos.getY() - 0.5);
 		BlockPos newBlockPos = new BlockPos(oldBlockPos.getX(), y, oldBlockPos.getZ());
@@ -114,7 +120,7 @@ public class Mirror {
 		//Randomizer bag synergy
 		if (bagInventory != null) {
 			itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
-			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vector3d(0, 0, 0), hand);
+			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
 		//Find blockstate
@@ -128,8 +134,8 @@ public class Mirror {
 			blockStateMirrorZ(player, m, newBlockPos, newBlockState, bagInventory, itemStack, hand, blockStates, itemStacks);
 	}
 
-	private static void blockStateMirrorZ(PlayerEntity player, MirrorSettings m, BlockPos oldBlockPos, BlockState oldBlockState,
-										  IItemHandler bagInventory, ItemStack itemStack, Hand hand, List<BlockState> blockStates, List<ItemStack> itemStacks) {
+	private static void blockStateMirrorZ(Player player, MirrorSettings m, BlockPos oldBlockPos, BlockState oldBlockState,
+										  IItemHandler bagInventory, ItemStack itemStack, InteractionHand hand, List<BlockState> blockStates, List<ItemStack> itemStacks) {
 		//find mirror position
 		double z = m.position.z + (m.position.z - oldBlockPos.getZ() - 0.5);
 		BlockPos newBlockPos = new BlockPos(oldBlockPos.getX(), oldBlockPos.getY(), z);
@@ -137,11 +143,11 @@ public class Mirror {
 		//Randomizer bag synergy
 		if (bagInventory != null) {
 			itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
-			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vector3d(0, 0, 0), hand);
+			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
 		//Find blockstate
-		BlockState newBlockState = oldBlockState == null ? null : oldBlockState.mirror(net.minecraft.util.Mirror.LEFT_RIGHT);
+		BlockState newBlockState = oldBlockState == null ? null : oldBlockState.mirror(net.minecraft.world.level.block.Mirror.LEFT_RIGHT);
 
 		//Store blockstate and itemstack
 		blockStates.add(newBlockState);
@@ -159,11 +165,11 @@ public class Mirror {
 
 	private static BlockState getVerticalMirror(BlockState blockState) {
 		//Stairs
-		if (blockState.getBlock() instanceof StairsBlock) {
-			if (blockState.getValue(StairsBlock.HALF) == Half.BOTTOM) {
-				return blockState.setValue(StairsBlock.HALF, Half.TOP);
+		if (blockState.getBlock() instanceof StairBlock) {
+			if (blockState.getValue(StairBlock.HALF) == Half.BOTTOM) {
+				return blockState.setValue(StairBlock.HALF, Half.TOP);
 			} else {
-				return blockState.setValue(StairsBlock.HALF, Half.BOTTOM);
+				return blockState.setValue(StairBlock.HALF, Half.BOTTOM);
 			}
 		}
 
@@ -201,7 +207,7 @@ public class Mirror {
 
 	public static class MirrorSettings {
 		public boolean enabled = false;
-		public Vector3d position = new Vector3d(0.5, 64.5, 0.5);
+		public Vec3 position = new Vec3(0.5, 64.5, 0.5);
 		public boolean mirrorX = true, mirrorY = false, mirrorZ = false;
 		public int radius = 10;
 		public boolean drawLines = true, drawPlanes = true;
@@ -209,7 +215,7 @@ public class Mirror {
 		public MirrorSettings() {
 		}
 
-		public MirrorSettings(boolean mirrorEnabled, Vector3d position, boolean mirrorX, boolean mirrorY, boolean mirrorZ, int radius, boolean drawLines, boolean drawPlanes) {
+		public MirrorSettings(boolean mirrorEnabled, Vec3 position, boolean mirrorX, boolean mirrorY, boolean mirrorZ, int radius, boolean drawLines, boolean drawPlanes) {
 			this.enabled = mirrorEnabled;
 			this.position = position;
 			this.mirrorX = mirrorX;

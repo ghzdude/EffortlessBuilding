@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding.compatibility;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -97,7 +97,7 @@ public class CompatHelper {
 
 	// Handle IItemHandler slot stacks not being modifiable. We must call IItemHandler#extractItem,
 	// because the ItemStack returned by IItemHandler#getStackInSlot isn't modifiable.
-	public static void shrinkStack(ItemStack origStack, ItemStack curStack, PlayerEntity player) {
+	public static void shrinkStack(ItemStack origStack, ItemStack curStack, Player player) {
 		//TODO 1.13 compatibility, offhand support
 		//Hacky way to get the origstack, because given origStack is itemblock stack and never proxy
 //        origStack = player.getHeldItem(EnumHand.MAIN_HAND);

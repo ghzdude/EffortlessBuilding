@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.capability;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
@@ -57,8 +57,8 @@ public class ModeCapabilityManager {
 
 	public static class Storage implements Capability.IStorage<IModeCapability> {
 		@Override
-		public INBT writeNBT(Capability<IModeCapability> capability, IModeCapability instance, Direction side) {
-			CompoundNBT compound = new CompoundNBT();
+		public Tag writeNBT(Capability<IModeCapability> capability, IModeCapability instance, Direction side) {
+			CompoundTag compound = new CompoundTag();
 			ModeSettings modeSettings = instance.getModeData();
 			if (modeSettings == null) modeSettings = new ModeSettings();
 
@@ -70,8 +70,8 @@ public class ModeCapabilityManager {
 		}
 
 		@Override
-		public void readNBT(Capability<IModeCapability> capability, IModeCapability instance, Direction side, INBT nbt) {
-			CompoundNBT compound = (CompoundNBT) nbt;
+		public void readNBT(Capability<IModeCapability> capability, IModeCapability instance, Direction side, Tag nbt) {
+			CompoundTag compound = (CompoundTag) nbt;
 
 			//BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.values()[compound.getInteger("buildMode")];
 
@@ -82,7 +82,7 @@ public class ModeCapabilityManager {
 		}
 	}
 
-	public static class Provider implements ICapabilitySerializable<INBT> {
+	public static class Provider implements ICapabilitySerializable<Tag> {
 		IModeCapability inst = modeCapability.getDefaultInstance();
 
 		@Nonnull
@@ -92,12 +92,12 @@ public class ModeCapabilityManager {
 		}
 
 		@Override
-		public INBT serializeNBT() {
+		public Tag serializeNBT() {
 			return modeCapability.getStorage().writeNBT(modeCapability, inst, null);
 		}
 
 		@Override
-		public void deserializeNBT(INBT nbt) {
+		public void deserializeNBT(Tag nbt) {
 			modeCapability.getStorage().readNBT(modeCapability, inst, null, nbt);
 		}
 

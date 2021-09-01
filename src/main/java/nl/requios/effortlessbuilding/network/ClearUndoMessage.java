@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -17,11 +17,11 @@ public class ClearUndoMessage {
 	public ClearUndoMessage() {
 	}
 
-	public static void encode(ClearUndoMessage message, PacketBuffer buf) {
+	public static void encode(ClearUndoMessage message, FriendlyByteBuf buf) {
 
 	}
 
-	public static ClearUndoMessage decode(PacketBuffer buf) {
+	public static ClearUndoMessage decode(FriendlyByteBuf buf) {
 		return new ClearUndoMessage();
 	}
 
@@ -30,7 +30,7 @@ public class ClearUndoMessage {
 			ctx.get().enqueueWork(() -> {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside
-					PlayerEntity player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+					Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
 					//Add to undo stack clientside
 					UndoRedo.clear(player);
