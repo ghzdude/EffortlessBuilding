@@ -14,7 +14,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	//Finds height after floor has been chosen in buildmodes with 3 clicks
 	public static BlockPos findHeight(PlayerEntity player, BlockPos secondPos, boolean skipRaytrace) {
 		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight(), player.getPosZ());
+		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<HeightCriteria> criteriaList = new ArrayList<>(3);
 
@@ -58,46 +58,46 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	@Override
 	public void initialize(PlayerEntity player) {
 		super.initialize(player);
-		secondPosTable.put(player.getUniqueID(), BlockPos.ZERO);
+		secondPosTable.put(player.getUUID(), BlockPos.ZERO);
 	}
 
 	@Override
 	public List<BlockPos> onRightClick(PlayerEntity player, BlockPos blockPos, Direction sideHit, Vector3d hitVec, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
 
-		Dictionary<UUID, Integer> rightClickTable = player.world.isRemote ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUniqueID());
+		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
+		int rightClickNr = rightClickTable.get(player.getUUID());
 		rightClickNr++;
-		rightClickTable.put(player.getUniqueID(), rightClickNr);
+		rightClickTable.put(player.getUUID(), rightClickNr);
 
 		if (rightClickNr == 1) {
 			//If clicking in air, reset and try again
 			if (blockPos == null) {
-				rightClickTable.put(player.getUniqueID(), 0);
+				rightClickTable.put(player.getUUID(), 0);
 				return list;
 			}
 
 			//First click, remember starting position
-			firstPosTable.put(player.getUniqueID(), blockPos);
-			sideHitTable.put(player.getUniqueID(), sideHit);
-			hitVecTable.put(player.getUniqueID(), hitVec);
+			firstPosTable.put(player.getUUID(), blockPos);
+			sideHitTable.put(player.getUUID(), sideHit);
+			hitVecTable.put(player.getUUID(), hitVec);
 			//Keep list empty, dont place any blocks yet
 		} else if (rightClickNr == 2) {
 			//Second click, find other floor point
-			BlockPos firstPos = firstPosTable.get(player.getUniqueID());
+			BlockPos firstPos = firstPosTable.get(player.getUUID());
 			BlockPos secondPos = findSecondPos(player, firstPos, true);
 
 			if (secondPos == null) {
-				rightClickTable.put(player.getUniqueID(), 1);
+				rightClickTable.put(player.getUUID(), 1);
 				return list;
 			}
 
-			secondPosTable.put(player.getUniqueID(), secondPos);
+			secondPosTable.put(player.getUUID(), secondPos);
 
 		} else {
 			//Third click, place diagonal wall with height
 			list = findCoordinates(player, blockPos, skipRaytrace);
-			rightClickTable.put(player.getUniqueID(), 0);
+			rightClickTable.put(player.getUUID(), 0);
 		}
 
 		return list;
@@ -106,14 +106,14 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	@Override
 	public List<BlockPos> findCoordinates(PlayerEntity player, BlockPos blockPos, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
-		Dictionary<UUID, Integer> rightClickTable = player.world.isRemote ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUniqueID());
+		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
+		int rightClickNr = rightClickTable.get(player.getUUID());
 
 		if (rightClickNr == 0) {
 			if (blockPos != null)
 				list.add(blockPos);
 		} else if (rightClickNr == 1) {
-			BlockPos firstPos = firstPosTable.get(player.getUniqueID());
+			BlockPos firstPos = firstPosTable.get(player.getUUID());
 
 			BlockPos secondPos = findSecondPos(player, firstPos, true);
 			if (secondPos == null) return list;
@@ -137,8 +137,8 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			list.addAll(getIntermediateBlocks(player, x1, y1, z1, x2, y2, z2));
 
 		} else {
-			BlockPos firstPos = firstPosTable.get(player.getUniqueID());
-			BlockPos secondPos = secondPosTable.get(player.getUniqueID());
+			BlockPos firstPos = firstPosTable.get(player.getUUID());
+			BlockPos secondPos = secondPosTable.get(player.getUUID());
 
 			BlockPos thirdPos = findThirdPos(player, firstPos, secondPos, skipRaytrace);
 			if (thirdPos == null) return list;
@@ -193,8 +193,8 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 		HeightCriteria(Vector3d planeBound, BlockPos secondPos, Vector3d start) {
 			this.planeBound = planeBound;
 			this.lineBound = toLongestLine(this.planeBound, secondPos);
-			this.distToLineSq = this.lineBound.subtract(this.planeBound).lengthSquared();
-			this.distToPlayerSq = this.planeBound.subtract(start).lengthSquared();
+			this.distToLineSq = this.lineBound.subtract(this.planeBound).lengthSqr();
+			this.distToPlayerSq = this.planeBound.subtract(start).lengthSqr();
 		}
 
 		//Make it from a plane into a line, on y axis only

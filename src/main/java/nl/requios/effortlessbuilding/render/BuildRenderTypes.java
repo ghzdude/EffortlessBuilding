@@ -37,13 +37,13 @@ public class BuildRenderTypes {
 	private static final int secondaryTextureUnit = 2;
 
 	static {
-		TRANSLUCENT_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "field_228515_g_");
-		NO_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "field_228510_b_");
+		TRANSLUCENT_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "TRANSLUCENT_TRANSPARENCY");
+		NO_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "NO_TRANSPARENCY");
 
 		DIFFUSE_LIGHTING_ENABLED = new RenderState.DiffuseLightingState(true);
 		DIFFUSE_LIGHTING_DISABLED = new RenderState.DiffuseLightingState(false);
 
-		PROJECTION_LAYERING = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "field_239235_M_");
+		PROJECTION_LAYERING = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "VIEW_OFFSET_Z_LAYERING");
 
 		CULL_DISABLED = new RenderState.CullState(false);
 
@@ -68,24 +68,24 @@ public class BuildRenderTypes {
 //        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 //
 //        RenderSystem.lineWidth(2);
-		renderState = RenderType.State.getBuilder()
-			.line(new RenderState.LineState(OptionalDouble.of(2)))
-			.layer(PROJECTION_LAYERING)
-			.transparency(TRANSLUCENT_TRANSPARENCY)
-			.writeMask(WRITE_TO_DEPTH_AND_COLOR)
-			.cull(CULL_DISABLED)
-			.build(false);
-		LINES = RenderType.makeType("eb_lines",
+		renderState = RenderType.State.builder()
+			.setLineState(new RenderState.LineState(OptionalDouble.of(2)))
+			.setLayeringState(PROJECTION_LAYERING)
+			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+			.setWriteMaskState(WRITE_TO_DEPTH_AND_COLOR)
+			.setCullState(CULL_DISABLED)
+			.createCompositeState(false);
+		LINES = RenderType.create("eb_lines",
 			DefaultVertexFormats.POSITION_COLOR, GL11.GL_LINES, INITIAL_BUFFER_SIZE, renderState);
 
-		renderState = RenderType.State.getBuilder()
-			.line(new RenderState.LineState(OptionalDouble.of(2)))
-			.layer(PROJECTION_LAYERING)
-			.transparency(TRANSLUCENT_TRANSPARENCY)
-			.writeMask(COLOR_WRITE)
-			.cull(CULL_DISABLED)
-			.build(false);
-		PLANES = RenderType.makeType("eb_planes",
+		renderState = RenderType.State.builder()
+			.setLineState(new RenderState.LineState(OptionalDouble.of(2)))
+			.setLayeringState(PROJECTION_LAYERING)
+			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+			.setWriteMaskState(COLOR_WRITE)
+			.setCullState(CULL_DISABLED)
+			.createCompositeState(false);
+		PLANES = RenderType.create("eb_planes",
 			DefaultVertexFormats.POSITION_COLOR, GL11.GL_TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, renderState);
 
 	}
@@ -111,23 +111,23 @@ public class BuildRenderTypes {
 //            RenderSystem.pushLightingAttributes();
 //            RenderSystem.pushTextureAttributes();
 
-			ShaderHandler.useShader(ShaderHandler.dissolve, generateShaderCallback(dissolve, Vector3d.copy(blockPos), Vector3d.copy(firstPos), Vector3d.copy(secondPos), blockPos == secondPos, red));
+			ShaderHandler.useShader(ShaderHandler.dissolve, generateShaderCallback(dissolve, Vector3d.atLowerCornerOf(blockPos), Vector3d.atLowerCornerOf(firstPos), Vector3d.atLowerCornerOf(secondPos), blockPos == secondPos, red));
 			RenderSystem.blendColor(1f, 1f, 1f, 0.8f);
 		}, ShaderHandler::releaseShader);
 
-		RenderType.State renderState = RenderType.State.getBuilder()
-			.texture(new RenderState.TextureState(ShaderHandler.shaderMaskTextureLocation, false, false))
-			.texturing(MY_TEXTURING)
-			.transparency(TRANSLUCENT_TRANSPARENCY)
-			.diffuseLighting(DIFFUSE_LIGHTING_DISABLED)
-			.alpha(DEFAULT_ALPHA)
-			.cull(new RenderState.CullState(true))
-			.lightmap(new RenderState.LightmapState(false))
-			.overlay(new RenderState.OverlayState(false))
-			.build(true);
+		RenderType.State renderState = RenderType.State.builder()
+			.setTextureState(new RenderState.TextureState(ShaderHandler.shaderMaskTextureLocation, false, false))
+			.setTexturingState(MY_TEXTURING)
+			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
+			.setAlphaState(DEFAULT_ALPHA)
+			.setCullState(new RenderState.CullState(true))
+			.setLightmapState(new RenderState.LightmapState(false))
+			.setOverlayState(new RenderState.OverlayState(false))
+			.createCompositeState(true);
 		//Unique name for every combination, otherwise it will reuse the previous one
 		String name = "eb_block_previews_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
-		return RenderType.makeType(name,
+		return RenderType.create(name,
 			DefaultVertexFormats.BLOCK, GL11.GL_QUADS, 256, true, true, renderState);
 	}
 
@@ -151,13 +151,13 @@ public class BuildRenderTypes {
 			//mask
 			ARBShaderObjects.glUniform1iARB(maskUniform, secondaryTextureUnit);
 			glActiveTexture(ARBMultitexture.GL_TEXTURE0_ARB + secondaryTextureUnit);
-			mc.getTextureManager().bindTexture(ShaderHandler.shaderMaskTextureLocation);//getTexture(ShaderHandler.shaderMaskTextureLocation).bindTexture();
+			mc.getTextureManager().bind(ShaderHandler.shaderMaskTextureLocation);//getTexture(ShaderHandler.shaderMaskTextureLocation).bindTexture();
 			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, mc.getTextureManager().getTexture(ShaderHandler.shaderMaskTextureLocation).getGlTextureId());
 
 			//image
 			ARBShaderObjects.glUniform1iARB(imageUniform, primaryTextureUnit);
 			glActiveTexture(ARBMultitexture.GL_TEXTURE0_ARB + primaryTextureUnit);
-			mc.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);//.getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).bindTexture();
+			mc.getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);//.getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).bindTexture();
 			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, mc.getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).getGlTextureId());
 
 			//blockpos

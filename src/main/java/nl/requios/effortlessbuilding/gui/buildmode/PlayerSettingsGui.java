@@ -62,7 +62,7 @@ public class PlayerSettingsGui extends Screen {
 		});
 		addButton(slider);
 
-		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, new StringTextComponent("Done"), (button) -> this.minecraft.player.closeScreen());
+		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, new StringTextComponent("Done"), (button) -> this.minecraft.player.closeContainer());
 		addButton(closeButton);
 	}
 
@@ -76,10 +76,10 @@ public class PlayerSettingsGui extends Screen {
 		this.renderBackground(ms);
 
 		int yy = top;
-		font.drawString(ms, "Shader type", left, yy + 5, 0xFFFFFF);
+		font.draw(ms, "Shader type", left, yy + 5, 0xFFFFFF);
 
 		yy += 50;
-		font.drawString(ms, "Shader speed", left, yy + 5, 0xFFFFFF);
+		font.draw(ms, "Shader speed", left, yy + 5, 0xFFFFFF);
 
 		super.render(ms, mouseX, mouseY, partialTicks);
 
@@ -98,7 +98,7 @@ public class PlayerSettingsGui extends Screen {
 	}
 
 	@Override
-	public void onClose() {
+	public void removed() {
 		ShaderTypeList.ShaderTypeEntry selectedShader = shaderTypeList.getSelected();
 		//TODO save and remove
 	}
@@ -149,7 +149,7 @@ public class PlayerSettingsGui extends Screen {
 		@Override
 		public void setSelected(PlayerSettingsGui.ShaderTypeList.ShaderTypeEntry selected) {
 			super.setSelected(selected);
-			Minecraft.getInstance().getSoundHandler().play(SimpleSound.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			Minecraft.getInstance().getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			EffortlessBuilding.log("Selected shader " + selected.shaderType.name);
 			shaderTypeButton.setMessage(selected.shaderType.name);
 //            showShaderList = false;
@@ -186,7 +186,7 @@ public class PlayerSettingsGui extends Screen {
 		}
 
 		protected boolean isFocused() {
-			return PlayerSettingsGui.this.getListener() == this;
+			return PlayerSettingsGui.this.getFocused() == this;
 		}
 
 		@Override
@@ -201,18 +201,18 @@ public class PlayerSettingsGui extends Screen {
 			int i = this.getScrollbarPosition();
 			int j = i + 6;
 			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder bufferbuilder = tessellator.getBuffer();
+			BufferBuilder bufferbuilder = tessellator.getBuilder();
 //            this.minecraft.getTextureManager().bindTexture(AbstractGui.BACKGROUND_LOCATION);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
 			RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 			float f = 32.0F;
 			bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
-			bufferbuilder.pos(this.x0, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
-			bufferbuilder.pos(this.x1, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
-			bufferbuilder.pos(this.x1, this.y0, 0.0D).color(20, 20, 20, 180).endVertex();
-			bufferbuilder.pos(this.x0, this.y0, 0.0D).color(20, 20, 20, 180).endVertex();
-			tessellator.draw();
+			bufferbuilder.vertex(this.x0, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
+			bufferbuilder.vertex(this.x1, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
+			bufferbuilder.vertex(this.x1, this.y0, 0.0D).color(20, 20, 20, 180).endVertex();
+			bufferbuilder.vertex(this.x0, this.y0, 0.0D).color(20, 20, 20, 180).endVertex();
+			tessellator.end();
 			int k = this.getRowLeft();
 			int l = this.y0 + 4 - (int) this.getScrollAmount();
 			if (this.renderHeader) {
@@ -253,23 +253,23 @@ public class PlayerSettingsGui extends Screen {
 				}
 
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos(i, this.y1, 0.0D).tex(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos(j, this.y1, 0.0D).tex(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos(j, this.y0, 0.0D).tex(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos(i, this.y0, 0.0D).tex(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i, this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+				bufferbuilder.vertex(j, this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+				bufferbuilder.vertex(j, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+				bufferbuilder.vertex(i, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+				tessellator.end();
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos(i, l1 + k1, 0.0D).tex(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos(j, l1 + k1, 0.0D).tex(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos(j, l1, 0.0D).tex(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos(i, l1, 0.0D).tex(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i, l1 + k1, 0.0D).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
+				bufferbuilder.vertex(j, l1 + k1, 0.0D).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
+				bufferbuilder.vertex(j, l1, 0.0D).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
+				bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
+				tessellator.end();
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos(i, l1 + k1 - 1, 0.0D).tex(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos(j - 1, l1 + k1 - 1, 0.0D).tex(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos(j - 1, l1, 0.0D).tex(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos(i, l1, 0.0D).tex(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i, l1 + k1 - 1, 0.0D).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
+				bufferbuilder.vertex(j - 1, l1 + k1 - 1, 0.0D).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
+				bufferbuilder.vertex(j - 1, l1, 0.0D).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
+				bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
+				tessellator.end();
 			}
 
 //            this.renderDecorations(p_render_1_, p_render_2_);

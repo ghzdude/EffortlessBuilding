@@ -70,7 +70,7 @@ public class ModeSettingsManager {
 		getModeSettings(player);
 
 		//Only on server
-		if (!player.world.isRemote) {
+		if (!player.level.isClientSide) {
 			//Send to client
 			ModeSettingsMessage msg = new ModeSettingsMessage(getModeSettings(player));
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), msg);

@@ -122,7 +122,7 @@ public abstract class SlotGui extends FocusableGui implements IRenderable {
 				return true;
 			} else if (i != -1 && this.selectItem(i, p_mouseClicked_5_, p_mouseClicked_1_, p_mouseClicked_3_)) {
 				if (this.children().size() > i) {
-					this.setListener(this.children().get(i));
+					this.setFocused(this.children().get(i));
 				}
 
 				this.setDragging(true);
@@ -136,8 +136,8 @@ public abstract class SlotGui extends FocusableGui implements IRenderable {
 	}
 
 	public boolean mouseReleased(double p_mouseReleased_1_, double p_mouseReleased_3_, int p_mouseReleased_5_) {
-		if (this.getListener() != null) {
-			this.getListener().mouseReleased(p_mouseReleased_1_, p_mouseReleased_3_, p_mouseReleased_5_);
+		if (this.getFocused() != null) {
+			this.getFocused().mouseReleased(p_mouseReleased_1_, p_mouseReleased_3_, p_mouseReleased_5_);
 		}
 
 		return false;
@@ -217,7 +217,7 @@ public abstract class SlotGui extends FocusableGui implements IRenderable {
 	protected void renderList(MatrixStack ms, int p_renderList_1_, int p_renderList_2_, int p_renderList_3_, int p_renderList_4_, float p_renderList_5_) {
 		int i = this.getItemCount();
 		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tessellator.getBuffer();
+		BufferBuilder bufferbuilder = tessellator.getBuilder();
 
 		for (int j = 0; j < i; ++j) {
 			int k = p_renderList_2_ + j * this.itemHeight + this.headerHeight;
@@ -233,18 +233,18 @@ public abstract class SlotGui extends FocusableGui implements IRenderable {
 				float f = this.isFocused() ? 1.0F : 0.5F;
 				RenderSystem.color4f(f, f, f, 1.0F);
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-				bufferbuilder.pos(i1, k + l + 2, 0.0D).endVertex();
-				bufferbuilder.pos(j1, k + l + 2, 0.0D).endVertex();
-				bufferbuilder.pos(j1, k - 2, 0.0D).endVertex();
-				bufferbuilder.pos(i1, k - 2, 0.0D).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i1, k + l + 2, 0.0D).endVertex();
+				bufferbuilder.vertex(j1, k + l + 2, 0.0D).endVertex();
+				bufferbuilder.vertex(j1, k - 2, 0.0D).endVertex();
+				bufferbuilder.vertex(i1, k - 2, 0.0D).endVertex();
+				tessellator.end();
 				RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-				bufferbuilder.pos(i1 + 1, k + l + 1, 0.0D).endVertex();
-				bufferbuilder.pos(j1 - 1, k + l + 1, 0.0D).endVertex();
-				bufferbuilder.pos(j1 - 1, k - 1, 0.0D).endVertex();
-				bufferbuilder.pos(i1 + 1, k - 1, 0.0D).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i1 + 1, k + l + 1, 0.0D).endVertex();
+				bufferbuilder.vertex(j1 - 1, k + l + 1, 0.0D).endVertex();
+				bufferbuilder.vertex(j1 - 1, k - 1, 0.0D).endVertex();
+				bufferbuilder.vertex(i1 + 1, k - 1, 0.0D).endVertex();
+				tessellator.end();
 				RenderSystem.enableTexture();
 			}
 

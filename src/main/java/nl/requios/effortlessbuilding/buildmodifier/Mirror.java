@@ -160,39 +160,39 @@ public class Mirror {
 	private static BlockState getVerticalMirror(BlockState blockState) {
 		//Stairs
 		if (blockState.getBlock() instanceof StairsBlock) {
-			if (blockState.get(StairsBlock.HALF) == Half.BOTTOM) {
-				return blockState.with(StairsBlock.HALF, Half.TOP);
+			if (blockState.getValue(StairsBlock.HALF) == Half.BOTTOM) {
+				return blockState.setValue(StairsBlock.HALF, Half.TOP);
 			} else {
-				return blockState.with(StairsBlock.HALF, Half.BOTTOM);
+				return blockState.setValue(StairsBlock.HALF, Half.BOTTOM);
 			}
 		}
 
 		//Slabs
 		if (blockState.getBlock() instanceof SlabBlock) {
-			if (blockState.get(SlabBlock.TYPE) == SlabType.DOUBLE) {
+			if (blockState.getValue(SlabBlock.TYPE) == SlabType.DOUBLE) {
 				return blockState;
-			} else if (blockState.get(SlabBlock.TYPE) == SlabType.BOTTOM) {
-				return blockState.with(SlabBlock.TYPE, SlabType.TOP);
+			} else if (blockState.getValue(SlabBlock.TYPE) == SlabType.BOTTOM) {
+				return blockState.setValue(SlabBlock.TYPE, SlabType.TOP);
 			} else {
-				return blockState.with(SlabBlock.TYPE, SlabType.BOTTOM);
+				return blockState.setValue(SlabBlock.TYPE, SlabType.BOTTOM);
 			}
 		}
 
 		//Buttons, endrod, observer, piston
 		if (blockState.getBlock() instanceof DirectionalBlock) {
-			if (blockState.get(DirectionalBlock.FACING) == Direction.DOWN) {
-				return blockState.with(DirectionalBlock.FACING, Direction.UP);
-			} else if (blockState.get(DirectionalBlock.FACING) == Direction.UP) {
-				return blockState.with(DirectionalBlock.FACING, Direction.DOWN);
+			if (blockState.getValue(DirectionalBlock.FACING) == Direction.DOWN) {
+				return blockState.setValue(DirectionalBlock.FACING, Direction.UP);
+			} else if (blockState.getValue(DirectionalBlock.FACING) == Direction.UP) {
+				return blockState.setValue(DirectionalBlock.FACING, Direction.DOWN);
 			}
 		}
 
 		//Dispenser, dropper
 		if (blockState.getBlock() instanceof DispenserBlock) {
-			if (blockState.get(DispenserBlock.FACING) == Direction.DOWN) {
-				return blockState.with(DispenserBlock.FACING, Direction.UP);
-			} else if (blockState.get(DispenserBlock.FACING) == Direction.UP) {
-				return blockState.with(DispenserBlock.FACING, Direction.DOWN);
+			if (blockState.getValue(DispenserBlock.FACING) == Direction.DOWN) {
+				return blockState.setValue(DispenserBlock.FACING, Direction.UP);
+			} else if (blockState.getValue(DispenserBlock.FACING) == Direction.UP) {
+				return blockState.setValue(DispenserBlock.FACING, Direction.DOWN);
 			}
 		}
 

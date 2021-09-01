@@ -84,7 +84,7 @@ public class GuiScrollPane extends SlotGui {
 			this.capYPosition();
 
 			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder bufferbuilder = tessellator.getBuffer();
+			BufferBuilder bufferbuilder = tessellator.getBuilder();
 
 			int insideLeft = this.x0 + this.width / 2 - this.getRowWidth() / 2 + 2;
 			int insideTop = this.y0 + 4 - (int) this.yo;
@@ -133,23 +133,23 @@ public class GuiScrollPane extends SlotGui {
 				}
 
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos(scrollbarLeft, this.y1, 0.0F).tex(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos(scrollbarRight, this.y1, 0.0F).tex(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos(scrollbarRight, this.y0, 0.0F).tex(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-				bufferbuilder.pos(scrollbarLeft, this.y0, 0.0F).tex(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(scrollbarLeft, this.y1, 0.0F).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+				bufferbuilder.vertex(scrollbarRight, this.y1, 0.0F).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+				bufferbuilder.vertex(scrollbarRight, this.y0, 0.0F).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+				bufferbuilder.vertex(scrollbarLeft, this.y0, 0.0F).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+				tessellator.end();
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos(scrollbarLeft, l1 + k1, 0.0F).tex(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos(scrollbarRight, l1 + k1, 0.0F).tex(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos(scrollbarRight, l1, 0.0F).tex(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-				bufferbuilder.pos(scrollbarLeft, l1, 0.0F).tex(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(scrollbarLeft, l1 + k1, 0.0F).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
+				bufferbuilder.vertex(scrollbarRight, l1 + k1, 0.0F).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
+				bufferbuilder.vertex(scrollbarRight, l1, 0.0F).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
+				bufferbuilder.vertex(scrollbarLeft, l1, 0.0F).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
+				tessellator.end();
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-				bufferbuilder.pos(scrollbarLeft, l1 + k1 - 1, 0.0F).tex(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos(scrollbarRight - 1, l1 + k1 - 1, 0.0F).tex(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos(scrollbarRight - 1, l1, 0.0F).tex(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-				bufferbuilder.pos(scrollbarLeft, l1, 0.0F).tex(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(scrollbarLeft, l1 + k1 - 1, 0.0F).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
+				bufferbuilder.vertex(scrollbarRight - 1, l1 + k1 - 1, 0.0F).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
+				bufferbuilder.vertex(scrollbarRight - 1, l1, 0.0F).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
+				bufferbuilder.vertex(scrollbarLeft, l1, 0.0F).uv(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
+				tessellator.end();
 			}
 
 			//this.renderDecorations(mouseXIn, mouseYIn);
@@ -210,7 +210,7 @@ public class GuiScrollPane extends SlotGui {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> getEventListeners() {
+	public List<? extends IGuiEventListener> children() {
 		return null;
 	}
 
@@ -260,7 +260,7 @@ public class GuiScrollPane extends SlotGui {
 
 	public void handleMouseInput() {
 		if (this.isMouseInList(this.mouseX, this.mouseY)) {
-			if (minecraft.mouseHelper.isLeftDown() && this.mouseY >= this.y0 &&
+			if (minecraft.mouseHandler.isLeftPressed() && this.mouseY >= this.y0 &&
 				this.mouseY <= this.y1) {
 				int i = this.x0 + (this.width - this.getRowWidth()) / 2;
 				int j = this.x0 + (this.width + this.getRowWidth()) / 2;
@@ -274,7 +274,7 @@ public class GuiScrollPane extends SlotGui {
 				}
 			}
 
-			if (minecraft.mouseHelper.isLeftDown() && this.isVisible()) {
+			if (minecraft.mouseHandler.isLeftPressed() && this.isVisible()) {
 				if (this.yDrag == -1) {
 					boolean flag1 = true;
 
@@ -335,7 +335,7 @@ public class GuiScrollPane extends SlotGui {
 	protected void renderList(MatrixStack ms, int insideLeft, int insideTop, int mouseXIn, int mouseYIn, float partialTicks) {
 		int itemCount = this.getItemCount();
 		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tessellator.getBuffer();
+		BufferBuilder bufferbuilder = tessellator.getBuilder();
 
 		//Find y to start with
 		int y = this.headerHeight + insideTop;
@@ -363,18 +363,18 @@ public class GuiScrollPane extends SlotGui {
 				float f = this.isFocused() ? 1.0F : 0.5F;
 				RenderSystem.color4f(f, f, f, 1.0F);
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-				bufferbuilder.pos(i1, y + entryHeight2 + 2, 0.0D).endVertex();
-				bufferbuilder.pos(j1, y + entryHeight2 + 2, 0.0D).endVertex();
-				bufferbuilder.pos(j1, y - 2, 0.0D).endVertex();
-				bufferbuilder.pos(i1, y - 2, 0.0D).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i1, y + entryHeight2 + 2, 0.0D).endVertex();
+				bufferbuilder.vertex(j1, y + entryHeight2 + 2, 0.0D).endVertex();
+				bufferbuilder.vertex(j1, y - 2, 0.0D).endVertex();
+				bufferbuilder.vertex(i1, y - 2, 0.0D).endVertex();
+				tessellator.end();
 				RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
 				bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-				bufferbuilder.pos(i1 + 1, y + entryHeight2 + 1, 0.0D).endVertex();
-				bufferbuilder.pos(j1 - 1, y + entryHeight2 + 1, 0.0D).endVertex();
-				bufferbuilder.pos(j1 - 1, y - 1, 0.0D).endVertex();
-				bufferbuilder.pos(i1 + 1, y - 1, 0.0D).endVertex();
-				tessellator.draw();
+				bufferbuilder.vertex(i1 + 1, y + entryHeight2 + 1, 0.0D).endVertex();
+				bufferbuilder.vertex(j1 - 1, y + entryHeight2 + 1, 0.0D).endVertex();
+				bufferbuilder.vertex(j1 - 1, y - 1, 0.0D).endVertex();
+				bufferbuilder.vertex(i1 + 1, y - 1, 0.0D).endVertex();
+				tessellator.end();
 				RenderSystem.enableTexture();
 			}
 

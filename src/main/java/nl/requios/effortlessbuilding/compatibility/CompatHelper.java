@@ -79,7 +79,7 @@ public class CompatHelper {
 	public static ItemStack getItemBlockByState(ItemStack stack, BlockState state) {
 		if (state == null) return ItemStack.EMPTY;
 
-		Item blockItem = Item.getItemFromBlock(state.getBlock());
+		Item blockItem = Item.byBlock(state.getBlock());
 		if (stack.getItem() instanceof BlockItem)
 			return stack;
 		else if (stack.getItem() instanceof ItemRandomizerBag) {

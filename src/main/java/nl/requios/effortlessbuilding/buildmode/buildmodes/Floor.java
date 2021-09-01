@@ -15,7 +15,7 @@ public class Floor extends TwoClicksBuildMode {
 
 	public static BlockPos findFloor(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
 		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight(), player.getPosZ());
+		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<Criteria> criteriaList = new ArrayList<>(3);
 
@@ -81,7 +81,7 @@ public class Floor extends TwoClicksBuildMode {
 
 		Criteria(Vector3d planeBound, Vector3d start) {
 			this.planeBound = planeBound;
-			this.distToPlayerSq = this.planeBound.subtract(start).lengthSquared();
+			this.distToPlayerSq = this.planeBound.subtract(start).lengthSqr();
 		}
 
 		//check if its not behind the player and its not too close and not too far

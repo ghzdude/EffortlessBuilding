@@ -61,7 +61,7 @@ public class EventHandler {
 	@SubscribeEvent
 	//Only called serverside (except with lilypads...)
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
-		if (event.getWorld().isRemote()) return;
+		if (event.getWorld().isClientSide()) return;
 
 		if (!(event.getEntity() instanceof PlayerEntity)) return;
 
@@ -96,7 +96,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onBlockBroken(BlockEvent.BreakEvent event) {
-		if (event.getWorld().isRemote()) return;
+		if (event.getWorld().isClientSide()) return;
 
 		if (event.getPlayer() instanceof FakePlayer) return;
 
@@ -115,7 +115,7 @@ public class EventHandler {
 			if (event.getPlayer() instanceof ServerPlayerEntity && event.getState() != null && event.getPos() != null) {
 				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
 				if (packetTarget != null)
-					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.getDefaultState()));
+					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.defaultBlockState()));
 			}
 		}
 	}
@@ -128,12 +128,12 @@ public class EventHandler {
 		if (event.getPlayer() instanceof FakePlayer) return;
 
 		PlayerEntity player = event.getPlayer();
-		World world = player.world;
+		World world = player.level;
 		BlockPos pos = event.getPos();
 
 		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
 
-		float originalBlockHardness = event.getState().getBlockHardness(world, pos);
+		float originalBlockHardness = event.getState().getDestroySpeed(world, pos);
 		if (originalBlockHardness < 0) return; //Dont break bedrock
 		float totalBlockHardness = 0;
 		//get coordinates
@@ -144,7 +144,7 @@ public class EventHandler {
 			BlockState blockState = world.getBlockState(coordinate);
 			//add hardness for each blockstate, if can break
 			if (SurvivalHelper.canBreak(world, player, coordinate))
-				totalBlockHardness += blockState.getBlockHardness(world, coordinate);
+				totalBlockHardness += blockState.getDestroySpeed(world, coordinate);
 		}
 
 		//Grabbing percentage from config
@@ -171,7 +171,7 @@ public class EventHandler {
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
 		PlayerEntity player = event.getPlayer();
-		if (player.getEntityWorld().isRemote) return;
+		if (player.getCommandSenderWorld().isClientSide) return;
 
 		UndoRedo.clear(player);
 		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new ClearUndoMessage());
@@ -189,7 +189,7 @@ public class EventHandler {
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		if (event.getPlayer() instanceof FakePlayer) return;
 		PlayerEntity player = event.getPlayer();
-		if (player.getEntityWorld().isRemote) return;
+		if (player.getCommandSenderWorld().isClientSide) return;
 
 		//Set build mode to normal
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);

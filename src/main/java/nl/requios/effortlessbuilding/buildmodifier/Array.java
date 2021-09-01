@@ -27,7 +27,7 @@ public class Array {
 		Vector3i offset = new Vector3i(a.offset.getX(), a.offset.getY(), a.offset.getZ());
 
 		for (int i = 0; i < a.count; i++) {
-			pos = pos.add(offset);
+			pos = pos.offset(offset);
 			coordinates.add(pos);
 		}
 
@@ -51,7 +51,7 @@ public class Array {
 		}
 
 		for (int i = 0; i < a.count; i++) {
-			pos = pos.add(offset);
+			pos = pos.offset(offset);
 
 			//Randomizer bag synergy
 			if (bagInventory != null) {

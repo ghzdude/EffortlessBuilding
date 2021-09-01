@@ -59,34 +59,34 @@ public class RandomizerBagContainer extends Container {
 	}
 
 	@Override
-	public boolean canInteractWith(PlayerEntity playerIn) {
+	public boolean stillValid(PlayerEntity playerIn) {
 		return true;
 	}
 
 	@Override
 	public Slot getSlot(int parSlotIndex) {
-		if (parSlotIndex >= inventorySlots.size())
-			parSlotIndex = inventorySlots.size() - 1;
+		if (parSlotIndex >= slots.size())
+			parSlotIndex = slots.size() - 1;
 		return super.getSlot(parSlotIndex);
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(PlayerEntity playerIn, int slotIndex) {
+	public ItemStack quickMoveStack(PlayerEntity playerIn, int slotIndex) {
 		ItemStack itemstack = ItemStack.EMPTY;
-		Slot slot = this.inventorySlots.get(slotIndex);
+		Slot slot = this.slots.get(slotIndex);
 
-		if (slot != null && slot.getHasStack()) {
-			ItemStack itemstack1 = slot.getStack();
+		if (slot != null && slot.hasItem()) {
+			ItemStack itemstack1 = slot.getItem();
 			itemstack = itemstack1.copy();
 
 			// If item is in our custom inventory
 			if (slotIndex < INV_START) {
 				// try to place in player inventory / action bar
-				if (!this.mergeItemStack(itemstack1, INV_START, HOTBAR_END + 1, true)) {
+				if (!this.moveItemStackTo(itemstack1, INV_START, HOTBAR_END + 1, true)) {
 					return ItemStack.EMPTY;
 				}
 
-				slot.onSlotChange(itemstack1, itemstack);
+				slot.onQuickCraft(itemstack1, itemstack);
 			}
 			// Item is in inventory / hotbar, try to place in custom inventory or armor slots
 			else {
@@ -95,7 +95,7 @@ public class RandomizerBagContainer extends Container {
 				 */
 				if (slotIndex >= INV_START) {
 					// place in custom inventory
-					if (!this.mergeItemStack(itemstack1, 0, INV_START, false)) {
+					if (!this.moveItemStackTo(itemstack1, 0, INV_START, false)) {
 						return ItemStack.EMPTY;
 					}
 				}
@@ -103,9 +103,9 @@ public class RandomizerBagContainer extends Container {
 			}
 
 			if (itemstack1.getCount() == 0) {
-				slot.putStack(ItemStack.EMPTY);
+				slot.set(ItemStack.EMPTY);
 			} else {
-				slot.onSlotChanged();
+				slot.setChanged();
 			}
 
 			if (itemstack1.getCount() == itemstack.getCount()) {
@@ -124,22 +124,22 @@ public class RandomizerBagContainer extends Container {
 	 * be able to save properly
 	 */
 	@Override
-	public ItemStack slotClick(int slot, int dragType, ClickType clickTypeIn, PlayerEntity player) {
+	public ItemStack clicked(int slot, int dragType, ClickType clickTypeIn, PlayerEntity player) {
 		// this will prevent the player from interacting with the item that opened the inventory:
-		if (slot >= 0 && getSlot(slot) != null && getSlot(slot).getStack().equals(player.getHeldItem(Hand.MAIN_HAND))) {
+		if (slot >= 0 && getSlot(slot) != null && getSlot(slot).getItem().equals(player.getItemInHand(Hand.MAIN_HAND))) {
 			return ItemStack.EMPTY;
 		}
-		return super.slotClick(slot, dragType, clickTypeIn, player);
+		return super.clicked(slot, dragType, clickTypeIn, player);
 	}
 
 	/**
 	 * Callback for when the crafting gui is closed.
 	 */
 	@Override
-	public void onContainerClosed(PlayerEntity player) {
-		super.onContainerClosed(player);
-		if (!player.world.isRemote) {
-			detectAndSendChanges();
+	public void removed(PlayerEntity player) {
+		super.removed(player);
+		if (!player.level.isClientSide) {
+			broadcastChanges();
 		}
 	}
 }

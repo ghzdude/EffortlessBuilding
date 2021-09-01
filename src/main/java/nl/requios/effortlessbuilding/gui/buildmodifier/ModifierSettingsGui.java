@@ -51,7 +51,7 @@ public class ModifierSettingsGui extends Screen {
 		//Close button
 		int y = height - 26;
 		buttonClose = new Button(width / 2 - 100, y, 200, 20, new StringTextComponent("Close"), (button) -> {
-			Minecraft.getInstance().player.closeScreen();
+			Minecraft.getInstance().player.closeContainer();
 		});
 		buttons.add(buttonClose);
 	}
@@ -82,8 +82,8 @@ public class ModifierSettingsGui extends Screen {
 	public boolean charTyped(char typedChar, int keyCode) {
 		super.charTyped(typedChar, keyCode);
 		scrollPane.charTyped(typedChar, keyCode);
-		if (keyCode == ClientProxy.keyBindings[0].getKey().getKeyCode()) {
-			minecraft.player.closeScreen();
+		if (keyCode == ClientProxy.keyBindings[0].getKey().getValue()) {
+			minecraft.player.closeContainer();
 		}
 		return false;
 	}
@@ -114,7 +114,7 @@ public class ModifierSettingsGui extends Screen {
 	}
 
 	@Override
-	public void onClose() {
+	public void removed() {
 		scrollPane.onGuiClosed();
 
 		//save everything
@@ -137,7 +137,7 @@ public class ModifierSettingsGui extends Screen {
 		//Send to server
 		PacketHandler.INSTANCE.sendToServer(new ModifierSettingsMessage(modifierSettings));
 
-		Minecraft.getInstance().mouseHelper.grabMouse();
+		Minecraft.getInstance().mouseHandler.grabMouse();
 	}
 
 }

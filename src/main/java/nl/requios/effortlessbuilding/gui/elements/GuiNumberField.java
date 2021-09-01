@@ -61,16 +61,16 @@ public class GuiNumberField extends AbstractGui {
 	}
 
 	public double getNumber() {
-		if (textField.getText().isEmpty()) return 0;
+		if (textField.getValue().isEmpty()) return 0;
 		try {
-			return DecimalFormat.getInstance().parse(textField.getText()).doubleValue();
+			return DecimalFormat.getInstance().parse(textField.getValue()).doubleValue();
 		} catch (ParseException e) {
 			return 0;
 		}
 	}
 
 	public void setNumber(double number) {
-		textField.setText(DecimalFormat.getInstance().format(number));
+		textField.setValue(DecimalFormat.getInstance().format(number));
 	}
 
 	public void setTooltip(ITextComponent tooltip) {
@@ -89,8 +89,8 @@ public class GuiNumberField extends AbstractGui {
 
 		//Rightclicked inside textfield
 		if (flag && mouseButton == 1) {
-			textField.setText("");
-			textField.setFocused2(true);
+			textField.setValue("");
+			textField.setFocus(true);
 			result = true;
 		}
 
@@ -123,20 +123,20 @@ public class GuiNumberField extends AbstractGui {
 		}
 
 		if (insideMinusButton) {
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("shift ").mergeStyle(TextFormatting.AQUA)).appendString("for ")
-				.append(new StringTextComponent("10").mergeStyle(TextFormatting.RED)));
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("ctrl ").mergeStyle(TextFormatting.AQUA)).appendString("for ")
-				.append(new StringTextComponent("5").mergeStyle(TextFormatting.RED)));
+			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("shift ").withStyle(TextFormatting.AQUA)).append("for ")
+				.append(new StringTextComponent("10").withStyle(TextFormatting.RED)));
+			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("ctrl ").withStyle(TextFormatting.AQUA)).append("for ")
+				.append(new StringTextComponent("5").withStyle(TextFormatting.RED)));
 		}
 
 		if (insidePlusButton) {
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("shift ").mergeStyle(TextFormatting.DARK_GREEN)).appendString("for ")
-				.append(new StringTextComponent("10").mergeStyle(TextFormatting.RED)));
-			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("ctrl ").mergeStyle(TextFormatting.DARK_GREEN)).appendString("for ")
-				.append(new StringTextComponent("5").mergeStyle(TextFormatting.RED)));
+			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("shift ").withStyle(TextFormatting.DARK_GREEN)).append("for ")
+				.append(new StringTextComponent("10").withStyle(TextFormatting.RED)));
+			textLines.add(new StringTextComponent("Hold ").append(new StringTextComponent("ctrl ").withStyle(TextFormatting.DARK_GREEN)).append("for ")
+				.append(new StringTextComponent("5").withStyle(TextFormatting.RED)));
 		}
 
-		screen.func_243308_b(ms, textLines, mouseX - 10, mouseY + 25);
+		screen.renderComponentTooltip(ms, textLines, mouseX - 10, mouseY + 25);
 
 	}
 

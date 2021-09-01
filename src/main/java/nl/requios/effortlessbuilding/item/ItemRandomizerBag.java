@@ -52,7 +52,7 @@ public class ItemRandomizerBag extends Item {
 	private static final Random rand = new Random(currentSeed);
 
 	public ItemRandomizerBag() {
-		super(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(1));
+		super(new Item.Properties().tab(ItemGroup.TAB_TOOLS).stacksTo(1));
 
 		this.setRegistryName(EffortlessBuilding.MODID, "randomizer_bag");
 	}
@@ -122,22 +122,22 @@ public class ItemRandomizerBag extends Item {
 	}
 
 	@Override
-	public ActionResultType onItemUse(ItemUseContext ctx) {
+	public ActionResultType useOn(ItemUseContext ctx) {
 		PlayerEntity player = ctx.getPlayer();
-		World world = ctx.getWorld();
-		BlockPos pos = ctx.getPos();
-		Direction facing = ctx.getFace();
-		ItemStack item = ctx.getItem();
-		Vector3d hitVec = ctx.getHitVec();
+		World world = ctx.getLevel();
+		BlockPos pos = ctx.getClickedPos();
+		Direction facing = ctx.getClickedFace();
+		ItemStack item = ctx.getItemInHand();
+		Vector3d hitVec = ctx.getClickLocation();
 
 		if (player == null) return ActionResultType.FAIL;
 
-		if (ctx.getPlayer() != null && ctx.getPlayer().isSneaking()) { //ctx.isPlacerSneaking()
-			if (world.isRemote) return ActionResultType.SUCCESS;
+		if (ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown()) { //ctx.isPlacerSneaking()
+			if (world.isClientSide) return ActionResultType.SUCCESS;
 			//Open inventory
 			NetworkHooks.openGui((ServerPlayerEntity) player, new ContainerProvider(item));
 		} else {
-			if (world.isRemote) return ActionResultType.SUCCESS;
+			if (world.isClientSide) return ActionResultType.SUCCESS;
 
 			//Only place manually if in normal vanilla mode
 			BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
@@ -149,7 +149,7 @@ public class ItemRandomizerBag extends Item {
 			//Use item
 			//Get bag inventory
 			//TODO offhand support
-			ItemStack bag = player.getHeldItem(Hand.MAIN_HAND);
+			ItemStack bag = player.getItemInHand(Hand.MAIN_HAND);
 			IItemHandler bagInventory = getBagInventory(bag);
 			if (bagInventory == null)
 				return ActionResultType.FAIL;
@@ -162,12 +162,12 @@ public class ItemRandomizerBag extends Item {
 			//toPlace.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
 
 			//TODO replaceable
-			if (!world.getBlockState(pos).getBlock().isReplaceable(world.getBlockState(pos), Fluids.EMPTY)) {
-				pos = pos.offset(facing);
+			if (!world.getBlockState(pos).getBlock().canBeReplaced(world.getBlockState(pos), Fluids.EMPTY)) {
+				pos = pos.relative(facing);
 			}
 
 			BlockItemUseContext blockItemUseContext = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(hitVec, facing, pos, false)));
-			BlockState blockState = Block.getBlockFromItem(toPlace.getItem()).getStateForPlacement(blockItemUseContext);
+			BlockState blockState = Block.byItem(toPlace.getItem()).getStateForPlacement(blockItemUseContext);
 
 			SurvivalHelper.placeBlock(world, player, pos, blockState, toPlace, facing, hitVec, false, false, true);
 
@@ -182,11 +182,11 @@ public class ItemRandomizerBag extends Item {
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-		ItemStack bag = player.getHeldItem(hand);
+	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+		ItemStack bag = player.getItemInHand(hand);
 
-		if (player.isSneaking()) {
-			if (world.isRemote) return new ActionResult<>(ActionResultType.SUCCESS, bag);
+		if (player.isShiftKeyDown()) {
+			if (world.isClientSide) return new ActionResult<>(ActionResultType.SUCCESS, bag);
 			//Open inventory
 			NetworkHooks.openGui((ServerPlayerEntity) player, new ContainerProvider(bag));
 		} else {
@@ -199,7 +199,7 @@ public class ItemRandomizerBag extends Item {
 			ItemStack toUse = pickRandomStack(bagInventory);
 			if (toUse.isEmpty()) return new ActionResult<>(ActionResultType.FAIL, bag);
 
-			return toUse.useItemRightClick(world, player, hand);
+			return toUse.use(world, player, hand);
 		}
 		return new ActionResult<>(ActionResultType.PASS, bag);
 	}
@@ -216,16 +216,16 @@ public class ItemRandomizerBag extends Item {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
 		tooltip.add(new StringTextComponent(TextFormatting.BLUE + "Rightclick" + TextFormatting.GRAY + " to place a random block"));
 		tooltip.add(new StringTextComponent(TextFormatting.BLUE + "Sneak + rightclick" + TextFormatting.GRAY + " to open inventory"));
-		if (world != null && world.getPlayers().size() > 1) {
+		if (world != null && world.players().size() > 1) {
 			tooltip.add(new StringTextComponent(TextFormatting.YELLOW + "Experimental on servers: may lose inventory"));
 		}
 	}
 
 	@Override
-	public String getTranslationKey() {
+	public String getDescriptionId() {
 		return this.getRegistryName().toString();
 	}
 

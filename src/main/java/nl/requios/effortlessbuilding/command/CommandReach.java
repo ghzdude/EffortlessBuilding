@@ -16,9 +16,9 @@ public class CommandReach {
 
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(Commands.literal("reach").then(Commands.literal("set").then(Commands.argument("level", IntegerArgumentType.integer(0, 3)).executes((context) -> {
-			return setReachLevel(context.getSource().asPlayer(), IntegerArgumentType.getInteger(context, "level"));
+			return setReachLevel(context.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(context, "level"));
 		}))).then(Commands.literal("get").executes((context -> {
-			return getReachLevel(context.getSource().asPlayer());
+			return getReachLevel(context.getSource().getPlayerOrException());
 		}))));
 	}
 
@@ -29,7 +29,7 @@ public class CommandReach {
 		//Send to client
 		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new ModifierSettingsMessage(modifierSettings));
 
-		player.sendMessage(new StringTextComponent("Reach level of " + player.getName().getString() + " set to " + modifierSettings.getReachUpgrade()), player.getUniqueID());
+		player.sendMessage(new StringTextComponent("Reach level of " + player.getName().getString() + " set to " + modifierSettings.getReachUpgrade()), player.getUUID());
 
 		return 1;
 	}

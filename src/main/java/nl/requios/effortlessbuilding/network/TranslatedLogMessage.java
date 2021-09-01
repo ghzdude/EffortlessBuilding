@@ -29,14 +29,14 @@ public class TranslatedLogMessage {
 	}
 
 	public static void encode(TranslatedLogMessage message, PacketBuffer buf) {
-		buf.writeString(message.prefix);
-		buf.writeString(message.translationKey);
-		buf.writeString(message.suffix);
+		buf.writeUtf(message.prefix);
+		buf.writeUtf(message.translationKey);
+		buf.writeUtf(message.suffix);
 		buf.writeBoolean(message.actionBar);
 	}
 
 	public static TranslatedLogMessage decode(PacketBuffer buf) {
-		return new TranslatedLogMessage(buf.readString(), buf.readString(), buf.readString(), buf.readBoolean());
+		return new TranslatedLogMessage(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean());
 	}
 
 	public String getPrefix() {

@@ -14,7 +14,7 @@ public class Line extends TwoClicksBuildMode {
 
 	public static BlockPos findLine(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
 		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight(), player.getPosZ());
+		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<Criteria> criteriaList = new ArrayList<>(3);
 
@@ -112,8 +112,8 @@ public class Line extends TwoClicksBuildMode {
 		Criteria(Vector3d planeBound, BlockPos firstPos, Vector3d start) {
 			this.planeBound = planeBound;
 			this.lineBound = toLongestLine(this.planeBound, firstPos);
-			this.distToLineSq = this.lineBound.subtract(this.planeBound).lengthSquared();
-			this.distToPlayerSq = this.planeBound.subtract(start).lengthSquared();
+			this.distToLineSq = this.lineBound.subtract(this.planeBound).lengthSqr();
+			this.distToPlayerSq = this.planeBound.subtract(start).lengthSqr();
 		}
 
 		//Make it from a plane into a line

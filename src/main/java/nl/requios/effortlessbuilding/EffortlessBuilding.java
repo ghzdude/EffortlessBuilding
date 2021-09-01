@@ -100,7 +100,7 @@ public class EffortlessBuilding {
 	}
 
 	public static void log(PlayerEntity player, String msg, boolean actionBar) {
-		player.sendStatusMessage(new StringTextComponent(msg), actionBar);
+		player.displayClientMessage(new StringTextComponent(msg), actionBar);
 	}
 
 	//Log with translation supported, call either on client or server (which then sends a message)
@@ -147,6 +147,6 @@ public class EffortlessBuilding {
 
 	@SubscribeEvent
 	public void onServerStarting(FMLServerStartingEvent event) {
-		CommandReach.register(event.getServer().getCommandManager().getDispatcher());
+		CommandReach.register(event.getServer().getCommands().getDispatcher());
 	}
 }

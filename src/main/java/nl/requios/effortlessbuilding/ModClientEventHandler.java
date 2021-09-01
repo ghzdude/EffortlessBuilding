@@ -37,10 +37,10 @@ public class ModClientEventHandler {
 	}
 
 	public static TextureAtlasSprite getBuildModeIcon(BuildModes.BuildModeEnum mode) {
-		return Minecraft.getInstance().getModelManager().getAtlasTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).getSprite(buildModeIcons.get(mode));
+		return Minecraft.getInstance().getModelManager().getAtlas(AtlasTexture.LOCATION_BLOCKS).getSprite(buildModeIcons.get(mode));
 	}
 
 	public static TextureAtlasSprite getModeOptionIcon(ModeOptions.ActionEnum action) {
-		return Minecraft.getInstance().getModelManager().getAtlasTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).getSprite(modeOptionIcons.get(action));
+		return Minecraft.getInstance().getModelManager().getAtlas(AtlasTexture.LOCATION_BLOCKS).getSprite(modeOptionIcons.get(action));
 	}
 }

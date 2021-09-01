@@ -15,6 +15,8 @@ import java.util.function.Supplier;
 
 import static nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
 
+import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
+
 /**
  * Shares modifier settings (see ModifierSettingsManager) between server and client
  */

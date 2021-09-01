@@ -39,14 +39,14 @@ public class AddUndoMessage {
 		buf.writeInt(message.coordinate.getX());
 		buf.writeInt(message.coordinate.getY());
 		buf.writeInt(message.coordinate.getZ());
-		buf.writeInt(Block.getStateId(message.previousBlockState));
-		buf.writeInt(Block.getStateId(message.newBlockState));
+		buf.writeInt(Block.getId(message.previousBlockState));
+		buf.writeInt(Block.getId(message.newBlockState));
 	}
 
 	public static AddUndoMessage decode(PacketBuffer buf) {
 		BlockPos coordinate = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-		BlockState previousBlockState = Block.getStateById(buf.readInt());
-		BlockState newBlockState = Block.getStateById(buf.readInt());
+		BlockState previousBlockState = Block.stateById(buf.readInt());
+		BlockState newBlockState = Block.stateById(buf.readInt());
 		return new AddUndoMessage(coordinate, previousBlockState, newBlockState);
 	}
 

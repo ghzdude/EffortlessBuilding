@@ -43,7 +43,7 @@ public class RadialMirror {
 				curAngle = curAngle - startAngleInSlice + (sliceAngle - startAngleInSlice);
 			}
 
-			Vector3d relNewVec = relStartVec.rotateYaw((float) curAngle);
+			Vector3d relNewVec = relStartVec.yRot((float) curAngle);
 			BlockPos newBlockPos = new BlockPos(r.position.add(relNewVec));
 			if (!coordinates.contains(newBlockPos) && !newBlockPos.equals(startPos)) coordinates.add(newBlockPos);
 		}
@@ -89,7 +89,7 @@ public class RadialMirror {
 				curAngle = curAngle - startAngleInSlice + (sliceAngle - startAngleInSlice);
 			}
 
-			Vector3d relNewVec = relStartVec.rotateYaw((float) curAngle);
+			Vector3d relNewVec = relStartVec.yRot((float) curAngle);
 			BlockPos newBlockPos = new BlockPos(r.position.add(relNewVec));
 			if (coordinates.contains(newBlockPos) || newBlockPos.equals(startPos)) continue; //filter out duplicates
 			coordinates.add(newBlockPos);
@@ -159,7 +159,7 @@ public class RadialMirror {
 	public static boolean isEnabled(RadialMirrorSettings r, BlockPos startPos) {
 		if (r == null || !r.enabled) return false;
 
-		return !(new Vector3d(startPos.getX() + 0.5, startPos.getY() + 0.5, startPos.getZ() + 0.5).subtract(r.position).lengthSquared() >
+		return !(new Vector3d(startPos.getX() + 0.5, startPos.getY() + 0.5, startPos.getZ() + 0.5).subtract(r.position).lengthSqr() >
 			r.radius * r.radius);
 	}
 

@@ -115,7 +115,7 @@ public class ModifierSettingsManager {
 		getModifierSettings(player);
 
 		//Only on server
-		if (!player.world.isRemote) {
+		if (!player.level.isClientSide) {
 			//Send to client
 			ModifierSettingsMessage msg = new ModifierSettingsMessage(getModifierSettings(player));
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), msg);

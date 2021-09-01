@@ -73,7 +73,7 @@ public class ClientProxy implements IProxy {
 			onMouseInput();
 
 			//Update previousLookAt
-			RayTraceResult objectMouseOver = Minecraft.getInstance().objectMouseOver;
+			RayTraceResult objectMouseOver = Minecraft.getInstance().hitResult;
 			//Checking for null is necessary! Even in vanilla when looking down ladders it is occasionally null (instead of Type MISS)
 			if (objectMouseOver == null) return;
 
@@ -88,7 +88,7 @@ public class ClientProxy implements IProxy {
 					currentLookAt = objectMouseOver;
 					previousLookAt = objectMouseOver;
 				} else {
-					if (((BlockRayTraceResult) currentLookAt).getPos() != ((BlockRayTraceResult) objectMouseOver).getPos()) {
+					if (((BlockRayTraceResult) currentLookAt).getBlockPos() != ((BlockRayTraceResult) objectMouseOver).getBlockPos()) {
 						previousLookAt = currentLookAt;
 						currentLookAt = objectMouseOver;
 					}
@@ -96,7 +96,7 @@ public class ClientProxy implements IProxy {
 			}
 
 		} else if (event.phase == TickEvent.Phase.END) {
-			Screen gui = Minecraft.getInstance().currentScreen;
+			Screen gui = Minecraft.getInstance().screen;
 			if (gui == null || !gui.isPauseScreen()) {
 				ticksInGame++;
 			}
@@ -116,22 +116,22 @@ public class ClientProxy implements IProxy {
 		if (player == null) return;
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 
-		if (Minecraft.getInstance().currentScreen != null ||
+		if (Minecraft.getInstance().screen != null ||
 			buildMode == BuildModes.BuildModeEnum.NORMAL ||
 			RadialMenu.instance.isVisible()) {
 			return;
 		}
 
-		if (mc.gameSettings.keyBindUseItem.isKeyDown()) {
+		if (mc.options.keyUse.isDown()) {
 
 			//KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
 
 			if (placeCooldown <= 0) {
 				placeCooldown = 4;
 
-				ItemStack currentItemStack = player.getHeldItem(Hand.MAIN_HAND);
+				ItemStack currentItemStack = player.getItemInHand(Hand.MAIN_HAND);
 				if (currentItemStack.getItem() instanceof BlockItem ||
-					(CompatHelper.isItemBlockProxy(currentItemStack) && !player.isSneaking())) {
+					(CompatHelper.isItemBlockProxy(currentItemStack) && !player.isShiftKeyDown())) {
 
 					ItemStack itemStack = CompatHelper.getItemBlockFromStack(currentItemStack);
 
@@ -144,15 +144,15 @@ public class ClientProxy implements IProxy {
 						PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage(blockLookingAt, true));
 
 						//play sound if further than normal
-						if ((blockLookingAt.getHitVec().subtract(player.getEyePosition(1f))).lengthSquared() > 25f &&
+						if ((blockLookingAt.getLocation().subtract(player.getEyePosition(1f))).lengthSqr() > 25f &&
 							itemStack.getItem() instanceof BlockItem) {
 
-							BlockState state = ((BlockItem) itemStack.getItem()).getBlock().getDefaultState();
-							BlockPos blockPos = blockLookingAt.getPos();
-							SoundType soundType = state.getBlock().getSoundType(state, player.world, blockPos, player);
-							player.world.playSound(player, player.getPosition(), soundType.getPlaceSound(), SoundCategory.BLOCKS,
+							BlockState state = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
+							BlockPos blockPos = blockLookingAt.getBlockPos();
+							SoundType soundType = state.getBlock().getSoundType(state, player.level, blockPos, player);
+							player.level.playSound(player, player.blockPosition(), soundType.getPlaceSound(), SoundCategory.BLOCKS,
 								0.4f, soundType.getPitch());
-							player.swingArm(Hand.MAIN_HAND);
+							player.swing(Hand.MAIN_HAND);
 						}
 					} else {
 						BuildModes.onBlockPlacedMessage(player, new BlockPlacedMessage());
@@ -167,7 +167,7 @@ public class ClientProxy implements IProxy {
 			placeCooldown = 0;
 		}
 
-		if (mc.gameSettings.keyBindAttack.isKeyDown()) {
+		if (mc.options.keyAttack.isDown()) {
 
 			//Break block in distance in creative (or survival if enabled in config)
 			if (breakCooldown <= 0) {
@@ -187,14 +187,14 @@ public class ClientProxy implements IProxy {
 					PacketHandler.INSTANCE.sendToServer(new BlockBrokenMessage(blockLookingAt));
 
 					//play sound if further than normal
-					if ((blockLookingAt.getHitVec().subtract(player.getEyePosition(1f))).lengthSquared() > 25f) {
+					if ((blockLookingAt.getLocation().subtract(player.getEyePosition(1f))).lengthSqr() > 25f) {
 
-						BlockPos blockPos = blockLookingAt.getPos();
-						BlockState state = player.world.getBlockState(blockPos);
-						SoundType soundtype = state.getBlock().getSoundType(state, player.world, blockPos, player);
-						player.world.playSound(player, player.getPosition(), soundtype.getBreakSound(), SoundCategory.BLOCKS,
+						BlockPos blockPos = blockLookingAt.getBlockPos();
+						BlockState state = player.level.getBlockState(blockPos);
+						SoundType soundtype = state.getBlock().getSoundType(state, player.level, blockPos, player);
+						player.level.playSound(player, player.blockPosition(), soundtype.getBreakSound(), SoundCategory.BLOCKS,
 							0.4f, soundtype.getPitch());
-						player.swingArm(Hand.MAIN_HAND);
+						player.swing(Hand.MAIN_HAND);
 					}
 				} else {
 					BuildModes.onBlockBrokenMessage(player, new BlockBrokenMessage());
@@ -220,12 +220,12 @@ public class ClientProxy implements IProxy {
 
 		//Remember to send packet to server if necessary
 		//Show Modifier Settings GUI
-		if (keyBindings[0].isPressed()) {
+		if (keyBindings[0].consumeClick()) {
 			openModifierSettings();
 		}
 
 		//QuickReplace toggle
-		if (keyBindings[1].isPressed()) {
+		if (keyBindings[1].consumeClick()) {
 			ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 			modifierSettings.setQuickReplace(!modifierSettings.doQuickReplace());
 			EffortlessBuilding.log(player, "Set " + TextFormatting.GOLD + "Quick Replace " + TextFormatting.RESET + (
@@ -234,30 +234,30 @@ public class ClientProxy implements IProxy {
 		}
 
 		//Creative/survival mode toggle
-		if (keyBindings[2].isPressed()) {
+		if (keyBindings[2].consumeClick()) {
 			if (player.isCreative()) {
-				player.sendChatMessage("/gamemode survival");
+				player.chat("/gamemode survival");
 			} else {
-				player.sendChatMessage("/gamemode creative");
+				player.chat("/gamemode creative");
 			}
 		}
 
 		//Undo (Ctrl+Z)
-		if (keyBindings[4].isPressed()) {
+		if (keyBindings[4].consumeClick()) {
 			ModeOptions.ActionEnum action = ModeOptions.ActionEnum.UNDO;
 			ModeOptions.performAction(player, action);
 			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
 		}
 
 		//Redo (Ctrl+Y)
-		if (keyBindings[5].isPressed()) {
+		if (keyBindings[5].consumeClick()) {
 			ModeOptions.ActionEnum action = ModeOptions.ActionEnum.REDO;
 			ModeOptions.performAction(player, action);
 			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
 		}
 
 		//Change placement mode
-		if (keyBindings[6].isPressed()) {
+		if (keyBindings[6].consumeClick()) {
 			//Toggle between first two actions of the first option of the current build mode
 			BuildModes.BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 			if (currentBuildMode.options.length > 0) {
@@ -275,7 +275,7 @@ public class ClientProxy implements IProxy {
 		}
 
 		//For shader development
-		if (keyBindings.length >= 8 && keyBindings[7].isPressed()) {
+		if (keyBindings.length >= 8 && keyBindings[7].consumeClick()) {
 			ShaderHandler.init();
 			EffortlessBuilding.log(player, "Reloaded shaders");
 		}
@@ -294,10 +294,10 @@ public class ClientProxy implements IProxy {
 		if (ReachHelper.getMaxReach(player) == 0) {
 			EffortlessBuilding.log(player, "Build modifiers are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
 		} else {
-			if (mc.currentScreen == null) {
-				mc.displayGuiScreen(new ModifierSettingsGui());
+			if (mc.screen == null) {
+				mc.setScreen(new ModifierSettingsGui());
 			} else {
-				player.closeScreen();
+				player.closeContainer();
 			}
 		}
 	}
@@ -311,10 +311,10 @@ public class ClientProxy implements IProxy {
 		RadialMenu.instance.setVisibility(0f);
 
 		//Disabled if max reach is 0, might be set in the config that way.
-		if (mc.currentScreen == null) {
-			mc.displayGuiScreen(new PlayerSettingsGui());
+		if (mc.screen == null) {
+			mc.setScreen(new PlayerSettingsGui());
 		} else {
-			player.closeScreen();
+			player.closeContainer();
 		}
 	}
 
@@ -327,17 +327,17 @@ public class ClientProxy implements IProxy {
 	}
 
 	public static RayTraceResult getLookingAt(PlayerEntity player) {
-		World world = player.world;
+		World world = player.level;
 
 		//base distance off of player ability (config)
 		float raytraceRange = ReachHelper.getPlacementReach(player);
 
-		Vector3d look = player.getLookVec();
-		Vector3d start = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight(), player.getPosZ());
-		Vector3d end = new Vector3d(player.getPosX() + look.x * raytraceRange, player.getPosY() + player.getEyeHeight() + look.y * raytraceRange, player.getPosZ() + look.z * raytraceRange);
+		Vector3d look = player.getLookAngle();
+		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
+		Vector3d end = new Vector3d(player.getX() + look.x * raytraceRange, player.getY() + player.getEyeHeight() + look.y * raytraceRange, player.getZ() + look.z * raytraceRange);
 //        return player.rayTrace(raytraceRange, 1f, RayTraceFluidMode.NEVER);
 		//TODO 1.14 check if correct
-		return world.rayTraceBlocks(new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player));
+		return world.clip(new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player));
 	}
 
 	@Override
@@ -350,21 +350,21 @@ public class ClientProxy implements IProxy {
 		keyBindings = new KeyBinding[7];
 
 		// instantiate the key bindings
-		keyBindings[0] = new KeyBinding("key.effortlessbuilding.hud.desc", KeyConflictContext.UNIVERSAL, InputMappings.getInputByCode(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
-		keyBindings[1] = new KeyBinding("key.effortlessbuilding.replace.desc", KeyConflictContext.IN_GAME, InputMappings.getInputByCode(GLFW.GLFW_KEY_KP_SUBTRACT, 0), "key.effortlessbuilding.category");
-		keyBindings[2] = new KeyBinding("key.effortlessbuilding.creative.desc", KeyConflictContext.IN_GAME, InputMappings.getInputByCode(GLFW.GLFW_KEY_F4, 0), "key.effortlessbuilding.category");
-		keyBindings[3] = new KeyBinding("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputMappings.getInputByCode(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category") {
+		keyBindings[0] = new KeyBinding("key.effortlessbuilding.hud.desc", KeyConflictContext.UNIVERSAL, InputMappings.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
+		keyBindings[1] = new KeyBinding("key.effortlessbuilding.replace.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_KP_SUBTRACT, 0), "key.effortlessbuilding.category");
+		keyBindings[2] = new KeyBinding("key.effortlessbuilding.creative.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_F4, 0), "key.effortlessbuilding.category");
+		keyBindings[3] = new KeyBinding("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category") {
 			@Override
-			public boolean conflicts(KeyBinding other) {
+			public boolean same(KeyBinding other) {
 				//Does not conflict with Chisels and Bits radial menu
-				if (other.getKey().getKeyCode() == getKey().getKeyCode() && other.getKeyDescription().equals("mod.chiselsandbits.other.mode"))
+				if (other.getKey().getValue() == getKey().getValue() && other.getName().equals("mod.chiselsandbits.other.mode"))
 					return false;
-				return super.conflicts(other);
+				return super.same(other);
 			}
 		};
-		keyBindings[4] = new KeyBinding("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getInputByCode(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
-		keyBindings[5] = new KeyBinding("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getInputByCode(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
-		keyBindings[6] = new KeyBinding("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputMappings.getInputByCode(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
+		keyBindings[4] = new KeyBinding("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
+		keyBindings[5] = new KeyBinding("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
+		keyBindings[6] = new KeyBinding("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
 		//keyBindings[7] = new KeyBinding("Reload shaders", KeyConflictContext.UNIVERSAL, InputMappings.getInputByCode(GLFW.GLFW_KEY_TAB, 0), "key.effortlessbuilding.category");
 
 		// register all the key bindings
@@ -372,7 +372,7 @@ public class ClientProxy implements IProxy {
 			ClientRegistry.registerKeyBinding(keyBinding);
 		}
 
-		DeferredWorkQueue.runLater(() -> ScreenManager.registerFactory(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new));
+		DeferredWorkQueue.runLater(() -> ScreenManager.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new));
 	}
 
 	public PlayerEntity getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {
@@ -381,6 +381,6 @@ public class ClientProxy implements IProxy {
 
 	@Override
 	public void logTranslate(PlayerEntity player, String prefix, String translationKey, String suffix, boolean actionBar) {
-		EffortlessBuilding.log(Minecraft.getInstance().player, prefix + I18n.format(translationKey) + suffix, actionBar);
+		EffortlessBuilding.log(Minecraft.getInstance().player, prefix + I18n.get(translationKey) + suffix, actionBar);
 	}
 }

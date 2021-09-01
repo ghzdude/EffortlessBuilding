@@ -20,28 +20,28 @@ public class RandomizerBagScreen extends ContainerScreen<RandomizerBagContainer>
 
 	public RandomizerBagScreen(RandomizerBagContainer randomizerBagContainer, PlayerInventory playerInventory, ITextComponent title) {
 		super(randomizerBagContainer, playerInventory, title);//new TranslationTextComponent("effortlessbuilding.screen.randomizer_bag"));
-		ySize = 134;
+		imageHeight = 134;
 	}
 
 	@Override
 	public void render(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
 		renderBackground(ms);
 		super.render(ms, mouseX, mouseY, partialTicks);
-		this.renderHoveredTooltip(ms, mouseX, mouseY);
+		this.renderTooltip(ms, mouseX, mouseY);
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(MatrixStack ms, int mouseX, int mouseY) {
-		font.func_243246_a(ms, this.title, 8, 6, 0x404040);
-		font.func_243246_a(ms, playerInventory.getDisplayName(), 8, ySize - 96 + 2, 0x404040);
+	protected void renderLabels(MatrixStack ms, int mouseX, int mouseY) {
+		font.drawShadow(ms, this.title, 8, 6, 0x404040);
+		font.drawShadow(ms, inventory.getDisplayName(), 8, imageHeight - 96 + 2, 0x404040);
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(MatrixStack ms, float partialTicks, int mouseX, int mouseY) {
+	protected void renderBg(MatrixStack ms, float partialTicks, int mouseX, int mouseY) {
 		RenderSystem.color3f(1.0F, 1.0F, 1.0F);
-		minecraft.getTextureManager().bindTexture(guiTextures);
-		int marginHorizontal = (width - xSize) / 2;
-		int marginVertical = (height - ySize) / 2;
-		blit(ms, marginHorizontal, marginVertical, 0, 0, xSize, ySize);
+		minecraft.getTextureManager().bind(guiTextures);
+		int marginHorizontal = (width - imageWidth) / 2;
+		int marginVertical = (height - imageHeight) / 2;
+		blit(ms, marginHorizontal, marginVertical, 0, 0, imageWidth, imageHeight);
 	}
 }

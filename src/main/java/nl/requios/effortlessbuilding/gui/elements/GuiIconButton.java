@@ -56,7 +56,7 @@ public class GuiIconButton extends Button {
 		super.render(ms, mouseX, mouseY, partialTicks);
 		if (this.visible) {
 			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-			Minecraft.getInstance().getTextureManager().bindTexture(this.resourceLocation);
+			Minecraft.getInstance().getTextureManager().bind(this.resourceLocation);
 			int currentIconX = this.iconX;
 			int currentIconY = this.iconY;
 
@@ -74,7 +74,7 @@ public class GuiIconButton extends Button {
 		boolean flag = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
 		if (flag) {
-			screen.func_243308_b(ms, tooltip, mouseX - 10, mouseY + 25);
+			screen.renderComponentTooltip(ms, tooltip, mouseX - 10, mouseY + 25);
 		}
 	}
 }

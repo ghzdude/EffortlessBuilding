@@ -35,7 +35,7 @@ public class BuildModes {
 	public static void onBlockPlacedMessage(PlayerEntity player, BlockPlacedMessage message) {
 
 		//Check if not in the middle of breaking
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.world.isRemote ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		if (currentlyBreaking.get(player) != null && currentlyBreaking.get(player)) {
 			//Cancel breaking
 			initializeMode(player);
@@ -53,20 +53,20 @@ public class BuildModes {
 
 			//Offset in direction of sidehit if not quickreplace and not replaceable
 			//TODO 1.13 replaceable
-			boolean replaceable = player.world.getBlockState(startPos).getMaterial().isReplaceable();
+			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
 			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, message.getSideHit());
 			if (!modifierSettings.doQuickReplace() && !replaceable && !becomesDoubleSlab) {
-				startPos = startPos.offset(message.getSideHit());
+				startPos = startPos.relative(message.getSideHit());
 			}
 
 			//Get under tall grass and other replaceable blocks
 			if (modifierSettings.doQuickReplace() && replaceable) {
-				startPos = startPos.down();
+				startPos = startPos.below();
 			}
 
 			//Check if player reach does not exceed startpos
 			int maxReach = ReachHelper.getMaxReach(player);
-			if (buildMode != BuildModeEnum.NORMAL && player.getPosition().distanceSq(startPos) > maxReach * maxReach) {
+			if (buildMode != BuildModeEnum.NORMAL && player.blockPosition().distSqr(startPos) > maxReach * maxReach) {
 				EffortlessBuilding.log(player, "Placement exceeds your reach.");
 				return;
 			}
@@ -110,7 +110,7 @@ public class BuildModes {
 	public static void onBlockBroken(PlayerEntity player, BlockPos startPos, boolean breakStartPos) {
 
 		//Check if not in the middle of placing
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.world.isRemote ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		if (currentlyBreaking.get(player) != null && !currentlyBreaking.get(player)) {
 			//Cancel placing
 			initializeMode(player);
@@ -154,25 +154,25 @@ public class BuildModes {
 
 	public static void initializeMode(PlayerEntity player) {
 		//Resetting mode, so not placing or breaking
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.world.isRemote ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		currentlyBreaking.remove(player);
 
 		ModeSettingsManager.getModeSettings(player).getBuildMode().instance.initialize(player);
 	}
 
 	public static boolean isCurrentlyPlacing(PlayerEntity player) {
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.world.isRemote ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		return currentlyBreaking.get(player) != null && !currentlyBreaking.get(player);
 	}
 
 	public static boolean isCurrentlyBreaking(PlayerEntity player) {
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.world.isRemote ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		return currentlyBreaking.get(player) != null && currentlyBreaking.get(player);
 	}
 
 	//Either placing or breaking
 	public static boolean isActive(PlayerEntity player) {
-		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.world.isRemote ? currentlyBreakingClient : currentlyBreakingServer;
+		Dictionary<PlayerEntity, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
 		return currentlyBreaking.get(player) != null;
 	}
 
@@ -206,7 +206,7 @@ public class BuildModes {
 
 	//Use this instead of player.getLookVec() in any buildmodes code
 	public static Vector3d getPlayerLookVec(PlayerEntity player) {
-		Vector3d lookVec = player.getLookVec();
+		Vector3d lookVec = player.getLookAngle();
 		double x = lookVec.x;
 		double y = lookVec.y;
 		double z = lookVec.z;
@@ -234,12 +234,12 @@ public class BuildModes {
 		if (!skipRaytrace) {
 			//collision within a 1 block radius to selected is fine
 			RayTraceContext rayTraceContext = new RayTraceContext(start, lineBound, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player);
-			RayTraceResult rayTraceResult = player.world.rayTraceBlocks(rayTraceContext);
+			RayTraceResult rayTraceResult = player.level.clip(rayTraceContext);
 			intersects = rayTraceResult != null && rayTraceResult.getType() == RayTraceResult.Type.BLOCK &&
-				planeBound.subtract(rayTraceResult.getHitVec()).lengthSquared() > 4;
+				planeBound.subtract(rayTraceResult.getLocation()).lengthSqr() > 4;
 		}
 
-		return planeBound.subtract(start).dotProduct(look) > 0 &&
+		return planeBound.subtract(start).dot(look) > 0 &&
 			distToPlayerSq > 2 && distToPlayerSq < reach * reach &&
 			!intersects;
 	}

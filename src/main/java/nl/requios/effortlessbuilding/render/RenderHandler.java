@@ -47,8 +47,8 @@ public class RenderHandler {
 			return;
 
 		MatrixStack matrixStack = event.getMatrixStack();
-		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-		IRenderTypeBuffer.Impl renderTypeBuffer = IRenderTypeBuffer.getImpl(bufferBuilder);
+		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuilder();
+		IRenderTypeBuffer.Impl renderTypeBuffer = IRenderTypeBuffer.immediate(bufferBuilder);
 		if (renderTypeBuffer == null)
 			return;
 
@@ -56,9 +56,9 @@ public class RenderHandler {
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-		Vector3d projectedView = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+		Vector3d projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
-		matrixStack.push();
+		matrixStack.pushPose();
 		matrixStack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
 
 		//Mirror and radial mirror lines and areas
@@ -67,7 +67,7 @@ public class RenderHandler {
 		//Render block previews
 		BlockPreviewRenderer.render(matrixStack, renderTypeBuffer, player, modifierSettings, modeSettings);
 
-		matrixStack.pop();
+		matrixStack.popPose();
 	}
 
 	@SubscribeEvent
@@ -84,11 +84,11 @@ public class RenderHandler {
 		if (type == RenderGameOverlayEvent.ElementType.ALL /*&& !hasChiselInHand*/) {
 			final boolean wasVisible = RadialMenu.instance.isVisible();
 
-			if (ClientProxy.keyBindings[3].isKeyDown()) {
+			if (ClientProxy.keyBindings[3].isDown()) {
 				if (ReachHelper.getMaxReach(player) > 0) {
 					RadialMenu.instance.actionUsed = false;
 					RadialMenu.instance.raiseVisibility();
-				} else if (ClientProxy.keyBindings[3].isPressed()) {
+				} else if (ClientProxy.keyBindings[3].consumeClick()) {
 					EffortlessBuilding.log(player, "Build modes are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
 				}
 			} else {
@@ -101,7 +101,7 @@ public class RenderHandler {
 						ModeSettingsManager.setModeSettings(player, modeSettings);
 						PacketHandler.INSTANCE.sendToServer(new ModeSettingsMessage(modeSettings));
 
-						EffortlessBuilding.log(player, I18n.format(modeSettings.getBuildMode().name), true);
+						EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().name), true);
 					}
 
 					//Perform button action
@@ -120,27 +120,27 @@ public class RenderHandler {
 
 			if (RadialMenu.instance.isVisible()) {
 
-				int scaledWidth = mc.getMainWindow().getScaledWidth();
-				int scaledHeight = mc.getMainWindow().getScaledHeight();
+				int scaledWidth = mc.getWindow().getGuiScaledWidth();
+				int scaledHeight = mc.getWindow().getGuiScaledHeight();
 				RadialMenu.instance.configure(scaledWidth, scaledHeight);
 
 				if (!wasVisible) {
-					mc.mouseHelper.ungrabMouse();
+					mc.mouseHandler.releaseMouse();
 				}
 
-				if (mc.mouseHelper.isMouseGrabbed()) {
-					KeyBinding.unPressAllKeys();
+				if (mc.mouseHandler.isMouseGrabbed()) {
+					KeyBinding.releaseAll();
 				}
 
-				final int mouseX = ((int) mc.mouseHelper.getMouseX()) * scaledWidth / mc.getMainWindow().getFramebufferWidth();
-				final int mouseY = scaledHeight - ((int) mc.mouseHelper.getMouseY()) * scaledHeight / mc.getMainWindow().getFramebufferHeight() - 1;
+				final int mouseX = ((int) mc.mouseHandler.xpos()) * scaledWidth / mc.getWindow().getWidth();
+				final int mouseY = scaledHeight - ((int) mc.mouseHandler.ypos()) * scaledHeight / mc.getWindow().getHeight() - 1;
 
 				net.minecraftforge.client.ForgeHooksClient.drawScreen(RadialMenu.instance, event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks());
 			} else {
 				if (wasVisible &&
 					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_MODIFIER_SETTINGS &&
 					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_PLAYER_SETTINGS) {
-					mc.mouseHelper.grabMouse();
+					mc.mouseHandler.grabMouse();
 				}
 			}
 		}
@@ -149,8 +149,8 @@ public class RenderHandler {
 	public static void playRadialMenuSound() {
 		final float volume = 0.1f;
 		if (volume >= 0.0001f) {
-			SimpleSound sound = new SimpleSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, volume, 1.0f, Minecraft.getInstance().player.getPosition());
-			Minecraft.getInstance().getSoundHandler().play(sound);
+			SimpleSound sound = new SimpleSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, volume, 1.0f, Minecraft.getInstance().player.blockPosition());
+			Minecraft.getInstance().getSoundManager().play(sound);
 		}
 	}
 
@@ -159,7 +159,7 @@ public class RenderHandler {
 	}
 
 	protected static void endLines(IRenderTypeBuffer.Impl renderTypeBuffer) {
-		renderTypeBuffer.finish();
+		renderTypeBuffer.endBatch();
 	}
 
 	protected static IVertexBuilder beginPlanes(IRenderTypeBuffer.Impl renderTypeBuffer) {
@@ -167,14 +167,14 @@ public class RenderHandler {
 	}
 
 	protected static void endPlanes(IRenderTypeBuffer.Impl renderTypeBuffer) {
-		renderTypeBuffer.finish();
+		renderTypeBuffer.endBatch();
 	}
 
 	protected static void renderBlockPreview(MatrixStack matrixStack, IRenderTypeBuffer.Impl renderTypeBuffer, BlockRendererDispatcher dispatcher,
 											 BlockPos blockPos, BlockState blockState, float dissolve, BlockPos firstPos, BlockPos secondPos, boolean red) {
 		if (blockState == null) return;
 
-		matrixStack.push();
+		matrixStack.pushPose();
 		matrixStack.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
 //        matrixStack.rotate(Vector3f.YP.rotationDegrees(-90f));
 		matrixStack.translate(-0.01f, -0.01f, -0.01f);
@@ -188,8 +188,8 @@ public class RenderHandler {
 //        World world = DimensionManager.getWorld(server, DimensionType.OVERWORLD, false, true);
 
 		try {
-			IBakedModel model = dispatcher.getModelForState(blockState);
-			dispatcher.getBlockModelRenderer().renderModelBrightnessColor(matrixStack.getLast(), buffer,
+			IBakedModel model = dispatcher.getBlockModel(blockState);
+			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer,
 				blockState, model, 1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY);
 //        blockRendererDispatcher.getBlockModelRenderer().renderModel(world, blockRendererDispatcher.getModelForState(blockState),
 //                blockState, logicPos, matrixStack, renderTypeBuffer.getBuffer(renderType), true, new Random(), blockState.getPositionRandom(logicPos), i);
@@ -197,17 +197,17 @@ public class RenderHandler {
 			EffortlessBuilding.logger.warn("RenderHandler::renderBlockPreview cannot render " + blockState.getBlock().toString());
 
 			//Render outline as backup, escape out of the current renderstack
-			matrixStack.pop();
-			renderTypeBuffer.finish();
+			matrixStack.popPose();
+			renderTypeBuffer.endBatch();
 			IVertexBuilder lineBuffer = beginLines(renderTypeBuffer);
 			renderBlockOutline(matrixStack, lineBuffer, blockPos, new Vector3d(1f, 1f, 1f));
 			endLines(renderTypeBuffer);
-			buffer = renderTypeBuffer.getBuffer(Atlases.getTranslucentCullBlockType()); //any type will do, as long as we have something on the stack
-			matrixStack.push();
+			buffer = renderTypeBuffer.getBuffer(Atlases.translucentCullBlockSheet()); //any type will do, as long as we have something on the stack
+			matrixStack.pushPose();
 		}
 
-		renderTypeBuffer.finish();
-		matrixStack.pop();
+		renderTypeBuffer.endBatch();
+		matrixStack.popPose();
 	}
 
 	protected static void renderBlockOutline(MatrixStack matrixStack, IVertexBuilder buffer, BlockPos pos, Vector3d color) {
@@ -216,16 +216,16 @@ public class RenderHandler {
 
 	//Renders outline. Pos1 has to be minimal x,y,z and pos2 maximal x,y,z
 	protected static void renderBlockOutline(MatrixStack matrixStack, IVertexBuilder buffer, BlockPos pos1, BlockPos pos2, Vector3d color) {
-		AxisAlignedBB aabb = new AxisAlignedBB(pos1, pos2.add(1, 1, 1)).grow(0.0020000000949949026);
+		AxisAlignedBB aabb = new AxisAlignedBB(pos1, pos2.offset(1, 1, 1)).inflate(0.0020000000949949026);
 
-		WorldRenderer.drawBoundingBox(matrixStack, buffer, aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
+		WorldRenderer.renderLineBox(matrixStack, buffer, aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
 //        WorldRenderer.drawSelectionBoundingBox(aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
 	}
 
 	//Renders outline with given bounding box
 	protected static void renderBlockOutline(MatrixStack matrixStack, IVertexBuilder buffer, BlockPos pos, VoxelShape collisionShape, Vector3d color) {
 //        WorldRenderer.drawShape(collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
-		WorldRenderer.drawVoxelShapeParts(matrixStack, buffer, collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
+		WorldRenderer.renderVoxelShape(matrixStack, buffer, collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
 	}
 
 	//TODO 1.14

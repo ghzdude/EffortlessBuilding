@@ -94,31 +94,31 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 		buttonArrayEnabled.render(ms, mouseX, mouseY, partialTicks);
 		if (buttonArrayEnabled.isChecked()) {
 			buttonArrayEnabled.y = yy;
-			font.drawString(ms, "Array enabled", left + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Array enabled", left + offset, yy + 2, 0xFFFFFF);
 
 			yy = y + 20;
-			font.drawString(ms, "Offset", left + offset, yy + 5, 0xFFFFFF);
-			font.drawString(ms, "X", left + 50 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Offset", left + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "X", left + 50 + offset, yy + 5, 0xFFFFFF);
 			textArrayOffsetX.y = yy;
-			font.drawString(ms, "Y", left + 120 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Y", left + 120 + offset, yy + 5, 0xFFFFFF);
 			textArrayOffsetY.y = yy;
-			font.drawString(ms, "Z", left + 190 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Z", left + 190 + offset, yy + 5, 0xFFFFFF);
 			textArrayOffsetZ.y = yy;
 
 			yy = y + 50;
-			font.drawString(ms, "Count", left + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Count", left + offset, yy + 5, 0xFFFFFF);
 			textArrayCount.y = yy;
 
 			int currentReach = Math.max(-1, getArrayReach());
 			int maxReach = ReachHelper.getMaxReach(mc.player);
 			TextFormatting reachColor = isCurrentReachValid(currentReach, maxReach) ? TextFormatting.GRAY : TextFormatting.RED;
 			String reachText = "Reach: " + reachColor + currentReach + TextFormatting.GRAY + "/" + TextFormatting.GRAY + maxReach;
-			font.drawString(ms, reachText, left + 176 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, reachText, left + 176 + offset, yy + 5, 0xFFFFFF);
 
 			arrayNumberFieldList.forEach(numberField -> numberField.drawNumberField(ms, mouseX, mouseY, partialTicks));
 		} else {
 			buttonArrayEnabled.y = yy;
-			font.drawString(ms, "Array disabled", left + offset, yy + 2, 0x999999);
+			font.draw(ms, "Array disabled", left + offset, yy + 2, 0x999999);
 		}
 
 	}
@@ -146,7 +146,7 @@ public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
 		boolean insideArrayEnabledLabel = mouseX >= left && mouseX < right && relativeY >= -2 && relativeY < 12;
 
 		if (insideArrayEnabledLabel) {
-			buttonArrayEnabled.playDownSound(this.mc.getSoundHandler());
+			buttonArrayEnabled.playDownSound(this.mc.getSoundManager());
 			buttonArrayEnabled.onClick(mouseX, mouseY);
 		}
 

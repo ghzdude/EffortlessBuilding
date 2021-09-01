@@ -20,20 +20,20 @@ public abstract class BaseBuildMode implements IBuildMode {
 
 	@Override
 	public void initialize(PlayerEntity player) {
-		rightClickClientTable.put(player.getUniqueID(), 0);
-		rightClickServerTable.put(player.getUniqueID(), 0);
-		firstPosTable.put(player.getUniqueID(), BlockPos.ZERO);
-		sideHitTable.put(player.getUniqueID(), Direction.UP);
-		hitVecTable.put(player.getUniqueID(), Vector3d.ZERO);
+		rightClickClientTable.put(player.getUUID(), 0);
+		rightClickServerTable.put(player.getUUID(), 0);
+		firstPosTable.put(player.getUUID(), BlockPos.ZERO);
+		sideHitTable.put(player.getUUID(), Direction.UP);
+		hitVecTable.put(player.getUUID(), Vector3d.ZERO);
 	}
 
 	@Override
 	public Direction getSideHit(PlayerEntity player) {
-		return sideHitTable.get(player.getUniqueID());
+		return sideHitTable.get(player.getUUID());
 	}
 
 	@Override
 	public Vector3d getHitVec(PlayerEntity player) {
-		return hitVecTable.get(player.getUniqueID());
+		return hitVecTable.get(player.getUUID());
 	}
 }

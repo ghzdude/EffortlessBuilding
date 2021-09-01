@@ -29,7 +29,7 @@ public class BuildModifiers {
 
 	//Called from BuildModes
 	public static void onBlockPlaced(PlayerEntity player, List<BlockPos> startCoordinates, Direction sideHit, Vector3d hitVec, boolean placeStartPos) {
-		World world = player.world;
+		World world = player.level;
 		ItemRandomizerBag.renewRandomness();
 
 		//Format hitvec to 0.x
@@ -50,7 +50,7 @@ public class BuildModifiers {
 			previousBlockStates.add(world.getBlockState(coordinate));
 		}
 
-		if (world.isRemote) {
+		if (world.isClientSide) {
 
 			BlockPreviewRenderer.onBlocksPlaced();
 
@@ -64,7 +64,7 @@ public class BuildModifiers {
 				BlockState blockState = blockStates.get(i);
 				ItemStack itemStack = itemStacks.get(i);
 
-				if (world.isBlockPresent(blockPos)) {
+				if (world.isLoaded(blockPos)) {
 					//check itemstack empty
 					if (itemStack.isEmpty()) {
 						//try to find new stack, otherwise continue
@@ -83,11 +83,11 @@ public class BuildModifiers {
 
 		//Set first previousBlockState to empty if in NORMAL mode, to make undo/redo work
 		//(Block is placed by the time it gets here, and unplaced after this)
-		if (!placeStartPos) previousBlockStates.set(0, Blocks.AIR.getDefaultState());
+		if (!placeStartPos) previousBlockStates.set(0, Blocks.AIR.defaultBlockState());
 
 		//If all new blockstates are air then no use in adding it, no block was actually placed
 		//Can happen when e.g. placing one block in yourself
-		if (Collections.frequency(newBlockStates, Blocks.AIR.getDefaultState()) != newBlockStates.size()) {
+		if (Collections.frequency(newBlockStates, Blocks.AIR.defaultBlockState()) != newBlockStates.size()) {
 			//add to undo stack
 			BlockPos firstPos = startCoordinates.get(0);
 			BlockPos secondPos = startCoordinates.get(startCoordinates.size() - 1);
@@ -96,7 +96,7 @@ public class BuildModifiers {
 	}
 
 	public static void onBlockBroken(PlayerEntity player, List<BlockPos> startCoordinates, boolean breakStartPos) {
-		World world = player.world;
+		World world = player.level;
 
 		List<BlockPos> coordinates = findCoordinates(player, startCoordinates);
 
@@ -109,25 +109,25 @@ public class BuildModifiers {
 			previousBlockStates.add(world.getBlockState(coordinate));
 		}
 
-		if (world.isRemote) {
+		if (world.isClientSide) {
 			BlockPreviewRenderer.onBlocksBroken();
 
 			//list of air blockstates
 			for (int i = 0; i < coordinates.size(); i++) {
-				newBlockStates.add(Blocks.AIR.getDefaultState());
+				newBlockStates.add(Blocks.AIR.defaultBlockState());
 			}
 
 		} else {
 
 			//If the player is going to instabreak grass or a plant, only break other instabreaking things
 			boolean onlyInstaBreaking = !player.isCreative() &&
-				world.getBlockState(startCoordinates.get(0)).getBlockHardness(world, startCoordinates.get(0)) == 0f;
+				world.getBlockState(startCoordinates.get(0)).getDestroySpeed(world, startCoordinates.get(0)) == 0f;
 
 			//break all those blocks
 			for (int i = breakStartPos ? 0 : 1; i < coordinates.size(); i++) {
 				BlockPos coordinate = coordinates.get(i);
-				if (world.isBlockPresent(coordinate) && !world.isAirBlock(coordinate)) {
-					if (!onlyInstaBreaking || world.getBlockState(coordinate).getBlockHardness(world, coordinate) == 0f) {
+				if (world.isLoaded(coordinate) && !world.isEmptyBlock(coordinate)) {
+					if (!onlyInstaBreaking || world.getBlockState(coordinate).getDestroySpeed(world, coordinate) == 0f) {
 						SurvivalHelper.breakBlock(world, player, coordinate, false);
 					}
 				}
@@ -141,7 +141,7 @@ public class BuildModifiers {
 
 		//Set first newBlockState to empty if in NORMAL mode, to make undo/redo work
 		//(Block isn't broken yet by the time it gets here, and broken after this)
-		if (!breakStartPos) newBlockStates.set(0, Blocks.AIR.getDefaultState());
+		if (!breakStartPos) newBlockStates.set(0, Blocks.AIR.defaultBlockState());
 
 		//add to undo stack
 		BlockPos firstPos = startCoordinates.get(0);
@@ -181,9 +181,9 @@ public class BuildModifiers {
 		itemStacks.clear();
 
 		//Get itemstack
-		ItemStack itemStack = player.getHeldItem(Hand.MAIN_HAND);
+		ItemStack itemStack = player.getItemInHand(Hand.MAIN_HAND);
 		if (itemStack.isEmpty() || !CompatHelper.isItemBlockProxy(itemStack)) {
-			itemStack = player.getHeldItem(Hand.OFF_HAND);
+			itemStack = player.getItemInHand(Hand.OFF_HAND);
 		}
 		if (itemStack.isEmpty() || !CompatHelper.isItemBlockProxy(itemStack)) {
 			return blockStates;
@@ -240,7 +240,7 @@ public class BuildModifiers {
 	}
 
 	public static BlockState getBlockStateFromItem(ItemStack itemStack, PlayerEntity player, BlockPos blockPos, Direction facing, Vector3d hitVec, Hand hand) {
-		return Block.getBlockFromItem(itemStack.getItem()).getStateForPlacement(new BlockItemUseContext(new ItemUseContext(player, hand, new BlockRayTraceResult(hitVec, facing, blockPos, false))));
+		return Block.byItem(itemStack.getItem()).getStateForPlacement(new BlockItemUseContext(new ItemUseContext(player, hand, new BlockRayTraceResult(hitVec, facing, blockPos, false))));
 	}
 
 	//Returns true if equal (or both null)

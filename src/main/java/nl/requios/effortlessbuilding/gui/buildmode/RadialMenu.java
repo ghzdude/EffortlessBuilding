@@ -30,6 +30,10 @@ import java.util.concurrent.TimeUnit;
 import static nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
 import static nl.requios.effortlessbuilding.buildmode.ModeOptions.*;
 
+import nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
+import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
+import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
+
 /**
  * From Chisels and Bits by AlgorithmX2
  * https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java
@@ -75,7 +79,7 @@ public class RadialMenu extends Screen {
 
 	public void configure(final int scaledWidth, final int scaledHeight) {
 		Minecraft mc = Minecraft.getInstance();
-		font = mc.fontRenderer;
+		font = mc.font;
 		width = scaledWidth;
 		height = scaledHeight;
 	}
@@ -100,7 +104,7 @@ public class RadialMenu extends Screen {
 		RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
 		RenderSystem.shadeModel(GL11.GL_SMOOTH);
 		final Tessellator tessellator = Tessellator.getInstance();
-		final BufferBuilder buffer = tessellator.getBuffer();
+		final BufferBuilder buffer = tessellator.getBuilder();
 
 		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 
@@ -110,8 +114,8 @@ public class RadialMenu extends Screen {
 		//Fix for high def (retina) displays: use custom mouse coordinates
 		//Borrowed from GameRenderer::updateCameraAndRender
 		Minecraft mc = Minecraft.getInstance();
-		int mouseXX = (int) (mc.mouseHelper.getMouseX() * (double) mc.getMainWindow().getScaledWidth() / (double) mc.getMainWindow().getWidth());
-		int mouseYY = (int) (mc.mouseHelper.getMouseY() * (double) mc.getMainWindow().getScaledHeight() / (double) mc.getMainWindow().getHeight());
+		int mouseXX = (int) (mc.mouseHandler.xpos() * (double) mc.getWindow().getGuiScaledWidth() / (double) mc.getWindow().getScreenWidth());
+		int mouseYY = (int) (mc.mouseHandler.ypos() * (double) mc.getWindow().getGuiScaledHeight() / (double) mc.getWindow().getScreenHeight());
 
 		final double mouseXCenter = mouseXX - middleX;
 		final double mouseYCenter = mouseYY - middleY;
@@ -210,10 +214,10 @@ public class RadialMenu extends Screen {
 					switchTo = menuRegion.mode;
 				}
 
-				buffer.pos(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(r, g, b, a).endVertex();
-				buffer.pos(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(r, g, b, a).endVertex();
-				buffer.pos(middleX + x2m2, middleY + y2m2, getBlitOffset()).color(r, g, b, a).endVertex();
-				buffer.pos(middleX + x1m2, middleY + y1m2, getBlitOffset()).color(r, g, b, a).endVertex();
+				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(r, g, b, a).endVertex();
+				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(r, g, b, a).endVertex();
+				buffer.vertex(middleX + x2m2, middleY + y2m2, getBlitOffset()).color(r, g, b, a).endVertex();
+				buffer.vertex(middleX + x1m2, middleY + y1m2, getBlitOffset()).color(r, g, b, a).endVertex();
 
 				currentMode++;
 			}
@@ -249,13 +253,13 @@ public class RadialMenu extends Screen {
 				doAction = btn.action;
 			}
 
-			buffer.pos(middleX + btn.x1, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
-			buffer.pos(middleX + btn.x1, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
-			buffer.pos(middleX + btn.x2, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
-			buffer.pos(middleX + btn.x2, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
+			buffer.vertex(middleX + btn.x1, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
+			buffer.vertex(middleX + btn.x1, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
+			buffer.vertex(middleX + btn.x2, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
+			buffer.vertex(middleX + btn.x2, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
 		}
 
-		tessellator.draw();
+		tessellator.end();
 
 		RenderSystem.shadeModel(GL11.GL_FLAT);
 
@@ -264,7 +268,7 @@ public class RadialMenu extends Screen {
 		RenderSystem.color3f(1f, 1f, 1f);
 		RenderSystem.disableBlend();
 		RenderSystem.enableAlphaTest();
-		mc.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+		mc.getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
 
 		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
 
@@ -289,10 +293,10 @@ public class RadialMenu extends Screen {
 			final double v1 = 0;
 			final double v2 = 16;
 
-			buffer.pos(middleX + x1, middleY + y1, getBlitOffset()).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
-			buffer.pos(middleX + x1, middleY + y2, getBlitOffset()).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
-			buffer.pos(middleX + x2, middleY + y2, getBlitOffset()).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
-			buffer.pos(middleX + x2, middleY + y1, getBlitOffset()).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + x1, middleY + y1, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v1)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + x1, middleY + y2, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v2)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + x2, middleY + y2, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v2)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + x2, middleY + y1, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v1)).color(f, f, f, a).endVertex();
 		}
 
 		//Draw action icons
@@ -315,13 +319,13 @@ public class RadialMenu extends Screen {
 			final double btny1 = btnmiddleY - 8;
 			final double btny2 = btnmiddleY + 8;
 
-			buffer.pos(middleX + btnx1, middleY + btny1, getBlitOffset()).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
-			buffer.pos(middleX + btnx1, middleY + btny2, getBlitOffset()).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
-			buffer.pos(middleX + btnx2, middleY + btny2, getBlitOffset()).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
-			buffer.pos(middleX + btnx2, middleY + btny1, getBlitOffset()).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + btnx1, middleY + btny1, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v1)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + btnx1, middleY + btny2, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v2)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + btnx2, middleY + btny2, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v2)).color(f, f, f, a).endVertex();
+			buffer.vertex(middleX + btnx2, middleY + btny1, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v1)).color(f, f, f, a).endVertex();
 		}
 
-		tessellator.draw();
+		tessellator.end();
 
 		//Draw strings
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
@@ -329,11 +333,11 @@ public class RadialMenu extends Screen {
 		//Draw option strings
 		for (int i = 0; i < currentBuildMode.options.length; i++) {
 			OptionEnum option = options[i];
-			font.drawStringWithShadow(ms, I18n.format(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, 0xeeeeeeff);
+			font.drawShadow(ms, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, 0xeeeeeeff);
 		}
 
 		String credits = "Effortless Building";
-		font.drawStringWithShadow(ms, credits, width - font.getStringWidth(credits) - 4, height - 10, 0x88888888);
+		font.drawShadow(ms, credits, width - font.width(credits) - 4, height - 10, 0x88888888);
 
 		//Draw buildmode text
 		for (final MenuRegion menuRegion : modes) {
@@ -343,16 +347,16 @@ public class RadialMenu extends Screen {
 				final double y = (menuRegion.y1 + menuRegion.y2) * 0.5;
 
 				int fixed_x = (int) (x * textDistance);
-				final int fixed_y = (int) (y * textDistance) - font.FONT_HEIGHT / 2;
-				final String text = I18n.format(menuRegion.mode.name);
+				final int fixed_y = (int) (y * textDistance) - font.lineHeight / 2;
+				final String text = I18n.get(menuRegion.mode.name);
 
 				if (x <= -0.2) {
-					fixed_x -= font.getStringWidth(text);
+					fixed_x -= font.width(text);
 				} else if (-0.2 <= x && x <= 0.2) {
-					fixed_x -= font.getStringWidth(text) / 2;
+					fixed_x -= font.width(text) / 2;
 				}
 
-				font.drawStringWithShadow(ms, text, (int) middleX + fixed_x, (int) middleY + fixed_y, 0xffffffff);
+				font.drawShadow(ms, text, (int) middleX + fixed_x, (int) middleY + fixed_y, 0xffffffff);
 			}
 		}
 
@@ -366,22 +370,22 @@ public class RadialMenu extends Screen {
 
 				//Add keybind in brackets
 				if (button.action == ActionEnum.UNDO) {
-					keybind = I18n.format(ClientProxy.keyBindings[4].getTranslationKey());
+					keybind = I18n.get(ClientProxy.keyBindings[4].saveString());
 				}
 				if (button.action == ActionEnum.REDO) {
-					keybind = I18n.format(ClientProxy.keyBindings[5].getTranslationKey());
+					keybind = I18n.get(ClientProxy.keyBindings[5].saveString());
 				}
 				if (button.action == ActionEnum.REPLACE) {
-					keybind = I18n.format(ClientProxy.keyBindings[1].getTranslationKey());
+					keybind = I18n.get(ClientProxy.keyBindings[1].saveString());
 				}
 				if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) {
-					keybind = I18n.format(ClientProxy.keyBindings[0].getTranslationKey());
+					keybind = I18n.get(ClientProxy.keyBindings[0].saveString());
 				}
 				if (currentBuildMode.options.length > 0) {
 					//Add (ctrl) to first two actions of first option
 					if (button.action == currentBuildMode.options[0].actions[0]
 						|| button.action == currentBuildMode.options[0].actions[1]) {
-						keybind = I18n.format(ClientProxy.keyBindings[6].getTranslationKey());
+						keybind = I18n.get(ClientProxy.keyBindings[6].saveString());
 						if (keybind.equals("Left Control")) keybind = "Ctrl";
 					}
 				}
@@ -390,28 +394,28 @@ public class RadialMenu extends Screen {
 
 				if (button.textSide == Direction.WEST) {
 
-					font.drawString(ms, text, (int) (middleX + button.x1 - 8) - font.getStringWidth(text),
+					font.draw(ms, text, (int) (middleX + button.x1 - 8) - font.width(text),
 						(int) (middleY + button.y1 + 6), 0xffffffff);
 
 				} else if (button.textSide == Direction.EAST) {
 
-					font.drawString(ms, text, (int) (middleX + button.x2 + 8),
+					font.draw(ms, text, (int) (middleX + button.x2 + 8),
 						(int) (middleY + button.y1 + 6), 0xffffffff);
 
 				} else if (button.textSide == Direction.UP || button.textSide == Direction.NORTH) {
 
-					font.drawString(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.getStringWidth(keybindFormatted) * 0.5),
+					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
 						(int) (middleY + button.y1 - 26), 0xffffffff);
 
-					font.drawString(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.getStringWidth(text) * 0.5),
+					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
 						(int) (middleY + button.y1 - 14), 0xffffffff);
 
 				} else if (button.textSide == Direction.DOWN || button.textSide == Direction.SOUTH) {
 
-					font.drawString(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.getStringWidth(text) * 0.5),
+					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
 						(int) (middleY + button.y1 + 26), 0xffffffff);
 
-					font.drawString(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.getStringWidth(keybindFormatted) * 0.5),
+					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
 						(int) (middleY + button.y1 + 38), 0xffffffff);
 
 				}
@@ -441,14 +445,14 @@ public class RadialMenu extends Screen {
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		EffortlessBuilding.log("mouse clicked");
 
-		KeyBinding.updateKeyBindState();
-		KeyBinding.setKeyBindState(ClientProxy.keyBindings[3].getKey(), true);
+		KeyBinding.setAll();
+		KeyBinding.set(ClientProxy.keyBindings[3].getKey(), true);
 
 		if (mouseButton == 0) {
-			this.minecraft.displayGuiScreen(null);
+			this.minecraft.setScreen(null);
 
-			if (this.minecraft.currentScreen == null) {
-				this.minecraft.setGameFocused(true);
+			if (this.minecraft.screen == null) {
+				this.minecraft.setWindowActive(true);
 			}
 		}
 		return super.mouseClicked(mouseX, mouseY, mouseButton);
@@ -465,7 +469,7 @@ public class RadialMenu extends Screen {
 
 		public MenuButton(final String name, final ActionEnum action, final double x, final double y,
 						  final Direction textSide) {
-			this.name = I18n.format(name);
+			this.name = I18n.get(name);
 			this.action = action;
 			x1 = x - 10;
 			x2 = x + 10;

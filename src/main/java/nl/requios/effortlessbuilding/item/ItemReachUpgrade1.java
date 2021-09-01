@@ -25,16 +25,16 @@ import java.util.List;
 public class ItemReachUpgrade1 extends Item {
 
 	public ItemReachUpgrade1() {
-		super(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(1));
+		super(new Item.Properties().tab(ItemGroup.TAB_TOOLS).stacksTo(1));
 		this.setRegistryName(EffortlessBuilding.MODID, "reach_upgrade1");
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
+	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
 		if (player.isCreative()) {
-			if (world.isRemote) EffortlessBuilding.log(player, "Reach upgrades are not necessary in creative.");
-			if (world.isRemote) EffortlessBuilding.log(player, "Still want increased reach? Use the config.");
-			return new ActionResult<>(ActionResultType.PASS, player.getHeldItem(hand));
+			if (world.isClientSide) EffortlessBuilding.log(player, "Reach upgrades are not necessary in creative.");
+			if (world.isClientSide) EffortlessBuilding.log(player, "Still want increased reach? Use the config.");
+			return new ActionResult<>(ActionResultType.PASS, player.getItemInHand(hand));
 		}
 
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
@@ -42,29 +42,29 @@ public class ItemReachUpgrade1 extends Item {
 		if (currentLevel == 0) {
 			modifierSettings.setReachUpgrade(1);
 
-			if (world.isRemote) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
-			player.setHeldItem(hand, ItemStack.EMPTY);
+			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
+			player.setItemInHand(hand, ItemStack.EMPTY);
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
 			player.playSound(soundEvent, 1f, 1f);
 		} else if (currentLevel > 0) {
-			if (world.isRemote)
+			if (world.isClientSide)
 				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + ReachHelper
 					.getMaxReach(player) + ".");
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
 		}
-		return new ActionResult<>(ActionResultType.PASS, player.getHeldItem(hand));
+		return new ActionResult<>(ActionResultType.PASS, player.getItemInHand(hand));
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
 		tooltip.add(new StringTextComponent(TextFormatting.GRAY + "Consume to increase reach to " + TextFormatting.BLUE + BuildConfig.reach.maxReachLevel1.get()));
 	}
 
 	@Override
-	public String getTranslationKey() {
+	public String getDescriptionId() {
 		return this.getRegistryName().toString();
 	}
 }

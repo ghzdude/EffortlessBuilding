@@ -31,9 +31,9 @@ public class BlockBrokenMessage {
 
 	public BlockBrokenMessage(BlockRayTraceResult result) {
 		this.blockHit = result.getType() == RayTraceResult.Type.BLOCK;
-		this.blockPos = result.getPos();
-		this.sideHit = result.getFace();
-		this.hitVec = result.getHitVec();
+		this.blockPos = result.getBlockPos();
+		this.sideHit = result.getDirection();
+		this.hitVec = result.getLocation();
 	}
 
 	public BlockBrokenMessage(boolean blockHit, BlockPos blockPos, Direction sideHit, Vector3d hitVec) {
@@ -48,7 +48,7 @@ public class BlockBrokenMessage {
 		buf.writeInt(message.blockPos.getX());
 		buf.writeInt(message.blockPos.getY());
 		buf.writeInt(message.blockPos.getZ());
-		buf.writeInt(message.sideHit.getIndex());
+		buf.writeInt(message.sideHit.get3DDataValue());
 		buf.writeDouble(message.hitVec.x);
 		buf.writeDouble(message.hitVec.y);
 		buf.writeDouble(message.hitVec.z);
@@ -57,7 +57,7 @@ public class BlockBrokenMessage {
 	public static BlockBrokenMessage decode(PacketBuffer buf) {
 		boolean blockHit = buf.readBoolean();
 		BlockPos blockPos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-		Direction sideHit = Direction.byIndex(buf.readInt());
+		Direction sideHit = Direction.from3DDataValue(buf.readInt());
 		Vector3d hitVec = new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
 		return new BlockBrokenMessage(blockHit, blockPos, sideHit, hitVec);
 	}

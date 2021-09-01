@@ -57,17 +57,17 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		textMirrorPosX = new GuiNumberField(font, buttonList, left + 58, y, 62, 18);
 		textMirrorPosX.setNumber(0);
 		textMirrorPosX.setTooltip(
-			Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").mergeStyle(TextFormatting.GRAY)));
+			Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosX);
 
 		textMirrorPosY = new GuiNumberField(font, buttonList, left + 138, y, 62, 18);
 		textMirrorPosY.setNumber(64);
-		textMirrorPosY.setTooltip(Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").mergeStyle(TextFormatting.GRAY)));
+		textMirrorPosY.setTooltip(Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosY);
 
 		textMirrorPosZ = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
 		textMirrorPosZ.setNumber(0);
-		textMirrorPosZ.setTooltip(Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").mergeStyle(TextFormatting.GRAY)));
+		textMirrorPosZ.setTooltip(Arrays.asList(new StringTextComponent("The position of the mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosZ);
 
 		y = top + 50;
@@ -85,13 +85,13 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		textMirrorRadius.setNumber(50);
 		//TODO change to diameter (remove /2)
 		textMirrorRadius.setTooltip(Arrays.asList(new StringTextComponent("How far the mirror reaches in any direction."),
-			new StringTextComponent("Max: ").mergeStyle(TextFormatting.GRAY).append(new StringTextComponent(String.valueOf(ReachHelper.getMaxReach(mc.player) / 2)).mergeStyle(TextFormatting.GOLD)),
-			new StringTextComponent("Upgradeable in survival with reach upgrades.").mergeStyle(TextFormatting.GRAY)));
+			new StringTextComponent("Max: ").withStyle(TextFormatting.GRAY).append(new StringTextComponent(String.valueOf(ReachHelper.getMaxReach(mc.player) / 2)).withStyle(TextFormatting.GOLD)),
+			new StringTextComponent("Upgradeable in survival with reach upgrades.").withStyle(TextFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorRadius);
 
 		y = top + 72;
 		buttonCurrentPosition = new GuiIconButton(left + 5, y, 0, 0, BUILDING_ICONS, button -> {
-			Vector3d pos = new Vector3d(Math.floor(mc.player.getPosX()) + 0.5, Math.floor(mc.player.getPosY()) + 0.5, Math.floor(mc.player.getPosZ()) + 0.5);
+			Vector3d pos = new Vector3d(Math.floor(mc.player.getX()) + 0.5, Math.floor(mc.player.getY()) + 0.5, Math.floor(mc.player.getZ()) + 0.5);
 			textMirrorPosX.setNumber(pos.x);
 			textMirrorPosY.setNumber(pos.y);
 			textMirrorPosZ.setNumber(pos.z);
@@ -182,23 +182,23 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		buttonMirrorEnabled.render(ms, mouseX, mouseY, partialTicks);
 		if (buttonMirrorEnabled.isChecked()) {
 			buttonMirrorEnabled.y = yy;
-			font.drawString(ms, "Mirror enabled", left + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Mirror enabled", left + offset, yy + 2, 0xFFFFFF);
 
 			yy = y + 18;
-			font.drawString(ms, "Position", left + offset, yy + 5, 0xFFFFFF);
-			font.drawString(ms, "X", left + 40 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Position", left + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "X", left + 40 + offset, yy + 5, 0xFFFFFF);
 			textMirrorPosX.y = yy;
-			font.drawString(ms, "Y", left + 120 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Y", left + 120 + offset, yy + 5, 0xFFFFFF);
 			textMirrorPosY.y = yy;
-			font.drawString(ms, "Z", left + 200 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Z", left + 200 + offset, yy + 5, 0xFFFFFF);
 			textMirrorPosZ.y = yy;
 
 			yy = y + 50;
-			font.drawString(ms, "Direction", left + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Direction", left + offset, yy + 2, 0xFFFFFF);
 			buttonMirrorX.y = yy;
 			buttonMirrorY.y = yy;
 			buttonMirrorZ.y = yy;
-			font.drawString(ms, "Radius", left + 176 + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Radius", left + 176 + offset, yy + 2, 0xFFFFFF);
 			textMirrorRadius.y = yy - 3;
 
 			yy = y + 72;
@@ -212,7 +212,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 			mirrorNumberFieldList.forEach(numberField -> numberField.drawNumberField(ms, mouseX, mouseY, partialTicks));
 		} else {
 			buttonMirrorEnabled.y = yy;
-			font.drawString(ms, "Mirror disabled", left + offset, yy + 2, 0x999999);
+			font.draw(ms, "Mirror disabled", left + offset, yy + 2, 0x999999);
 		}
 
 	}
@@ -241,7 +241,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		boolean insideMirrorEnabledLabel = mouseX >= left && mouseX < right && relativeY >= -2 && relativeY < 12;
 
 		if (insideMirrorEnabledLabel) {
-			buttonMirrorEnabled.playDownSound(this.mc.getSoundHandler());
+			buttonMirrorEnabled.playDownSound(this.mc.getSoundManager());
 			buttonMirrorEnabled.onClick(mouseX, mouseY);
 		}
 

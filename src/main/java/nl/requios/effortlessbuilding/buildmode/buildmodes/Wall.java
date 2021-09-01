@@ -15,7 +15,7 @@ public class Wall extends TwoClicksBuildMode {
 
 	public static BlockPos findWall(PlayerEntity player, BlockPos firstPos, boolean skipRaytrace) {
 		Vector3d look = BuildModes.getPlayerLookVec(player);
-		Vector3d start = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight(), player.getPosZ());
+		Vector3d start = new Vector3d(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
 
 		List<Criteria> criteriaList = new ArrayList<>(3);
 
@@ -120,8 +120,8 @@ public class Wall extends TwoClicksBuildMode {
 
 		Criteria(Vector3d planeBound, BlockPos firstPos, Vector3d start, Vector3d look) {
 			this.planeBound = planeBound;
-			this.distToPlayerSq = this.planeBound.subtract(start).lengthSquared();
-			Vector3d wall = this.planeBound.subtract(Vector3d.copy(firstPos));
+			this.distToPlayerSq = this.planeBound.subtract(start).lengthSqr();
+			Vector3d wall = this.planeBound.subtract(Vector3d.atLowerCornerOf(firstPos));
 			this.angle = wall.x * look.x + wall.z * look.z; //dot product ignoring y (looking up/down should not affect this angle)
 		}
 

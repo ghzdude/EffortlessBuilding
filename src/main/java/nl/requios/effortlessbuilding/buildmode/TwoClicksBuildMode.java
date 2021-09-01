@@ -17,27 +17,27 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	public List<BlockPos> onRightClick(PlayerEntity player, BlockPos blockPos, Direction sideHit, Vector3d hitVec, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
 
-		Dictionary<UUID, Integer> rightClickTable = player.world.isRemote ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUniqueID());
+		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
+		int rightClickNr = rightClickTable.get(player.getUUID());
 		rightClickNr++;
-		rightClickTable.put(player.getUniqueID(), rightClickNr);
+		rightClickTable.put(player.getUUID(), rightClickNr);
 
 		if (rightClickNr == 1) {
 			//If clicking in air, reset and try again
 			if (blockPos == null) {
-				rightClickTable.put(player.getUniqueID(), 0);
+				rightClickTable.put(player.getUUID(), 0);
 				return list;
 			}
 
 			//First click, remember starting position
-			firstPosTable.put(player.getUniqueID(), blockPos);
-			sideHitTable.put(player.getUniqueID(), sideHit);
-			hitVecTable.put(player.getUniqueID(), hitVec);
+			firstPosTable.put(player.getUUID(), blockPos);
+			sideHitTable.put(player.getUUID(), sideHit);
+			hitVecTable.put(player.getUUID(), hitVec);
 			//Keep list empty, dont place any blocks yet
 		} else {
 			//Second click, place blocks
 			list = findCoordinates(player, blockPos, skipRaytrace);
-			rightClickTable.put(player.getUniqueID(), 0);
+			rightClickTable.put(player.getUUID(), 0);
 		}
 
 		return list;
@@ -46,9 +46,9 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	@Override
 	public List<BlockPos> findCoordinates(PlayerEntity player, BlockPos blockPos, boolean skipRaytrace) {
 		List<BlockPos> list = new ArrayList<>();
-		Dictionary<UUID, Integer> rightClickTable = player.world.isRemote ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUniqueID());
-		BlockPos firstPos = firstPosTable.get(player.getUniqueID());
+		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
+		int rightClickNr = rightClickTable.get(player.getUUID());
+		BlockPos firstPos = firstPosTable.get(player.getUUID());
 
 		if (rightClickNr == 0) {
 			if (blockPos != null)

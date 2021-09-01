@@ -57,36 +57,36 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		textRadialMirrorPosX = new GuiNumberField(font, buttonList, left + 58, y, 62, 18);
 		textRadialMirrorPosX.setNumber(0);
 		textRadialMirrorPosX.setTooltip(
-			Arrays.asList(new StringTextComponent("The position of the radial mirror."), new StringTextComponent("For odd numbered builds add 0.5.").mergeStyle(TextFormatting.GRAY)));
+			Arrays.asList(new StringTextComponent("The position of the radial mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorPosX);
 
 		textRadialMirrorPosY = new GuiNumberField(font, buttonList, left + 138, y, 62, 18);
 		textRadialMirrorPosY.setNumber(64);
-		textRadialMirrorPosY.setTooltip(Arrays.asList(new StringTextComponent("The position of the radial mirror."), new StringTextComponent("For odd numbered builds add 0.5.").mergeStyle(TextFormatting.GRAY)));
+		textRadialMirrorPosY.setTooltip(Arrays.asList(new StringTextComponent("The position of the radial mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorPosY);
 
 		textRadialMirrorPosZ = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
 		textRadialMirrorPosZ.setNumber(0);
-		textRadialMirrorPosZ.setTooltip(Arrays.asList(new StringTextComponent("The position of the radial mirror."), new StringTextComponent("For odd numbered builds add 0.5.").mergeStyle(TextFormatting.GRAY)));
+		textRadialMirrorPosZ.setTooltip(Arrays.asList(new StringTextComponent("The position of the radial mirror."), new StringTextComponent("For odd numbered builds add 0.5.").withStyle(TextFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorPosZ);
 
 		y = top + 47;
 		textRadialMirrorSlices = new GuiNumberField(font, buttonList, left + 55, y, 50, 18);
 		textRadialMirrorSlices.setNumber(4);
-		textRadialMirrorSlices.setTooltip(Arrays.asList(new StringTextComponent("The number of repeating slices."), new StringTextComponent("Minimally 2.").mergeStyle(TextFormatting.GRAY)));
+		textRadialMirrorSlices.setTooltip(Arrays.asList(new StringTextComponent("The number of repeating slices."), new StringTextComponent("Minimally 2.").withStyle(TextFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorSlices);
 
 		textRadialMirrorRadius = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
 		textRadialMirrorRadius.setNumber(50);
 		//TODO change to diameter (remove /2)
 		textRadialMirrorRadius.setTooltip(Arrays.asList(new StringTextComponent("How far the radial mirror reaches from its center position."),
-			new StringTextComponent("Max: ").mergeStyle(TextFormatting.GRAY).append(new StringTextComponent(String.valueOf(ReachHelper.getMaxReach(mc.player) / 2)).mergeStyle(TextFormatting.GOLD)),
-			new StringTextComponent("Upgradeable in survival with reach upgrades.").mergeStyle(TextFormatting.GRAY)));
+			new StringTextComponent("Max: ").withStyle(TextFormatting.GRAY).append(new StringTextComponent(String.valueOf(ReachHelper.getMaxReach(mc.player) / 2)).withStyle(TextFormatting.GOLD)),
+			new StringTextComponent("Upgradeable in survival with reach upgrades.").withStyle(TextFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorRadius);
 
 		y = top + 72;
 		buttonCurrentPosition = new GuiIconButton(left + 5, y, 0, 0, BUILDING_ICONS, button -> {
-			Vector3d pos = new Vector3d(Math.floor(mc.player.getPosX()) + 0.5, Math.floor(mc.player.getPosY()) + 0.5, Math.floor(mc.player.getPosZ()) + 0.5);
+			Vector3d pos = new Vector3d(Math.floor(mc.player.getX()) + 0.5, Math.floor(mc.player.getY()) + 0.5, Math.floor(mc.player.getZ()) + 0.5);
 			textRadialMirrorPosX.setNumber(pos.x);
 			textRadialMirrorPosY.setNumber(pos.y);
 			textRadialMirrorPosZ.setNumber(pos.z);
@@ -179,21 +179,21 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		buttonRadialMirrorEnabled.render(ms, mouseX, mouseY, partialTicks);
 		if (buttonRadialMirrorEnabled.isChecked()) {
 			buttonRadialMirrorEnabled.y = yy;
-			font.drawString(ms, "Radial mirror enabled", left + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Radial mirror enabled", left + offset, yy + 2, 0xFFFFFF);
 
 			yy = y + 18;
-			font.drawString(ms, "Position", left + offset, yy + 5, 0xFFFFFF);
-			font.drawString(ms, "X", left + 40 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Position", left + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "X", left + 40 + offset, yy + 5, 0xFFFFFF);
 			textRadialMirrorPosX.y = yy;
-			font.drawString(ms, "Y", left + 120 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Y", left + 120 + offset, yy + 5, 0xFFFFFF);
 			textRadialMirrorPosY.y = yy;
-			font.drawString(ms, "Z", left + 200 + offset, yy + 5, 0xFFFFFF);
+			font.draw(ms, "Z", left + 200 + offset, yy + 5, 0xFFFFFF);
 			textRadialMirrorPosZ.y = yy;
 
 			yy = y + 50;
-			font.drawString(ms, "Slices", left + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Slices", left + offset, yy + 2, 0xFFFFFF);
 			textRadialMirrorSlices.y = yy - 3;
-			font.drawString(ms, "Radius", left + 176 + offset, yy + 2, 0xFFFFFF);
+			font.draw(ms, "Radius", left + 176 + offset, yy + 2, 0xFFFFFF);
 			textRadialMirrorRadius.y = yy - 3;
 
 			yy = y + 72;
@@ -211,7 +211,7 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 				.forEach(numberField -> numberField.drawNumberField(ms, mouseX, mouseY, partialTicks));
 		} else {
 			buttonRadialMirrorEnabled.y = yy;
-			font.drawString(ms, "Radial mirror disabled", left + offset, yy + 2, 0x999999);
+			font.draw(ms, "Radial mirror disabled", left + offset, yy + 2, 0x999999);
 		}
 
 	}
@@ -240,7 +240,7 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		boolean insideRadialMirrorEnabledLabel = mouseX >= left && mouseX < right && relativeY >= -2 && relativeY < 12;
 
 		if (insideRadialMirrorEnabledLabel) {
-			buttonRadialMirrorEnabled.playDownSound(this.mc.getSoundHandler());
+			buttonRadialMirrorEnabled.playDownSound(this.mc.getSoundManager());
 			buttonRadialMirrorEnabled.onClick(mouseX, mouseY);
 		}
 

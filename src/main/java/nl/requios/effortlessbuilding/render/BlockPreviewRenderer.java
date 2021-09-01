@@ -58,7 +58,7 @@ public class BlockPreviewRenderer {
 				PlacedData placed = placedDataList.get(i);
 				if (placed.coordinates != null && !placed.coordinates.isEmpty()) {
 
-					double totalTime = MathHelper.clampedLerp(30, 60, placed.firstPos.distanceSq(placed.secondPos) / 100.0) * BuildConfig.visuals.dissolveTimeMultiplier.get();
+					double totalTime = MathHelper.clampedLerp(30, 60, placed.firstPos.distSqr(placed.secondPos) / 100.0) * BuildConfig.visuals.dissolveTimeMultiplier.get();
 					float dissolve = (ClientProxy.ticksInGame - placed.time) / (float) totalTime;
 					renderBlockPreviews(matrixStack, renderTypeBuffer, placed.coordinates, placed.blockStates, placed.itemStacks, dissolve, placed.firstPos, placed.secondPos, false, placed.breaking);
 				}
@@ -66,16 +66,16 @@ public class BlockPreviewRenderer {
 		}
 		//Expire
 		placedDataList.removeIf(placed -> {
-			double totalTime = MathHelper.clampedLerp(30, 60, placed.firstPos.distanceSq(placed.secondPos) / 100.0) * BuildConfig.visuals.dissolveTimeMultiplier.get();
+			double totalTime = MathHelper.clampedLerp(30, 60, placed.firstPos.distSqr(placed.secondPos) / 100.0) * BuildConfig.visuals.dissolveTimeMultiplier.get();
 			return placed.time + totalTime < ClientProxy.ticksInGame;
 		});
 
 		//Render block previews
 		RayTraceResult lookingAt = ClientProxy.getLookingAt(player);
 		if (modeSettings.getBuildMode() == BuildModes.BuildModeEnum.NORMAL)
-			lookingAt = Minecraft.getInstance().objectMouseOver;
+			lookingAt = Minecraft.getInstance().hitResult;
 
-		ItemStack mainhand = player.getHeldItemMainhand();
+		ItemStack mainhand = player.getMainHandItem();
 		boolean toolInHand = !(!mainhand.isEmpty() && CompatHelper.isItemBlockProxy(mainhand));
 
 		BlockPos startPos = null;
@@ -85,23 +85,23 @@ public class BlockPreviewRenderer {
 		//Checking for null is necessary! Even in vanilla when looking down ladders it is occasionally null (instead of Type MISS)
 		if (lookingAt != null && lookingAt.getType() == RayTraceResult.Type.BLOCK) {
 			BlockRayTraceResult blockLookingAt = (BlockRayTraceResult) lookingAt;
-			startPos = blockLookingAt.getPos();
+			startPos = blockLookingAt.getBlockPos();
 
 			//Check if tool (or none) in hand
 			//TODO 1.13 replaceable
-			boolean replaceable = player.world.getBlockState(startPos).getMaterial().isReplaceable();
-			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, blockLookingAt.getFace());
+			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
+			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, blockLookingAt.getDirection());
 			if (!modifierSettings.doQuickReplace() && !toolInHand && !replaceable && !becomesDoubleSlab) {
-				startPos = startPos.offset(blockLookingAt.getFace());
+				startPos = startPos.relative(blockLookingAt.getDirection());
 			}
 
 			//Get under tall grass and other replaceable blocks
 			if (modifierSettings.doQuickReplace() && !toolInHand && replaceable) {
-				startPos = startPos.down();
+				startPos = startPos.below();
 			}
 
-			sideHit = blockLookingAt.getFace();
-			hitVec = blockLookingAt.getHitVec();
+			sideHit = blockLookingAt.getDirection();
+			hitVec = blockLookingAt.getLocation();
 		}
 
 		//Dont render if in normal mode and modifiers are disabled
@@ -150,7 +150,7 @@ public class BlockPreviewRenderer {
 				if (breaking) {
 					//Find blockstate of world
 					for (BlockPos coordinate : newCoordinates) {
-						blockStates.add(player.world.getBlockState(coordinate));
+						blockStates.add(player.level.getBlockState(coordinate));
 					}
 				} else {
 					blockStates = BuildModifiers.findBlockStates(player, startCoordinates, hitVec, sideHit, itemStacks);
@@ -174,9 +174,9 @@ public class BlockPreviewRenderer {
 						soundTime = ClientProxy.ticksInGame;
 
 						if (blockStates.get(0) != null) {
-							SoundType soundType = blockStates.get(0).getBlock().getSoundType(blockStates.get(0), player.world,
+							SoundType soundType = blockStates.get(0).getBlock().getSoundType(blockStates.get(0), player.level,
 								newCoordinates.get(0), player);
-							player.world.playSound(player, player.getPosition(), breaking ? soundType.getBreakSound() : soundType.getPlaceSound(),
+							player.level.playSound(player, player.blockPosition(), breaking ? soundType.getBreakSound() : soundType.getPlaceSound(),
 								SoundCategory.BLOCKS, 0.3f, 0.8f);
 						}
 					}
@@ -196,7 +196,7 @@ public class BlockPreviewRenderer {
 						if (breaking) color = new Vector3d(1f, 0f, 0f);
 
 						for (int i = newCoordinates.size() - 1; i >= 0; i--) {
-							VoxelShape collisionShape = blockStates.get(i).getCollisionShape(player.world, newCoordinates.get(i));
+							VoxelShape collisionShape = blockStates.get(i).getCollisionShape(player.level, newCoordinates.get(i));
 							RenderHandler.renderBlockOutline(matrixStack, buffer, newCoordinates.get(i), collisionShape, color);
 						}
 
@@ -239,21 +239,21 @@ public class BlockPreviewRenderer {
 			IVertexBuilder buffer = RenderHandler.beginLines(renderTypeBuffer);
 			//Draw outlines if tool in hand
 			//Find proper raytrace: either normal range or increased range depending on canBreakFar
-			RayTraceResult objectMouseOver = Minecraft.getInstance().objectMouseOver;
+			RayTraceResult objectMouseOver = Minecraft.getInstance().hitResult;
 			RayTraceResult breakingRaytrace = ReachHelper.canBreakFar(player) ? lookingAt : objectMouseOver;
 			if (toolInHand && breakingRaytrace != null && breakingRaytrace.getType() == RayTraceResult.Type.BLOCK) {
 				BlockRayTraceResult blockBreakingRaytrace = (BlockRayTraceResult) breakingRaytrace;
-				List<BlockPos> breakCoordinates = BuildModifiers.findCoordinates(player, blockBreakingRaytrace.getPos());
+				List<BlockPos> breakCoordinates = BuildModifiers.findCoordinates(player, blockBreakingRaytrace.getBlockPos());
 
 				//Only render first outline if further than normal reach
 				boolean excludeFirst = objectMouseOver != null && objectMouseOver.getType() == RayTraceResult.Type.BLOCK;
 				for (int i = excludeFirst ? 1 : 0; i < breakCoordinates.size(); i++) {
 					BlockPos coordinate = breakCoordinates.get(i);
 
-					BlockState blockState = player.world.getBlockState(coordinate);
-					if (!blockState.getBlock().isAir(blockState, player.world, coordinate)) {
-						if (SurvivalHelper.canBreak(player.world, player, coordinate) || i == 0) {
-							VoxelShape collisionShape = blockState.getCollisionShape(player.world, coordinate);
+					BlockState blockState = player.level.getBlockState(coordinate);
+					if (!blockState.getBlock().isAir(blockState, player.level, coordinate)) {
+						if (SurvivalHelper.canBreak(player.level, player, coordinate) || i == 0) {
+							VoxelShape collisionShape = blockState.getCollisionShape(player.level, coordinate);
 							RenderHandler.renderBlockOutline(matrixStack, buffer, coordinate, collisionShape, new Vector3d(0f, 0f, 0f));
 						}
 					}
@@ -275,7 +275,7 @@ public class BlockPreviewRenderer {
 											 BlockPos secondPos, boolean checkCanPlace, boolean red) {
 		PlayerEntity player = Minecraft.getInstance().player;
 		ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-		BlockRendererDispatcher dispatcher = Minecraft.getInstance().getBlockRendererDispatcher();
+		BlockRendererDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
 		int blocksValid = 0;
 
 		if (coordinates.isEmpty()) return blocksValid;
@@ -290,7 +290,7 @@ public class BlockPreviewRenderer {
 			//Check if can place
 			//If check is turned off, check if blockstate is the same (for dissolve effect)
 			if ((!checkCanPlace /*&& player.world.getNewBlockState(blockPos) == blockState*/) || //TODO enable (breaks the breaking shader)
-				SurvivalHelper.canPlace(player.world, player, blockPos, blockState, itemstack, modifierSettings.doQuickReplace(), Direction.UP)) {
+				SurvivalHelper.canPlace(player.level, player, blockPos, blockState, itemstack, modifierSettings.doQuickReplace(), Direction.UP)) {
 
 				RenderHandler.renderBlockPreview(matrixStack, renderTypeBuffer, dispatcher, blockPos, blockState, dissolve, firstPos, secondPos, red);
 				blocksValid++;
@@ -353,8 +353,8 @@ public class BlockPreviewRenderer {
 
 		Collections.sort(coordinates, (lhs, rhs) -> {
 			// -1 - less than, 1 - greater than, 0 - equal
-			double lhsDistanceToPlayer = Vector3d.copy(lhs).subtract(player.getEyePosition(1f)).lengthSquared();
-			double rhsDistanceToPlayer = Vector3d.copy(rhs).subtract(player.getEyePosition(1f)).lengthSquared();
+			double lhsDistanceToPlayer = Vector3d.atLowerCornerOf(lhs).subtract(player.getEyePosition(1f)).lengthSqr();
+			double rhsDistanceToPlayer = Vector3d.atLowerCornerOf(rhs).subtract(player.getEyePosition(1f)).lengthSqr();
 			return (int) Math.signum(lhsDistanceToPlayer - rhsDistanceToPlayer);
 		});
 

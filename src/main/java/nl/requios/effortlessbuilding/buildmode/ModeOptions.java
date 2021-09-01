@@ -77,11 +77,11 @@ public class ModeOptions {
 					modifierSettings.doQuickReplace() ? "on" : "off"), true);
 				break;
 			case OPEN_MODIFIER_SETTINGS:
-				if (player.world.isRemote)
+				if (player.level.isClientSide)
 					ClientProxy.openModifierSettings();
 				break;
 			case OPEN_PLAYER_SETTINGS:
-				if (player.world.isRemote)
+				if (player.level.isClientSide)
 					ClientProxy.openPlayerSettings();
 				break;
 
@@ -129,7 +129,7 @@ public class ModeOptions {
 				break;
 		}
 
-		if (player.world.isRemote &&
+		if (player.level.isClientSide &&
 			action != ActionEnum.REPLACE &&
 			action != ActionEnum.OPEN_MODIFIER_SETTINGS &&
 			action != ActionEnum.OPEN_PLAYER_SETTINGS) {

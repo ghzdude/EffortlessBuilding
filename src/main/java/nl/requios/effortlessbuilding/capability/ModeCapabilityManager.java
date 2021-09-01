@@ -17,6 +17,8 @@ import javax.annotation.Nullable;
 
 import static nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
+import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
+
 @Mod.EventBusSubscriber
 public class ModeCapabilityManager {
 

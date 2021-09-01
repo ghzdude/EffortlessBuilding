@@ -21,6 +21,8 @@ import javax.annotation.Nullable;
 
 import static nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
 
+import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
+
 @Mod.EventBusSubscriber
 public class ModifierCapabilityManager {
 
