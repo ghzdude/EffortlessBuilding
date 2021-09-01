@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 public class InventoryHelper {
 
 	public static ItemStack findItemStackInInventory(Player player, Block block) {
-		for (ItemStack invStack : player.inventory.items) {
+		for (ItemStack invStack : player.getInventory().items) {
 			if (!invStack.isEmpty() && invStack.getItem() instanceof BlockItem &&
 				((BlockItem) invStack.getItem()).getBlock().equals(block)) {
 				return invStack;
@@ -19,7 +19,7 @@ public class InventoryHelper {
 
 	public static int findTotalBlocksInInventory(Player player, Block block) {
 		int total = 0;
-		for (ItemStack invStack : player.inventory.items) {
+		for (ItemStack invStack : player.getInventory().items) {
 			if (!invStack.isEmpty() && invStack.getItem() instanceof BlockItem &&
 				((BlockItem) invStack.getItem()).getBlock().equals(block)) {
 				total += invStack.getCount();

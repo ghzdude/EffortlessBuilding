@@ -4,7 +4,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.helper.ReachHelper;

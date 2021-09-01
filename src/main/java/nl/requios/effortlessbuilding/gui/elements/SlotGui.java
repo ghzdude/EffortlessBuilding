@@ -1,15 +1,12 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.Widget;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -231,15 +228,15 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements W
 				int j1 = this.x0 + this.width / 2 + this.getRowWidth() / 2;
 				RenderSystem.disableTexture();
 				float f = this.isFocused() ? 1.0F : 0.5F;
-				RenderSystem.color4f(f, f, f, 1.0F);
-				bufferbuilder.begin(7, DefaultVertexFormat.POSITION);
+				RenderSystem.setShaderColor(f, f, f, 1.0F);
+				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 				bufferbuilder.vertex(i1, k + l + 2, 0.0D).endVertex();
 				bufferbuilder.vertex(j1, k + l + 2, 0.0D).endVertex();
 				bufferbuilder.vertex(j1, k - 2, 0.0D).endVertex();
 				bufferbuilder.vertex(i1, k - 2, 0.0D).endVertex();
 				tessellator.end();
-				RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
-				bufferbuilder.begin(7, DefaultVertexFormat.POSITION);
+				RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 				bufferbuilder.vertex(i1 + 1, k + l + 1, 0.0D).endVertex();
 				bufferbuilder.vertex(j1 - 1, k + l + 1, 0.0D).endVertex();
 				bufferbuilder.vertex(j1 - 1, k - 1, 0.0D).endVertex();

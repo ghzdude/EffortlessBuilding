@@ -55,9 +55,17 @@ public class ModeCapabilityManager {
 		}
 	}
 
-	public static class Storage implements Capability.IStorage<IModeCapability> {
+	public static class Provider implements ICapabilitySerializable<Tag> {
+		IModeCapability instance = new ModeCapability();
+
+		@Nonnull
 		@Override
-		public Tag writeNBT(Capability<IModeCapability> capability, IModeCapability instance, Direction side) {
+		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+			return modeCapability.orEmpty(cap, LazyOptional.of(() -> instance));
+		}
+
+		@Override
+		public Tag serializeNBT() {
 			CompoundTag compound = new CompoundTag();
 			ModeSettings modeSettings = instance.getModeData();
 			if (modeSettings == null) modeSettings = new ModeSettings();
@@ -70,7 +78,7 @@ public class ModeCapabilityManager {
 		}
 
 		@Override
-		public void readNBT(Capability<IModeCapability> capability, IModeCapability instance, Direction side, Tag nbt) {
+		public void deserializeNBT(Tag nbt) {
 			CompoundTag compound = (CompoundTag) nbt;
 
 			//BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.values()[compound.getInteger("buildMode")];
@@ -79,26 +87,6 @@ public class ModeCapabilityManager {
 
 			ModeSettings modeSettings = new ModeSettings(BuildModes.BuildModeEnum.NORMAL);
 			instance.setModeData(modeSettings);
-		}
-	}
-
-	public static class Provider implements ICapabilitySerializable<Tag> {
-		IModeCapability inst = modeCapability.getDefaultInstance();
-
-		@Nonnull
-		@Override
-		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-			return modeCapability.orEmpty(cap, LazyOptional.of(() -> inst));
-		}
-
-		@Override
-		public Tag serializeNBT() {
-			return modeCapability.getStorage().writeNBT(modeCapability, inst, null);
-		}
-
-		@Override
-		public void deserializeNBT(Tag nbt) {
-			modeCapability.getStorage().readNBT(modeCapability, inst, null, nbt);
 		}
 
 	}

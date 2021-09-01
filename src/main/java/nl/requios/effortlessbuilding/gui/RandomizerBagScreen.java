@@ -15,11 +15,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
 public class RandomizerBagScreen extends AbstractContainerScreen<RandomizerBagContainer> {
+	private Inventory inventory;
+
 	private static final ResourceLocation guiTextures =
 		new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/container/randomizerbag.png");
 
 	public RandomizerBagScreen(RandomizerBagContainer randomizerBagContainer, Inventory playerInventory, Component title) {
 		super(randomizerBagContainer, playerInventory, title);//new TranslationTextComponent("effortlessbuilding.screen.randomizer_bag"));
+		this.inventory = playerInventory;
 		imageHeight = 134;
 	}
 
@@ -38,8 +41,8 @@ public class RandomizerBagScreen extends AbstractContainerScreen<RandomizerBagCo
 
 	@Override
 	protected void renderBg(PoseStack ms, float partialTicks, int mouseX, int mouseY) {
-		RenderSystem.color3f(1.0F, 1.0F, 1.0F);
-		minecraft.getTextureManager().bind(guiTextures);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1f);
+		RenderSystem.setShaderTexture(0, guiTextures);
 		int marginHorizontal = (width - imageWidth) / 2;
 		int marginVertical = (height - imageHeight) / 2;
 		blit(ms, marginHorizontal, marginVertical, 0, 0, imageWidth, imageHeight);

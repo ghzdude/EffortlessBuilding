@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -8,7 +9,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.lwjgl.opengl.*;
 
 import java.util.OptionalDouble;
@@ -18,14 +19,16 @@ public class BuildRenderTypes {
 	public static final RenderStateShard.TransparencyStateShard TRANSLUCENT_TRANSPARENCY;
 	public static final RenderStateShard.TransparencyStateShard NO_TRANSPARENCY;
 
-	public static final RenderStateShard.DiffuseLightingStateShard DIFFUSE_LIGHTING_ENABLED;
-	public static final RenderStateShard.DiffuseLightingStateShard DIFFUSE_LIGHTING_DISABLED;
+	//TODO 1.17
+//	public static final RenderStateShard.DiffuseLightingStateShard DIFFUSE_LIGHTING_ENABLED;
+//	public static final RenderStateShard.DiffuseLightingStateShard DIFFUSE_LIGHTING_DISABLED;
 
 	public static final RenderStateShard.LayeringStateShard PROJECTION_LAYERING;
 
 	public static final RenderStateShard.CullStateShard CULL_DISABLED;
 
-	public static final RenderStateShard.AlphaStateShard DEFAULT_ALPHA;
+	//TODO 1.17
+//	public static final RenderStateShard.AlphaStateShard DEFAULT_ALPHA;
 
 	public static final RenderStateShard.WriteMaskStateShard WRITE_TO_DEPTH_AND_COLOR;
 	public static final RenderStateShard.WriteMaskStateShard COLOR_WRITE;
@@ -40,14 +43,12 @@ public class BuildRenderTypes {
 		TRANSLUCENT_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderStateShard.class, null, "TRANSLUCENT_TRANSPARENCY");
 		NO_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderStateShard.class, null, "NO_TRANSPARENCY");
 
-		DIFFUSE_LIGHTING_ENABLED = new RenderStateShard.DiffuseLightingStateShard(true);
-		DIFFUSE_LIGHTING_DISABLED = new RenderStateShard.DiffuseLightingStateShard(false);
-
 		PROJECTION_LAYERING = ObfuscationReflectionHelper.getPrivateValue(RenderStateShard.class, null, "VIEW_OFFSET_Z_LAYERING");
 
 		CULL_DISABLED = new RenderStateShard.CullStateShard(false);
 
-		DEFAULT_ALPHA = new RenderStateShard.AlphaStateShard(0.003921569F);
+		//TODO 1.17
+//		DEFAULT_ALPHA = new RenderStateShard.AlphaStateShard(0.003921569F);
 
 		final boolean ENABLE_DEPTH_WRITING = true;
 		final boolean ENABLE_COLOUR_COMPONENTS_WRITING = true;
@@ -76,7 +77,7 @@ public class BuildRenderTypes {
 			.setCullState(CULL_DISABLED)
 			.createCompositeState(false);
 		LINES = RenderType.create("eb_lines",
-			DefaultVertexFormat.POSITION_COLOR, GL11.GL_LINES, INITIAL_BUFFER_SIZE, renderState);
+			DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.LINES, INITIAL_BUFFER_SIZE, false, false, renderState);
 
 		renderState = RenderType.CompositeState.builder()
 			.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(2)))
@@ -86,7 +87,7 @@ public class BuildRenderTypes {
 			.setCullState(CULL_DISABLED)
 			.createCompositeState(false);
 		PLANES = RenderType.create("eb_planes",
-			DefaultVertexFormat.POSITION_COLOR, GL11.GL_TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, renderState);
+			DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, false, false, renderState);
 
 	}
 
@@ -112,15 +113,17 @@ public class BuildRenderTypes {
 //            RenderSystem.pushTextureAttributes();
 
 			ShaderHandler.useShader(ShaderHandler.dissolve, generateShaderCallback(dissolve, Vec3.atLowerCornerOf(blockPos), Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos), blockPos == secondPos, red));
-			RenderSystem.blendColor(1f, 1f, 1f, 0.8f);
+			//TODO 1.17
+//			RenderSystem.blendColor(1f, 1f, 1f, 0.8f);
 		}, ShaderHandler::releaseShader);
 
 		RenderType.CompositeState renderState = RenderType.CompositeState.builder()
 			.setTextureState(new RenderStateShard.TextureStateShard(ShaderHandler.shaderMaskTextureLocation, false, false))
 			.setTexturingState(MY_TEXTURING)
 			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
-			.setAlphaState(DEFAULT_ALPHA)
+				//TODO 1.17
+//			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
+//			.setAlphaState(DEFAULT_ALPHA)
 			.setCullState(new RenderStateShard.CullStateShard(true))
 			.setLightmapState(new RenderStateShard.LightmapStateShard(false))
 			.setOverlayState(new RenderStateShard.OverlayStateShard(false))
@@ -128,7 +131,7 @@ public class BuildRenderTypes {
 		//Unique name for every combination, otherwise it will reuse the previous one
 		String name = "eb_block_previews_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
 		return RenderType.create(name,
-			DefaultVertexFormat.BLOCK, GL11.GL_QUADS, 256, true, true, renderState);
+			DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 256, true, true, renderState);
 	}
 
 	private static Consumer<Integer> generateShaderCallback(final float dissolve, final Vec3 blockpos,
@@ -151,13 +154,15 @@ public class BuildRenderTypes {
 			//mask
 			ARBShaderObjects.glUniform1iARB(maskUniform, secondaryTextureUnit);
 			glActiveTexture(ARBMultitexture.GL_TEXTURE0_ARB + secondaryTextureUnit);
-			mc.getTextureManager().bind(ShaderHandler.shaderMaskTextureLocation);//getTexture(ShaderHandler.shaderMaskTextureLocation).bindTexture();
+			RenderSystem.setShaderTexture(0, ShaderHandler.shaderMaskTextureLocation);
+			//mc.getTextureManager().bindForSetup(ShaderHandler.shaderMaskTextureLocation);//getTexture(ShaderHandler.shaderMaskTextureLocation).bindTexture();
 			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, mc.getTextureManager().getTexture(ShaderHandler.shaderMaskTextureLocation).getGlTextureId());
 
 			//image
 			ARBShaderObjects.glUniform1iARB(imageUniform, primaryTextureUnit);
 			glActiveTexture(ARBMultitexture.GL_TEXTURE0_ARB + primaryTextureUnit);
-			mc.getTextureManager().bind(TextureAtlas.LOCATION_BLOCKS);//.getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).bindTexture();
+			RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+			//mc.getTextureManager().bindForSetup(TextureAtlas.LOCATION_BLOCKS);//.getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).bindTexture();
 			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, mc.getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).getGlTextureId());
 
 			//blockpos

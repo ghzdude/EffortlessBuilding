@@ -6,7 +6,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;

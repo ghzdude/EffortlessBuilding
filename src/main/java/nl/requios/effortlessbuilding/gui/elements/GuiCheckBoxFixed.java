@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.fml.client.gui.GuiUtils;
+import net.minecraftforge.fmlclient.gui.GuiUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -30,7 +30,7 @@ public class GuiCheckBoxFixed extends Button {
 		if (this.visible) {
 			Minecraft mc = Minecraft.getInstance();
 			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.boxWidth && mouseY < this.y + this.height;
-			GuiUtils.drawContinuousTexturedBox(WIDGETS_LOCATION, this.x, this.y, 0, 46, this.boxWidth, this.height, 200, 20, 2, 3, 2, 2, this.getBlitOffset());
+			GuiUtils.drawContinuousTexturedBox(ms, WIDGETS_LOCATION, this.x, this.y, 0, 46, this.boxWidth, this.height, 200, 20, 2, 3, 2, 2, this.getBlitOffset());
 			this.renderBg(ms, mc, mouseX, mouseY);
 			int color = 14737632;
 

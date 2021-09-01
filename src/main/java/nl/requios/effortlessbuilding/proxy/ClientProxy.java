@@ -1,6 +1,6 @@
 package nl.requios.effortlessbuilding.proxy;
 
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.client.Minecraft;
@@ -31,11 +31,13 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fmlclient.registry.ClientRegistry;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
@@ -372,7 +374,8 @@ public class ClientProxy implements IProxy {
 			ClientRegistry.registerKeyBinding(keyBinding);
 		}
 
-		DeferredWorkQueue.runLater(() -> MenuScreens.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new));
+		//TODO 1.17
+//		DeferredWorkQueue.runLater(() -> MenuScreens.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new));
 	}
 
 	public Player getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {

@@ -1,6 +1,6 @@
 package nl.requios.effortlessbuilding.item;
 
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.TooltipFlag;
@@ -10,7 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionResult;
@@ -25,7 +24,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraftforge.fmllegacy.network.NetworkHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuilding;

@@ -1,16 +1,13 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
 import com.google.common.base.Stopwatch;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.Direction;
@@ -265,12 +262,12 @@ public class RadialMenu extends Screen {
 
 		RenderSystem.translatef(0f, 0f, 5f);
 		RenderSystem.enableTexture();
-		RenderSystem.color3f(1f, 1f, 1f);
+		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 		RenderSystem.disableBlend();
 		RenderSystem.enableAlphaTest();
-		mc.getTextureManager().bind(TextureAtlas.LOCATION_BLOCKS);
+		RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
 
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+		buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
 		//Draw buildmode icons
 		for (final MenuRegion menuRegion : modes) {

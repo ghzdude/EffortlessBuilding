@@ -1,7 +1,6 @@
 package nl.requios.effortlessbuilding.helper;
 
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.block.*;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +40,7 @@ public class SurvivalHelper {
 		if (!world.isLoaded(pos)) return false;
 		ItemStack itemstack = origstack;
 
-		if (blockState.getBlock().isAir(blockState, world, pos) || itemstack.isEmpty()) {
+		if (blockState.isAir() || itemstack.isEmpty()) {
 			dropBlock(world, player, pos);
 			world.removeBlock(pos, false);
 			return true;
@@ -229,7 +228,7 @@ public class SurvivalHelper {
 	private static boolean canPlayerEdit(Player player, Level world, BlockPos pos, ItemStack stack) {
 		if (!world.mayInteract(player, pos)) return false;
 
-		if (player.abilities.mayBuild) {
+		if (player.getAbilities().mayBuild) {
 			//True in creative and survival mode
 			return true;
 		} else {

@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -56,7 +57,7 @@ public class GuiIconButton extends Button {
 		super.render(ms, mouseX, mouseY, partialTicks);
 		if (this.visible) {
 			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-			Minecraft.getInstance().getTextureManager().bind(this.resourceLocation);
+			RenderSystem.setShaderTexture(0, this.resourceLocation);
 			int currentIconX = this.iconX;
 			int currentIconY = this.iconY;
 

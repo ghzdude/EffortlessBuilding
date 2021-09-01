@@ -1,9 +1,10 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -34,7 +35,7 @@ public class GuiNumberField extends GuiComponent {
 
 	List<Component> tooltip = new ArrayList<>();
 
-	public GuiNumberField(Font font, List<AbstractWidget> buttonList, int x, int y, int width, int height) {
+	public GuiNumberField(Font font, List<Widget> renderables, int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -56,8 +57,8 @@ public class GuiNumberField extends GuiComponent {
 			setNumber(getNumber() + valueChanged);
 		});
 
-		buttonList.add(minusButton);
-		buttonList.add(plusButton);
+		renderables.add(minusButton);
+		renderables.add(plusButton);
 	}
 
 	public double getNumber() {

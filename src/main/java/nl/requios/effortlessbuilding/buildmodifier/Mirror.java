@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.block.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.properties.Half;

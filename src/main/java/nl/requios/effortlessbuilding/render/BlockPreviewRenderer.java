@@ -251,7 +251,7 @@ public class BlockPreviewRenderer {
 					BlockPos coordinate = breakCoordinates.get(i);
 
 					BlockState blockState = player.level.getBlockState(coordinate);
-					if (!blockState.getBlock().isAir(blockState, player.level, coordinate)) {
+					if (!blockState.isAir()) {
 						if (SurvivalHelper.canBreak(player.level, player, coordinate) || i == 0) {
 							VoxelShape collisionShape = blockState.getCollisionShape(player.level, coordinate);
 							RenderHandler.renderBlockOutline(matrixStack, buffer, coordinate, collisionShape, new Vec3(0f, 0f, 0f));

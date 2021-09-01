@@ -14,7 +14,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
@@ -31,7 +31,7 @@ import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID)
 public class EventHandler {
 
 	@SubscribeEvent

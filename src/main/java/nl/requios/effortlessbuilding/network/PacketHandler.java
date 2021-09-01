@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.network;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.fmllegacy.network.NetworkRegistry;
+import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 
 public class PacketHandler {

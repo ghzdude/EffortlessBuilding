@@ -3,9 +3,13 @@ package nl.requios.effortlessbuilding;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
+import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 
 // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
 // Event bus for receiving Registry Events)
@@ -24,6 +28,12 @@ public class ModEventHandler {
 		for (Block block : EffortlessBuilding.BLOCKS) {
 			event.getRegistry().register(new BlockItem(block, new Item.Properties()).setRegistryName(block.getRegistryName()));
 		}
+	}
+
+	@SubscribeEvent
+	public static void registerCapabilities(RegisterCapabilitiesEvent event){
+		event.register(ModifierCapabilityManager.IModifierCapability.class);
+		event.register(ModeCapabilityManager.IModeCapability.class);
 	}
 
 //    @SubscribeEvent

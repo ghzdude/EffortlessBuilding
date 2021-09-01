@@ -3,6 +3,7 @@ package nl.requios.effortlessbuilding.gui.elements;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraftforge.api.distmarker.Dist;
@@ -27,7 +28,7 @@ public abstract class GuiCollapsibleScrollEntry implements GuiScrollPane.IScroll
 	}
 
 	@Override
-	public void init(List<AbstractWidget> buttonList) {
+	public void init(List<Widget> renderables) {
 		left = scrollPane.getWidth() / 2 - 140;
 		right = scrollPane.getWidth() / 2 + 140;
 		top = scrollPane.getHeight() / 2 - 100;

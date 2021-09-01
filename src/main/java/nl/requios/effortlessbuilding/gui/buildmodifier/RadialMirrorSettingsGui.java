@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -40,8 +41,8 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void init(List<AbstractWidget> buttonList) {
-		super.init(buttonList);
+	public void init(List<Widget> renderables) {
+		super.init(renderables);
 
 		int y = top - 2;
 		buttonRadialMirrorEnabled = new GuiCheckBoxFixed(left - 15 + 8, y, "", false) {
@@ -51,32 +52,32 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 				setCollapsed(!buttonRadialMirrorEnabled.isChecked());
 			}
 		};
-		buttonList.add(buttonRadialMirrorEnabled);
+		renderables.add(buttonRadialMirrorEnabled);
 
 		y = top + 18;
-		textRadialMirrorPosX = new GuiNumberField(font, buttonList, left + 58, y, 62, 18);
+		textRadialMirrorPosX = new GuiNumberField(font, renderables, left + 58, y, 62, 18);
 		textRadialMirrorPosX.setNumber(0);
 		textRadialMirrorPosX.setTooltip(
 			Arrays.asList(new TextComponent("The position of the radial mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorPosX);
 
-		textRadialMirrorPosY = new GuiNumberField(font, buttonList, left + 138, y, 62, 18);
+		textRadialMirrorPosY = new GuiNumberField(font, renderables, left + 138, y, 62, 18);
 		textRadialMirrorPosY.setNumber(64);
 		textRadialMirrorPosY.setTooltip(Arrays.asList(new TextComponent("The position of the radial mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorPosY);
 
-		textRadialMirrorPosZ = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
+		textRadialMirrorPosZ = new GuiNumberField(font, renderables, left + 218, y, 62, 18);
 		textRadialMirrorPosZ.setNumber(0);
 		textRadialMirrorPosZ.setTooltip(Arrays.asList(new TextComponent("The position of the radial mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorPosZ);
 
 		y = top + 47;
-		textRadialMirrorSlices = new GuiNumberField(font, buttonList, left + 55, y, 50, 18);
+		textRadialMirrorSlices = new GuiNumberField(font, renderables, left + 55, y, 50, 18);
 		textRadialMirrorSlices.setNumber(4);
 		textRadialMirrorSlices.setTooltip(Arrays.asList(new TextComponent("The number of repeating slices."), new TextComponent("Minimally 2.").withStyle(ChatFormatting.GRAY)));
 		radialMirrorNumberFieldList.add(textRadialMirrorSlices);
 
-		textRadialMirrorRadius = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
+		textRadialMirrorRadius = new GuiNumberField(font, renderables, left + 218, y, 62, 18);
 		textRadialMirrorRadius.setNumber(50);
 		//TODO change to diameter (remove /2)
 		textRadialMirrorRadius.setTooltip(Arrays.asList(new TextComponent("How far the radial mirror reaches from its center position."),
@@ -158,8 +159,8 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 			buttonToggleOdd.setUseAlternateIcon(toggleOdd);
 		}
 
-		buttonList.addAll(radialMirrorButtonList);
-		buttonList.addAll(radialMirrorIconButtonList);
+		renderables.addAll(radialMirrorButtonList);
+		renderables.addAll(radialMirrorIconButtonList);
 
 		setCollapsed(!buttonRadialMirrorEnabled.isChecked());
 	}

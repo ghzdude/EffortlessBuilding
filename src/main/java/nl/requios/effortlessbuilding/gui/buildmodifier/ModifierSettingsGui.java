@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.gui.buildmodifier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.TextComponent;
@@ -17,6 +18,9 @@ import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
 import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ModifierSettingsGui extends Screen {
@@ -35,6 +39,7 @@ public class ModifierSettingsGui extends Screen {
 	@Override
 	//Create buttons and labels and add them to buttonList/labelList
 	protected void init() {
+
 		scrollPane = new GuiScrollPane(this, font, 8, height - 30);
 
 		mirrorSettingsGui = new MirrorSettingsGui(scrollPane);
@@ -46,14 +51,14 @@ public class ModifierSettingsGui extends Screen {
 		radialMirrorSettingsGui = new RadialMirrorSettingsGui(scrollPane);
 		scrollPane.AddListEntry(radialMirrorSettingsGui);
 
-		scrollPane.init(buttons);
+		scrollPane.init(renderables);
 
 		//Close button
 		int y = height - 26;
 		buttonClose = new Button(width / 2 - 100, y, 200, 20, new TextComponent("Close"), (button) -> {
 			Minecraft.getInstance().player.closeContainer();
 		});
-		buttons.add(buttonClose);
+		addRenderableOnly(buttonClose);
 	}
 
 	@Override
@@ -91,7 +96,9 @@ public class ModifierSettingsGui extends Screen {
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
-		buttons.forEach(button -> button.mouseClicked(mouseX, mouseY, mouseButton));
+		renderables.forEach(renderable -> {
+			if (renderable instanceof Button button) button.mouseClicked(mouseX, mouseY, mouseButton);
+		});
 		return scrollPane.mouseClicked(mouseX, mouseY, mouseButton);
 	}
 

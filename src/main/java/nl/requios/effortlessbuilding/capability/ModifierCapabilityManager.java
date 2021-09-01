@@ -19,8 +19,6 @@ import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
-
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
 
 @Mod.EventBusSubscriber
@@ -59,9 +57,18 @@ public class ModifierCapabilityManager {
 		}
 	}
 
-	public static class Storage implements Capability.IStorage<IModifierCapability> {
+	public static class Provider implements ICapabilitySerializable<Tag> {
+
+		IModifierCapability instance = new ModifierCapability();
+
+		@Nonnull
 		@Override
-		public Tag writeNBT(Capability<IModifierCapability> capability, IModifierCapability instance, Direction side) {
+		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+			return modifierCapability.orEmpty(cap, LazyOptional.of(() -> instance));
+		}
+
+		@Override
+		public Tag serializeNBT() {
 			CompoundTag compound = new CompoundTag();
 			ModifierSettings modifierSettings = instance.getModifierData();
 			if (modifierSettings == null) modifierSettings = new ModifierSettings();
@@ -110,15 +117,15 @@ public class ModifierCapabilityManager {
 		}
 
 		@Override
-		public void readNBT(Capability<IModifierCapability> capability, IModifierCapability instance, Direction side, Tag nbt) {
+		public void deserializeNBT(Tag nbt) {
 			CompoundTag compound = (CompoundTag) nbt;
 
 			//MIRROR
 			boolean mirrorEnabled = compound.getBoolean("mirrorEnabled");
 			Vec3 mirrorPosition = new Vec3(
-				compound.getDouble("mirrorPosX"),
-				compound.getDouble("mirrorPosY"),
-				compound.getDouble("mirrorPosZ"));
+					compound.getDouble("mirrorPosX"),
+					compound.getDouble("mirrorPosY"),
+					compound.getDouble("mirrorPosZ"));
 			boolean mirrorX = compound.getBoolean("mirrorX");
 			boolean mirrorY = compound.getBoolean("mirrorY");
 			boolean mirrorZ = compound.getBoolean("mirrorZ");
@@ -130,9 +137,9 @@ public class ModifierCapabilityManager {
 			//ARRAY
 			boolean arrayEnabled = compound.getBoolean("arrayEnabled");
 			BlockPos arrayOffset = new BlockPos(
-				compound.getInt("arrayOffsetX"),
-				compound.getInt("arrayOffsetY"),
-				compound.getInt("arrayOffsetZ"));
+					compound.getInt("arrayOffsetX"),
+					compound.getInt("arrayOffsetY"),
+					compound.getInt("arrayOffsetZ"));
 			int arrayCount = compound.getInt("arrayCount");
 			Array.ArraySettings arraySettings = new Array.ArraySettings(arrayEnabled, arrayOffset, arrayCount);
 
@@ -143,40 +150,19 @@ public class ModifierCapabilityManager {
 			//RADIAL MIRROR
 			boolean radialMirrorEnabled = compound.getBoolean("radialMirrorEnabled");
 			Vec3 radialMirrorPosition = new Vec3(
-				compound.getDouble("radialMirrorPosX"),
-				compound.getDouble("radialMirrorPosY"),
-				compound.getDouble("radialMirrorPosZ"));
+					compound.getDouble("radialMirrorPosX"),
+					compound.getDouble("radialMirrorPosY"),
+					compound.getDouble("radialMirrorPosZ"));
 			int radialMirrorSlices = compound.getInt("radialMirrorSlices");
 			boolean radialMirrorAlternate = compound.getBoolean("radialMirrorAlternate");
 			int radialMirrorRadius = compound.getInt("radialMirrorRadius");
 			boolean radialMirrorDrawLines = compound.getBoolean("radialMirrorDrawLines");
 			boolean radialMirrorDrawPlanes = compound.getBoolean("radialMirrorDrawPlanes");
 			RadialMirror.RadialMirrorSettings radialMirrorSettings = new RadialMirror.RadialMirrorSettings(radialMirrorEnabled, radialMirrorPosition,
-				radialMirrorSlices, radialMirrorAlternate, radialMirrorRadius, radialMirrorDrawLines, radialMirrorDrawPlanes);
+					radialMirrorSlices, radialMirrorAlternate, radialMirrorRadius, radialMirrorDrawLines, radialMirrorDrawPlanes);
 
 			ModifierSettings modifierSettings = new ModifierSettings(mirrorSettings, arraySettings, radialMirrorSettings, false, reachUpgrade);
 			instance.setModifierData(modifierSettings);
-		}
-	}
-
-	public static class Provider implements ICapabilitySerializable<Tag> {
-
-		IModifierCapability inst = modifierCapability.getDefaultInstance();
-
-		@Nonnull
-		@Override
-		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-			return modifierCapability.orEmpty(cap, LazyOptional.of(() -> inst));
-		}
-
-		@Override
-		public Tag serializeNBT() {
-			return modifierCapability.getStorage().writeNBT(modifierCapability, inst, null);
-		}
-
-		@Override
-		public void deserializeNBT(Tag nbt) {
-			modifierCapability.getStorage().readNBT(modifierCapability, inst, null, nbt);
 		}
 
 	}

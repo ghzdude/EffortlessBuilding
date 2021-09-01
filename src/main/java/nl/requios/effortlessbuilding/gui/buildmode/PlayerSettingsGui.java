@@ -1,17 +1,14 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
@@ -19,8 +16,8 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
-import net.minecraftforge.fml.client.gui.widget.Slider;
+import net.minecraftforge.fmlclient.gui.widget.ExtendedButton;
+import net.minecraftforge.fmlclient.gui.widget.Slider;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -48,22 +45,22 @@ public class PlayerSettingsGui extends Screen {
 
 		int yy = top;
 		shaderTypeList = new ShaderTypeList(this.minecraft);
-		this.children.add(shaderTypeList);
+		addWidget(shaderTypeList);
 		//TODO set selected name
 		Component currentShaderName = ShaderType.DISSOLVE_BLUE.name;
 		shaderTypeButton = new ExtendedButton(right - 180, yy, 180, 20, currentShaderName, (button) -> {
 			showShaderList = !showShaderList;
 		});
-		addButton(shaderTypeButton);
+		addRenderableOnly(shaderTypeButton);
 
 		yy += 50;
 		Slider slider = new Slider(right - 200, yy, 200, 20, TextComponent.EMPTY, TextComponent.EMPTY, 0.5, 2.0, 1.0, true, true, (button) -> {
 
 		});
-		addButton(slider);
+		addRenderableOnly(slider);
 
 		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, new TextComponent("Done"), (button) -> this.minecraft.player.closeContainer());
-		addButton(closeButton);
+		addRenderableOnly(closeButton);
 	}
 
 	@Override
@@ -205,9 +202,9 @@ public class PlayerSettingsGui extends Screen {
 //            this.minecraft.getTextureManager().bindTexture(AbstractGui.BACKGROUND_LOCATION);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-			RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			float f = 32.0F;
-			bufferbuilder.begin(7, DefaultVertexFormat.POSITION_COLOR);
+			bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 			bufferbuilder.vertex(this.x0, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
 			bufferbuilder.vertex(this.x1, this.y1, 0.0D).color(20, 20, 20, 180).endVertex();
 			bufferbuilder.vertex(this.x1, this.y0, 0.0D).color(20, 20, 20, 180).endVertex();
@@ -225,8 +222,6 @@ public class PlayerSettingsGui extends Screen {
 //            this.renderHoleBackground(this.y1, this.height, 255, 255);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-			RenderSystem.disableAlphaTest();
-			RenderSystem.shadeModel(7425);
 			RenderSystem.disableTexture();
 //            int i1 = 4;
 //            bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
@@ -252,19 +247,19 @@ public class PlayerSettingsGui extends Screen {
 					l1 = this.y0;
 				}
 
-				bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 				bufferbuilder.vertex(i, this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
 				bufferbuilder.vertex(j, this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
 				bufferbuilder.vertex(j, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
 				bufferbuilder.vertex(i, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
 				tessellator.end();
-				bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 				bufferbuilder.vertex(i, l1 + k1, 0.0D).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
 				bufferbuilder.vertex(j, l1 + k1, 0.0D).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
 				bufferbuilder.vertex(j, l1, 0.0D).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
 				bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
 				tessellator.end();
-				bufferbuilder.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 				bufferbuilder.vertex(i, l1 + k1 - 1, 0.0D).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
 				bufferbuilder.vertex(j - 1, l1 + k1 - 1, 0.0D).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
 				bufferbuilder.vertex(j - 1, l1, 0.0D).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
@@ -274,8 +269,6 @@ public class PlayerSettingsGui extends Screen {
 
 //            this.renderDecorations(p_render_1_, p_render_2_);
 			RenderSystem.enableTexture();
-			RenderSystem.shadeModel(7424);
-			RenderSystem.enableAlphaTest();
 			RenderSystem.disableBlend();
 		}
 
@@ -305,6 +298,11 @@ public class PlayerSettingsGui extends Screen {
 				} else {
 					return false;
 				}
+			}
+
+			@Override
+			public Component getNarration() {
+				return null;
 			}
 		}
 	}

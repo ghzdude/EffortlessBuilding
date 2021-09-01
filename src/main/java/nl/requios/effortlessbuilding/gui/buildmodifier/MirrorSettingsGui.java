@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -40,8 +41,8 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void init(List<AbstractWidget> buttonList) {
-		super.init(buttonList);
+	public void init(List<Widget> renderables) {
+		super.init(renderables);
 
 		int y = top - 2;
 		buttonMirrorEnabled = new GuiCheckBoxFixed(left - 15 + 8, y, "", false) {
@@ -51,21 +52,21 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 				setCollapsed(!buttonMirrorEnabled.isChecked());
 			}
 		};
-		buttonList.add(buttonMirrorEnabled);
+		renderables.add(buttonMirrorEnabled);
 
 		y = top + 18;
-		textMirrorPosX = new GuiNumberField(font, buttonList, left + 58, y, 62, 18);
+		textMirrorPosX = new GuiNumberField(font, renderables, left + 58, y, 62, 18);
 		textMirrorPosX.setNumber(0);
 		textMirrorPosX.setTooltip(
 			Arrays.asList(new TextComponent("The position of the mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosX);
 
-		textMirrorPosY = new GuiNumberField(font, buttonList, left + 138, y, 62, 18);
+		textMirrorPosY = new GuiNumberField(font, renderables, left + 138, y, 62, 18);
 		textMirrorPosY.setNumber(64);
 		textMirrorPosY.setTooltip(Arrays.asList(new TextComponent("The position of the mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosY);
 
-		textMirrorPosZ = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
+		textMirrorPosZ = new GuiNumberField(font, renderables, left + 218, y, 62, 18);
 		textMirrorPosZ.setNumber(0);
 		textMirrorPosZ.setTooltip(Arrays.asList(new TextComponent("The position of the mirror."), new TextComponent("For odd numbered builds add 0.5.").withStyle(ChatFormatting.GRAY)));
 		mirrorNumberFieldList.add(textMirrorPosZ);
@@ -81,7 +82,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 		mirrorButtonList.add(buttonMirrorZ);
 
 		y = top + 47;
-		textMirrorRadius = new GuiNumberField(font, buttonList, left + 218, y, 62, 18);
+		textMirrorRadius = new GuiNumberField(font, renderables, left + 218, y, 62, 18);
 		textMirrorRadius.setNumber(50);
 		//TODO change to diameter (remove /2)
 		textMirrorRadius.setTooltip(Arrays.asList(new TextComponent("How far the mirror reaches in any direction."),
@@ -160,8 +161,8 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 			buttonToggleOdd.setUseAlternateIcon(toggleOdd);
 		}
 
-		buttonList.addAll(mirrorButtonList);
-		buttonList.addAll(mirrorIconButtonList);
+		renderables.addAll(mirrorButtonList);
+		renderables.addAll(mirrorIconButtonList);
 
 		setCollapsed(!buttonMirrorEnabled.isChecked());
 	}
