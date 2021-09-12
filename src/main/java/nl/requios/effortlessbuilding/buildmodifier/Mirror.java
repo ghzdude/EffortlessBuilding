@@ -9,7 +9,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +71,8 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		IItemHandler bagInventory = null;
-		if (!itemStack.isEmpty() && itemStack.getItem() instanceof ItemRandomizerBag) {
-			bagInventory = ItemRandomizerBag.getBagInventory(itemStack);
+		if (!itemStack.isEmpty() && itemStack.getItem() instanceof RandomizerBagItem) {
+			bagInventory = RandomizerBagItem.getBagInventory(itemStack);
 		}
 
 		if (m.mirrorX)
@@ -93,7 +93,7 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		if (bagInventory != null) {
-			itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
+			itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
 			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
@@ -118,7 +118,7 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		if (bagInventory != null) {
-			itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
+			itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
 			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
@@ -141,7 +141,7 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		if (bagInventory != null) {
-			itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
+			itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
 			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 

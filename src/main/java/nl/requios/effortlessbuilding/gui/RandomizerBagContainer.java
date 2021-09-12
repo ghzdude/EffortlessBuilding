@@ -13,11 +13,11 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 
 public class RandomizerBagContainer extends AbstractContainerMenu {
 
-	private static final int INV_START = ItemRandomizerBag.INV_SIZE, INV_END = INV_START + 26,
+	private static final int INV_START = RandomizerBagItem.INV_SIZE, INV_END = INV_START + 26,
 		HOTBAR_START = INV_END + 1, HOTBAR_END = HOTBAR_START + 8;
 	private final IItemHandler bagInventory;
 
@@ -33,14 +33,14 @@ public class RandomizerBagContainer extends AbstractContainerMenu {
 
 	//Server?
 	public RandomizerBagContainer(int containerId, Inventory playerInventory) {
-		this(containerId, playerInventory, new ItemStackHandler(ItemRandomizerBag.INV_SIZE));
+		this(containerId, playerInventory, new ItemStackHandler(RandomizerBagItem.INV_SIZE));
 	}
 
 	public RandomizerBagContainer(int containerId, Inventory playerInventory, IItemHandler inventory) {
 		super(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), containerId);
 		bagInventory = inventory;
 
-		for (int i = 0; i < ItemRandomizerBag.INV_SIZE; ++i) {
+		for (int i = 0; i < RandomizerBagItem.INV_SIZE; ++i) {
 			this.addSlot(new SlotItemHandler(bagInventory, i, 44 + (18 * i), 20));
 		}
 

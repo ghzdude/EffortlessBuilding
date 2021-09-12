@@ -87,7 +87,8 @@ public class BuildConfig {
 					"0: blocks that can be harvested with wooden or gold tools",
 					"1: blocks that can be harvested with stone tools",
 					"2: blocks that can be harvested with iron tools",
-					"3: blocks that can be harvested with diamond tools")
+					"3: blocks that can be harvested with diamond tools",
+					"4: blocks that can be harvested with netherite tools")
 				.defineInRange("quickReplaceMiningLevel", -1, -1, 3);
 
 			undoStackSize = builder
@@ -102,7 +103,7 @@ public class BuildConfig {
 	public static class Visuals {
 		public final ForgeConfigSpec.ConfigValue<Boolean> alwaysShowBlockPreview;
 		public final ForgeConfigSpec.ConfigValue<Double> dissolveTimeMultiplier;
-		public final ForgeConfigSpec.ConfigValue<Integer> shaderTreshold;
+		public final ForgeConfigSpec.ConfigValue<Integer> shaderThreshold;
 		public final ForgeConfigSpec.ConfigValue<Boolean> useShaders;
 
 		public Visuals(ForgeConfigSpec.Builder builder) {
@@ -120,7 +121,7 @@ public class BuildConfig {
 					"Relaxing: 1.5")
 				.define("dissolveTimeMultiplier", 1.0);
 
-			shaderTreshold = builder
+			shaderThreshold = builder
 				.comment("Switch to using the simple performance shader when placing more than this many blocks.")
 				.define("shaderTreshold", 1500);
 

@@ -27,11 +27,10 @@ import net.minecraft.world.InteractionResultHolder;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class ItemReachUpgrade1 extends Item {
+public class ReachUpgrade2Item extends Item {
 
-	public ItemReachUpgrade1() {
+	public ReachUpgrade2Item() {
 		super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
-		this.setRegistryName(EffortlessBuilding.MODID, "reach_upgrade1");
 	}
 
 	@Override
@@ -44,15 +43,19 @@ public class ItemReachUpgrade1 extends Item {
 
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 		int currentLevel = modifierSettings.getReachUpgrade();
-		if (currentLevel == 0) {
-			modifierSettings.setReachUpgrade(1);
-
+		if (currentLevel == 1) {
+			modifierSettings.setReachUpgrade(2);
 			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
 			player.playSound(soundEvent, 1f, 1f);
-		} else if (currentLevel > 0) {
+		} else if (currentLevel < 1) {
+			if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 1 first.");
+
+			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
+			player.playSound(soundEvent, 1f, 1f);
+		} else if (currentLevel > 1) {
 			if (world.isClientSide)
 				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + ReachHelper
 					.getMaxReach(player) + ".");
@@ -65,7 +68,8 @@ public class ItemReachUpgrade1 extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(new TextComponent(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + BuildConfig.reach.maxReachLevel1.get()));
+		tooltip.add(new TextComponent(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + BuildConfig.reach.maxReachLevel2.get()));
+		tooltip.add(new TextComponent(ChatFormatting.GRAY + "Previous upgrades need to be consumed first"));
 	}
 
 	@Override

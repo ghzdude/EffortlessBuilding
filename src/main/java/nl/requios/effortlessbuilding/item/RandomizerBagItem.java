@@ -50,16 +50,14 @@ import net.minecraft.world.item.context.UseOnContext;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class ItemRandomizerBag extends Item {
+public class RandomizerBagItem extends Item {
 	public static final int INV_SIZE = 5;
 
 	private static long currentSeed = 1337;
 	private static final Random rand = new Random(currentSeed);
 
-	public ItemRandomizerBag() {
+	public RandomizerBagItem() {
 		super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
-
-		this.setRegistryName(EffortlessBuilding.MODID, "randomizer_bag");
 	}
 
 	/**
@@ -250,7 +248,7 @@ public class ItemRandomizerBag extends Item {
 		@Nullable
 		@Override
 		public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-			return new RandomizerBagContainer(containerId, playerInventory, ItemRandomizerBag.getBagInventory(bag));
+			return new RandomizerBagContainer(containerId, playerInventory, RandomizerBagItem.getBagInventory(bag));
 		}
 	}
 }

@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.Vec3i;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +46,8 @@ public class Array {
 
 		//Randomizer bag synergy
 		IItemHandler bagInventory = null;
-		if (!itemStack.isEmpty() && itemStack.getItem() instanceof ItemRandomizerBag) {
-			bagInventory = ItemRandomizerBag.getBagInventory(itemStack);
+		if (!itemStack.isEmpty() && itemStack.getItem() instanceof RandomizerBagItem) {
+			bagInventory = RandomizerBagItem.getBagInventory(itemStack);
 		}
 
 		for (int i = 0; i < a.count; i++) {
@@ -55,7 +55,7 @@ public class Array {
 
 			//Randomizer bag synergy
 			if (bagInventory != null) {
-				itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
+				itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
 				blockState = BuildModifiers
 					.getBlockStateFromItem(itemStack, player, startPos, Direction.UP, new Vec3(0, 0, 0), InteractionHand.MAIN_HAND);
 			}

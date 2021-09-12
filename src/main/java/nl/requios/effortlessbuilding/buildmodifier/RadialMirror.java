@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,8 +75,8 @@ public class RadialMirror {
 
 		//Randomizer bag synergy
 		IItemHandler bagInventory = null;
-		if (!itemStack.isEmpty() && itemStack.getItem() instanceof ItemRandomizerBag) {
-			bagInventory = ItemRandomizerBag.getBagInventory(itemStack);
+		if (!itemStack.isEmpty() && itemStack.getItem() instanceof RandomizerBagItem) {
+			bagInventory = RandomizerBagItem.getBagInventory(itemStack);
 		}
 
 		BlockState newBlockState;
@@ -96,7 +96,7 @@ public class RadialMirror {
 
 			//Randomizer bag synergy
 			if (bagInventory != null) {
-				itemStack = ItemRandomizerBag.pickRandomStack(bagInventory);
+				itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
 				newBlockState = BuildModifiers
 					.getBlockStateFromItem(itemStack, player, startPos, Direction.UP, new Vec3(0, 0, 0), InteractionHand.MAIN_HAND);
 

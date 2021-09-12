@@ -43,21 +43,6 @@ public class EventHandler {
 		}
 	}
 
-	//TODO 1.13 config
-//    @SubscribeEvent
-//    public static void onConfigChangedEvent(ConfigChangedEvent.OnConfigChangedEvent event)
-//    {
-//        if (event.getModID().equals(EffortlessBuilding.MODID))
-//        {
-//            ConfigManager.sync(EffortlessBuilding.MODID, Config.Type.INSTANCE);
-//        }
-//    }
-
-//    @SubscribeEvent
-//    public static void onServerTick(TickEvent.ServerTickEvent event) {
-//
-//    }
-
 	@SubscribeEvent
 	//Only called serverside (except with lilypads...)
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {

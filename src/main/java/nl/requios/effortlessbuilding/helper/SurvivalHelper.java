@@ -1,6 +1,9 @@
 package nl.requios.effortlessbuilding.helper;
 
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +18,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ToolType;
+import net.minecraftforge.common.data.ForgeBlockTagsProvider;
+import net.minecraftforge.event.ForgeEventFactory;
 import nl.requios.effortlessbuilding.BuildConfig;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
@@ -30,6 +34,8 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SurvivalHelper {
+
+	private static final Tag.Named<Block> NEEDS_NETHERITE_TOOL = BlockTags.bind("forge:needs_netherite_tool");
 
 	//Used for all placing of blocks in this mod.
 	//Checks if area is loaded, if player has the right permissions, if existing block can be replaced (drops it if so) and consumes an item from the stack.
@@ -208,17 +214,26 @@ public class SurvivalHelper {
 
 		BlockState state = world.getBlockState(pos);
 
-		switch (BuildConfig.survivalBalancers.quickReplaceMiningLevel.get()) {
+		int miningLevel = BuildConfig.survivalBalancers.quickReplaceMiningLevel.get();
+		switch (miningLevel) {
 			case -1:
 				return !state.requiresCorrectToolForDrops();
 			case 0:
-				return state.getBlock().getHarvestLevel(state) <= 0;
+				return !state.is(BlockTags.NEEDS_STONE_TOOL) &&
+					   !state.is(BlockTags.NEEDS_IRON_TOOL) &&
+					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL) &&
+					   !state.is(NEEDS_NETHERITE_TOOL);
 			case 1:
-				return state.getBlock().getHarvestLevel(state) <= 1;
+				return !state.is(BlockTags.NEEDS_IRON_TOOL) &&
+					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL) &&
+					   !state.is(NEEDS_NETHERITE_TOOL);
 			case 2:
-				return state.getBlock().getHarvestLevel(state) <= 2;
+				return !state.is(BlockTags.NEEDS_DIAMOND_TOOL) &&
+					   !state.is(NEEDS_NETHERITE_TOOL);
 			case 3:
-				return state.getBlock().getHarvestLevel(state) <= 3;
+				return !state.is(NEEDS_NETHERITE_TOOL);
+			case 4:
+				return true;
 		}
 
 		return false;
@@ -281,36 +296,7 @@ public class SurvivalHelper {
 
 		if (player.isCreative()) return true;
 
-		return canHarvestBlock(blockState.getBlock(), player, world, pos);
-	}
-
-	//From ForgeHooks#canHarvestBlock
-	public static boolean canHarvestBlock(@Nonnull Block block, @Nonnull Player player, @Nonnull Level world, @Nonnull BlockPos pos) {
-		BlockState state = world.getBlockState(pos);
-
-		//Dont break bedrock
-		if (state.getDestroySpeed(world, pos) < 0) {
-			return false;
-		}
-
-		if (!state.requiresCorrectToolForDrops()) {
-			return true;
-		}
-
-		ItemStack stack = player.getMainHandItem();
-		ToolType tool = block.getHarvestTool(state);
-		if (stack.isEmpty() || tool == null) {
-			return player.hasCorrectToolForDrops(state);
-		}
-
-		if (stack.getDamageValue() >= stack.getMaxDamage()) return false;
-
-		int toolLevel = stack.getItem().getHarvestLevel(stack, tool, player, state);
-		if (toolLevel < 0) {
-			return player.hasCorrectToolForDrops(state);
-		}
-
-		return toolLevel >= block.getHarvestLevel(state);
+		return ForgeEventFactory.doPlayerHarvestCheck(player, blockState, true);
 	}
 
 	public static boolean doesBecomeDoubleSlab(Player player, BlockPos pos, Direction facing) {

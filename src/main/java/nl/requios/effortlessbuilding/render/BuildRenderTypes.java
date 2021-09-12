@@ -9,30 +9,12 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.lwjgl.opengl.*;
 
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
 
-public class BuildRenderTypes {
-	public static final RenderStateShard.TransparencyStateShard TRANSLUCENT_TRANSPARENCY;
-	public static final RenderStateShard.TransparencyStateShard NO_TRANSPARENCY;
-
-	//TODO 1.17
-//	public static final RenderStateShard.DiffuseLightingStateShard DIFFUSE_LIGHTING_ENABLED;
-//	public static final RenderStateShard.DiffuseLightingStateShard DIFFUSE_LIGHTING_DISABLED;
-
-	public static final RenderStateShard.LayeringStateShard PROJECTION_LAYERING;
-
-	public static final RenderStateShard.CullStateShard CULL_DISABLED;
-
-	//TODO 1.17
-//	public static final RenderStateShard.AlphaStateShard DEFAULT_ALPHA;
-
-	public static final RenderStateShard.WriteMaskStateShard WRITE_TO_DEPTH_AND_COLOR;
-	public static final RenderStateShard.WriteMaskStateShard COLOR_WRITE;
-
+public class BuildRenderTypes extends RenderType {
 	public static final RenderType LINES;
 	public static final RenderType PLANES;
 
@@ -40,55 +22,35 @@ public class BuildRenderTypes {
 	private static final int secondaryTextureUnit = 2;
 
 	static {
-		TRANSLUCENT_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderStateShard.class, null, "TRANSLUCENT_TRANSPARENCY");
-		NO_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderStateShard.class, null, "NO_TRANSPARENCY");
-
-		PROJECTION_LAYERING = ObfuscationReflectionHelper.getPrivateValue(RenderStateShard.class, null, "VIEW_OFFSET_Z_LAYERING");
-
-		CULL_DISABLED = new RenderStateShard.CullStateShard(false);
-
-		//TODO 1.17
-//		DEFAULT_ALPHA = new RenderStateShard.AlphaStateShard(0.003921569F);
-
-		final boolean ENABLE_DEPTH_WRITING = true;
-		final boolean ENABLE_COLOUR_COMPONENTS_WRITING = true;
-		WRITE_TO_DEPTH_AND_COLOR = new RenderStateShard.WriteMaskStateShard(ENABLE_COLOUR_COMPONENTS_WRITING, ENABLE_DEPTH_WRITING);
-		COLOR_WRITE = new RenderStateShard.WriteMaskStateShard(true, false);
-
+		final LineStateShard LINE = new LineStateShard(OptionalDouble.of(2.0));
 		final int INITIAL_BUFFER_SIZE = 128;
 		RenderType.CompositeState renderState;
 
 		//LINES
-//        RenderSystem.pushLightingAttributes();
-//        RenderSystem.pushTextureAttributes();
-//        RenderSystem.disableCull();
-//        RenderSystem.disableLighting();
-//        RenderSystem.disableTexture();
-//
-//        RenderSystem.enableBlend();
-//        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-//
-//        RenderSystem.lineWidth(2);
-		renderState = RenderType.CompositeState.builder()
-			.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(2)))
-			.setLayeringState(PROJECTION_LAYERING)
-			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-			.setWriteMaskState(WRITE_TO_DEPTH_AND_COLOR)
-			.setCullState(CULL_DISABLED)
-			.createCompositeState(false);
+		renderState = CompositeState.builder()
+				.setLineState(LINE)
+				.setLayeringState(VIEW_OFFSET_Z_LAYERING)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setWriteMaskState(COLOR_DEPTH_WRITE)
+				.setCullState(RenderStateShard.NO_CULL)
+				.createCompositeState(false);
 		LINES = RenderType.create("eb_lines",
 			DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.LINES, INITIAL_BUFFER_SIZE, false, false, renderState);
 
-		renderState = RenderType.CompositeState.builder()
-			.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(2)))
-			.setLayeringState(PROJECTION_LAYERING)
+		//PLANES
+		renderState = CompositeState.builder()
+			.setLineState(LINE)
+			.setLayeringState(VIEW_OFFSET_Z_LAYERING)
 			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
 			.setWriteMaskState(COLOR_WRITE)
-			.setCullState(CULL_DISABLED)
+			.setCullState(RenderStateShard.NO_CULL)
 			.createCompositeState(false);
 		PLANES = RenderType.create("eb_planes",
 			DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, false, false, renderState);
+	}
 
+	public BuildRenderTypes(String p_173178_, VertexFormat p_173179_, VertexFormat.Mode p_173180_, int p_173181_, boolean p_173182_, boolean p_173183_, Runnable p_173184_, Runnable p_173185_) {
+		super(p_173178_, p_173179_, p_173180_, p_173181_, p_173182_, p_173183_, p_173184_, p_173185_);
 	}
 
 	public static RenderType getBlockPreviewRenderType(float dissolve, BlockPos blockPos, BlockPos firstPos,
@@ -113,8 +75,7 @@ public class BuildRenderTypes {
 //            RenderSystem.pushTextureAttributes();
 
 			ShaderHandler.useShader(ShaderHandler.dissolve, generateShaderCallback(dissolve, Vec3.atLowerCornerOf(blockPos), Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos), blockPos == secondPos, red));
-			//TODO 1.17
-//			RenderSystem.blendColor(1f, 1f, 1f, 0.8f);
+			RenderSystem.setShaderColor(1f, 1f, 1f, 0.8f);
 		}, ShaderHandler::releaseShader);
 
 		RenderType.CompositeState renderState = RenderType.CompositeState.builder()
@@ -203,43 +164,4 @@ public class BuildRenderTypes {
 			this.red = red;
 		}
 	}
-
-//    public static class MyTexturingState extends RenderState.TexturingState {
-//
-//        public float dissolve;
-//        public Vector3d blockPos;
-//        public Vector3d firstPos;
-//        public Vector3d secondPos;
-//        public boolean highlight;
-//        public boolean red;
-//
-//        public MyTexturingState(String p_i225989_1_, float dissolve, Vector3d blockPos, Vector3d firstPos,
-//                                Vector3d secondPos, boolean highlight, boolean red, Runnable p_i225989_2_, Runnable p_i225989_3_) {
-//            super(p_i225989_1_, p_i225989_2_, p_i225989_3_);
-//            this.dissolve = dissolve;
-//            this.blockPos = blockPos;
-//            this.firstPos = firstPos;
-//            this.secondPos = secondPos;
-//            this.highlight = highlight;
-//            this.red = red;
-//        }
-//
-//        @Override
-//        public boolean equals(Object p_equals_1_) {
-//            if (this == p_equals_1_) {
-//                return true;
-//            } else if (p_equals_1_ != null && this.getClass() == p_equals_1_.getClass()) {
-//                MyTexturingState other = (MyTexturingState)p_equals_1_;
-//                return this.dissolve == other.dissolve && this.blockPos == other.blockPos && this.firstPos == other.firstPos
-//                       && this.secondPos == other.secondPos && this.highlight == other.highlight && this.red == other.red;
-//            } else {
-//                return false;
-//            }
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//
-//        }
-//    }
 }

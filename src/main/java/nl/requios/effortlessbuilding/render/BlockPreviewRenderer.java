@@ -32,7 +32,7 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.Modif
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
 import java.util.ArrayList;
@@ -168,7 +168,7 @@ public class BlockPreviewRenderer {
 					previousSecondPos = secondPos;
 
 					//if so, renew randomness of randomizer bag
-					ItemRandomizerBag.renewRandomness();
+					RandomizerBagItem.renewRandomness();
 					//and play sound (max once every tick)
 					if (newCoordinates.size() > 1 && blockStates.size() > 1 && soundTime < ClientProxy.ticksInGame - 0) {
 						soundTime = ClientProxy.ticksInGame;
@@ -187,7 +187,7 @@ public class BlockPreviewRenderer {
 					int blockCount;
 
 					//Use fancy shader if config allows, otherwise outlines
-					if (BuildConfig.visuals.useShaders.get() && newCoordinates.size() < BuildConfig.visuals.shaderTreshold.get()) {
+					if (BuildConfig.visuals.useShaders.get() && newCoordinates.size() < BuildConfig.visuals.shaderThreshold.get()) {
 						blockCount = renderBlockPreviews(matrixStack, renderTypeBuffer, newCoordinates, blockStates, itemStacks, 0f, firstPos, secondPos, !breaking, breaking);
 					} else {
 						VertexConsumer buffer = RenderHandler.beginLines(renderTypeBuffer);
@@ -314,7 +314,7 @@ public class BlockPreviewRenderer {
 
 			//Save current coordinates, blockstates and itemstacks
 			if (!coordinates.isEmpty() && blockStates.size() == coordinates.size() &&
-				coordinates.size() > 1 && coordinates.size() < BuildConfig.visuals.shaderTreshold.get()) {
+				coordinates.size() > 1 && coordinates.size() < BuildConfig.visuals.shaderThreshold.get()) {
 
 				placedDataList.add(new PlacedData(ClientProxy.ticksInGame, coordinates, blockStates,
 					itemStacks, firstPos, secondPos, false));
@@ -338,7 +338,7 @@ public class BlockPreviewRenderer {
 
 			//Save current coordinates, blockstates and itemstacks
 			if (!coordinates.isEmpty() && blockStates.size() == coordinates.size() &&
-				coordinates.size() > 1 && coordinates.size() < BuildConfig.visuals.shaderTreshold.get()) {
+				coordinates.size() > 1 && coordinates.size() < BuildConfig.visuals.shaderThreshold.get()) {
 
 				sortOnDistanceToPlayer(coordinates, player);
 

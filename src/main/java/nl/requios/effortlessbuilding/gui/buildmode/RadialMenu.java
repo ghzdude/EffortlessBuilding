@@ -24,7 +24,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
 import static nl.requios.effortlessbuilding.buildmode.ModeOptions.*;
 
 import nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
@@ -87,8 +86,8 @@ public class RadialMenu extends Screen {
 
 		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(Minecraft.getInstance().player).getBuildMode();
 
-		RenderSystem.pushMatrix();
-		RenderSystem.translatef(0.0F, 0.0F, 200.0F);
+		ms.pushPose();
+		ms.translate(0, 0, 200);
 
 		final int startColor = (int) (visibility * 98) << 24;
 		final int endColor = (int) (visibility * 128) << 24;
@@ -97,13 +96,15 @@ public class RadialMenu extends Screen {
 
 		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
-		RenderSystem.disableAlphaTest();
+		//TODO 1.17
+//		RenderSystem.disableAlphaTest();
 		RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-		RenderSystem.shadeModel(GL11.GL_SMOOTH);
+		//TODO 1.17
+//		RenderSystem.shadeModel(GL11.GL_SMOOTH);
 		final Tesselator tessellator = Tesselator.getInstance();
 		final BufferBuilder buffer = tessellator.getBuilder();
 
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
+		buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
 		final double middleX = width / 2.0;
 		final double middleY = height / 2.0;
@@ -258,13 +259,15 @@ public class RadialMenu extends Screen {
 
 		tessellator.end();
 
-		RenderSystem.shadeModel(GL11.GL_FLAT);
+		//TODO 1.17
+//		RenderSystem.shadeModel(GL11.GL_FLAT);
 
-		RenderSystem.translatef(0f, 0f, 5f);
+		ms.translate(0f, 0f, 5f);
 		RenderSystem.enableTexture();
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 		RenderSystem.disableBlend();
-		RenderSystem.enableAlphaTest();
+		//TODO 1.17
+//		RenderSystem.enableAlphaTest();
 		RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
 
 		buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -420,7 +423,7 @@ public class RadialMenu extends Screen {
 			}
 		}
 
-		RenderSystem.popMatrix();
+		ms.popPose();
 	}
 
 	private boolean inTriangle(final double x1, final double y1, final double x2, final double y2,

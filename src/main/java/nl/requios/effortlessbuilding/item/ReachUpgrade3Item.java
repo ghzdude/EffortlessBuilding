@@ -27,11 +27,10 @@ import net.minecraft.world.InteractionResultHolder;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class ItemReachUpgrade3 extends Item {
+public class ReachUpgrade3Item extends Item {
 
-	public ItemReachUpgrade3() {
+	public ReachUpgrade3Item() {
 		super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
-		this.setRegistryName(EffortlessBuilding.MODID, "reach_upgrade3");
 	}
 
 	@Override

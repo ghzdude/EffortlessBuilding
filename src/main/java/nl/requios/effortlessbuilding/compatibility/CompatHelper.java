@@ -9,7 +9,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 
 public class CompatHelper {
 	//TODO 1.13 compatibility
@@ -40,7 +40,7 @@ public class CompatHelper {
 		Item item = stack.getItem();
 		if (item instanceof BlockItem)
 			return true;
-		return item instanceof ItemRandomizerBag;
+		return item instanceof RandomizerBagItem;
 		//TODO 1.13 compatibility
 //        if (item == dankNullItem)
 //            return true;
@@ -55,11 +55,11 @@ public class CompatHelper {
 			return proxy;
 
 		//Randomizer Bag
-		if (proxyItem instanceof ItemRandomizerBag) {
+		if (proxyItem instanceof RandomizerBagItem) {
 			ItemStack itemStack = proxy;
 			while (!(itemStack.getItem() instanceof BlockItem || itemStack.isEmpty())) {
-				if (itemStack.getItem() instanceof ItemRandomizerBag)
-					itemStack = ItemRandomizerBag.pickRandomStack(ItemRandomizerBag.getBagInventory(itemStack));
+				if (itemStack.getItem() instanceof RandomizerBagItem)
+					itemStack = RandomizerBagItem.pickRandomStack(RandomizerBagItem.getBagInventory(itemStack));
 			}
 			return itemStack;
 		}
@@ -82,9 +82,9 @@ public class CompatHelper {
 		Item blockItem = Item.byBlock(state.getBlock());
 		if (stack.getItem() instanceof BlockItem)
 			return stack;
-		else if (stack.getItem() instanceof ItemRandomizerBag) {
-			IItemHandler bagInventory = ItemRandomizerBag.getBagInventory(stack);
-			return ItemRandomizerBag.findStack(bagInventory, blockItem);
+		else if (stack.getItem() instanceof RandomizerBagItem) {
+			IItemHandler bagInventory = RandomizerBagItem.getBagInventory(stack);
+			return RandomizerBagItem.findStack(bagInventory, blockItem);
 		}
 		//TODO 1.13 compatibility
 //        else if (stack.getItem() == dankNullItem) {
