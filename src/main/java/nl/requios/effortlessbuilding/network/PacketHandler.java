@@ -7,12 +7,12 @@ import nl.requios.effortlessbuilding.EffortlessBuilding;
 
 public class PacketHandler {
 	private static final String PROTOCOL_VERSION = "1";
-	public static final SimpleChannel INSTANCE = NetworkRegistry.ChannelBuilder
-		.named(new ResourceLocation(EffortlessBuilding.MODID, "main_channel"))
-		.clientAcceptedVersions(PROTOCOL_VERSION::equals)
-		.serverAcceptedVersions(PROTOCOL_VERSION::equals)
-		.networkProtocolVersion(() -> PROTOCOL_VERSION)
-		.simpleChannel();
+	public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
+			new ResourceLocation(EffortlessBuilding.MODID, "main_channel"),
+			() -> PROTOCOL_VERSION,
+			PROTOCOL_VERSION::equals,
+			PROTOCOL_VERSION::equals
+			);
 
 	public static void register() {
 		int id = 0;

@@ -15,6 +15,7 @@ import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
@@ -22,6 +23,7 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
+import nl.requios.effortlessbuilding.command.CommandReach;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
@@ -31,7 +33,7 @@ import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID)
+@Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class EventHandler {
 
 	@SubscribeEvent
@@ -41,6 +43,11 @@ public class EventHandler {
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_mode"), new ModeCapabilityManager.Provider());
 		}
+	}
+
+	@SubscribeEvent
+	public void onServerStarting(FMLServerStartingEvent event) {
+		CommandReach.register(event.getServer().getCommands().getDispatcher());
 	}
 
 	@SubscribeEvent

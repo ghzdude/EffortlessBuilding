@@ -17,25 +17,32 @@ import javax.annotation.Nonnull;
 @Mod.EventBusSubscriber
 public class ModifierSettingsManager {
 
+	private static ModifierSettings cache = null;
+
 	//Retrieves the buildsettings of a player through the modifierCapability capability
 	//Never returns null
 	@Nonnull
 	public static ModifierSettings getModifierSettings(Player player) {
+		if (cache != null) return cache;
+
 		LazyOptional<ModifierCapabilityManager.IModifierCapability> modifierCapability =
-			player.getCapability(ModifierCapabilityManager.modifierCapability, null);
+			player.getCapability(ModifierCapabilityManager.MODIFIER_CAPABILITY, null);
 
 		if (modifierCapability.isPresent()) {
 			ModifierCapabilityManager.IModifierCapability capability = modifierCapability.orElse(null);
-			if (capability.getModifierData() == null) {
-				capability.setModifierData(new ModifierSettings());
+			cache = capability.getModifierData();
+			if (cache == null) {
+				cache = new ModifierSettings();
+				capability.setModifierData(cache);
 			}
-			return capability.getModifierData();
+			//Add invalidation listener, to invalidate cache
+			modifierCapability.addListener(self -> cache = null);
+			return cache;
 		}
 
-		//Player does not have modifierCapability capability
+		EffortlessBuilding.logger.warn("Player does not have modifierCapability: " + player);
 		//Return dummy settings
 		return new ModifierSettings();
-//        throw new IllegalArgumentException("Player does not have modifierCapability capability");
 	}
 
 	public static void setModifierSettings(Player player, ModifierSettings modifierSettings) {
@@ -45,7 +52,7 @@ public class ModifierSettingsManager {
 		}
 
 		LazyOptional<ModifierCapabilityManager.IModifierCapability> modifierCapability =
-			player.getCapability(ModifierCapabilityManager.modifierCapability, null);
+			player.getCapability(ModifierCapabilityManager.MODIFIER_CAPABILITY, null);
 
 		modifierCapability.ifPresent((capability) -> {
 			capability.setModifierData(modifierSettings);

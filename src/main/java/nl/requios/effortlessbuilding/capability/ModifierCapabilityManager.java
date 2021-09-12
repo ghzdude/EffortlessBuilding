@@ -7,7 +7,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,13 +27,13 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.Modif
 public class ModifierCapabilityManager {
 
 	@CapabilityInject(IModifierCapability.class)
-	public final static Capability<IModifierCapability> modifierCapability = null;
+	public final static Capability<IModifierCapability> MODIFIER_CAPABILITY = null;
 
 	// Allows for the capability to persist after death.
 	@SubscribeEvent
 	public static void clonePlayer(PlayerEvent.Clone event) {
-		LazyOptional<IModifierCapability> original = event.getOriginal().getCapability(modifierCapability, null);
-		LazyOptional<IModifierCapability> clone = event.getEntity().getCapability(modifierCapability, null);
+		LazyOptional<IModifierCapability> original = event.getOriginal().getCapability(MODIFIER_CAPABILITY, null);
+		LazyOptional<IModifierCapability> clone = event.getEntity().getCapability(MODIFIER_CAPABILITY, null);
 		clone.ifPresent(cloneModifierCapability ->
 			original.ifPresent(originalModifierCapability ->
 				cloneModifierCapability.setModifierData(originalModifierCapability.getModifierData())));
@@ -57,14 +59,33 @@ public class ModifierCapabilityManager {
 		}
 	}
 
-	public static class Provider implements ICapabilitySerializable<Tag> {
+	public static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<Tag> {
 
-		IModifierCapability instance = new ModifierCapability();
+		private final IModifierCapability instance = new ModifierCapability();
+		private LazyOptional<IModifierCapability> modifierCapabilityOptional = LazyOptional.of(() -> instance);
+
+		public Provider() {
+			super(Provider.class);
+			gatherCapabilities();
+		}
 
 		@Nonnull
 		@Override
 		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-			return modifierCapability.orEmpty(cap, LazyOptional.of(() -> instance));
+			if (cap == MODIFIER_CAPABILITY) return modifierCapabilityOptional.cast();
+			return LazyOptional.empty();
+		}
+
+		@Override
+		public void invalidateCaps() {
+			super.invalidateCaps();
+			modifierCapabilityOptional.invalidate();
+		}
+
+		@Override
+		public void reviveCaps() {
+			super.reviveCaps();
+			modifierCapabilityOptional = LazyOptional.of(() -> instance);
 		}
 
 		@Override

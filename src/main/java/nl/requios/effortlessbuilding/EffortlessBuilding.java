@@ -64,7 +64,7 @@ public class EffortlessBuilding {
 		instance = this;
 
 		// Register ourselves for server and other game events we are interested in
-		MinecraftForge.EVENT_BUS.register(this);
+		FMLJavaModLoadingContext.get().getModEventBus().register(this);
 
 		ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
 		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
@@ -89,7 +89,6 @@ public class EffortlessBuilding {
 
 	@SubscribeEvent
 	public void clientSetup(final FMLClientSetupEvent event) {
-
 		proxy.clientSetup(event);
 	}
 
@@ -97,11 +96,6 @@ public class EffortlessBuilding {
 	public void registerCapabilities(RegisterCapabilitiesEvent event){
 		event.register(ModifierCapabilityManager.IModifierCapability.class);
 		event.register(ModeCapabilityManager.IModeCapability.class);
-	}
-
-	@SubscribeEvent
-	public void onServerStarting(FMLServerStartingEvent event) {
-		CommandReach.register(event.getServer().getCommands().getDispatcher());
 	}
 
 	public static void log(String msg) {

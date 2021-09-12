@@ -5,6 +5,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -15,21 +16,19 @@ import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
-
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
 @Mod.EventBusSubscriber
 public class ModeCapabilityManager {
 
 	@CapabilityInject(IModeCapability.class)
-	public final static Capability<IModeCapability> modeCapability = null;
+	public final static Capability<IModeCapability> MODE_CAPABILITY = null;
 
 	// Allows for the capability to persist after death.
 	@SubscribeEvent
 	public static void clonePlayer(PlayerEvent.Clone event) {
-		LazyOptional<IModeCapability> original = event.getOriginal().getCapability(modeCapability, null);
-		LazyOptional<IModeCapability> clone = event.getEntity().getCapability(modeCapability, null);
+		LazyOptional<IModeCapability> original = event.getOriginal().getCapability(MODE_CAPABILITY, null);
+		LazyOptional<IModeCapability> clone = event.getEntity().getCapability(MODE_CAPABILITY, null);
 		clone.ifPresent(cloneModeCapability ->
 			original.ifPresent(originalModeCapability ->
 				cloneModeCapability.setModeData(originalModeCapability.getModeData())));
@@ -55,13 +54,33 @@ public class ModeCapabilityManager {
 		}
 	}
 
-	public static class Provider implements ICapabilitySerializable<Tag> {
-		IModeCapability instance = new ModeCapability();
+	public static class Provider extends CapabilityProvider<Provider> implements ICapabilitySerializable<Tag> {
+
+		private IModeCapability instance = new ModeCapability();
+		private LazyOptional<IModeCapability> modeCapabilityOptional = LazyOptional.of(() -> instance);
+
+		public Provider() {
+			super(Provider.class);
+			gatherCapabilities();
+		}
 
 		@Nonnull
 		@Override
 		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-			return modeCapability.orEmpty(cap, LazyOptional.of(() -> instance));
+			if (cap == MODE_CAPABILITY) return modeCapabilityOptional.cast();
+			return LazyOptional.empty();
+		}
+
+		@Override
+		public void invalidateCaps() {
+			super.invalidateCaps();
+			modeCapabilityOptional.invalidate();
+		}
+
+		@Override
+		public void reviveCaps() {
+			super.reviveCaps();
+			modeCapabilityOptional = LazyOptional.of(() -> instance);
 		}
 
 		@Override

@@ -16,22 +16,30 @@ import javax.annotation.Nonnull;
 @Mod.EventBusSubscriber
 public class ModeSettingsManager {
 
-	//Retrieves the buildsettings of a player through the modifierCapability capability
+	private static ModeSettings cache = null;
+
+	//Retrieves the buildsettings of a player through the modeCapability capability
 	//Never returns null
 	@Nonnull
 	public static ModeSettings getModeSettings(Player player) {
+		if (cache != null) return cache;
+
 		LazyOptional<ModeCapabilityManager.IModeCapability> modeCapability =
-			player.getCapability(ModeCapabilityManager.modeCapability, null);
+			player.getCapability(ModeCapabilityManager.MODE_CAPABILITY, null);
 
 		if (modeCapability.isPresent()) {
 			ModeCapabilityManager.IModeCapability capability = modeCapability.orElse(null);
-			if (capability.getModeData() == null) {
-				capability.setModeData(new ModeSettings());
+			cache = capability.getModeData();
+			if (cache == null) {
+				cache = new ModeSettings();
+				capability.setModeData(cache);
 			}
+			//Add invalidation listener, to invalidate cache
+			modeCapability.addListener(self -> cache = null);
 			return capability.getModeData();
 		}
 
-		//Player does not have modeCapability capability
+		EffortlessBuilding.logger.warn("Player does not have modeCapability: " + player);
 		//Return dummy settings
 		return new ModeSettings();
 //        throw new IllegalArgumentException("Player does not have modeCapability capability");
@@ -43,7 +51,7 @@ public class ModeSettingsManager {
 			return;
 		}
 		LazyOptional<ModeCapabilityManager.IModeCapability> modeCapability =
-			player.getCapability(ModeCapabilityManager.modeCapability, null);
+			player.getCapability(ModeCapabilityManager.MODE_CAPABILITY, null);
 
 		modeCapability.ifPresent((capability) -> {
 			capability.setModeData(modeSettings);
