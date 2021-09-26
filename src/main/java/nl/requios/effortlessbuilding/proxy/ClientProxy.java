@@ -5,7 +5,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.KeyMapping;
@@ -29,28 +28,23 @@ import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fmlclient.registry.ClientRegistry;
 import net.minecraftforge.fmllegacy.network.NetworkEvent;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.gui.RandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
 import nl.requios.effortlessbuilding.gui.buildmodifier.ModifierSettingsGui;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.network.*;
-import nl.requios.effortlessbuilding.render.ShaderHandler;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -66,7 +60,6 @@ public class ClientProxy implements IProxy {
 	public static int ticksInGame = 0;
 	private static int placeCooldown = 0;
 	private static int breakCooldown = 0;
-	private static boolean shadersInitialized = false;
 
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -101,12 +94,6 @@ public class ClientProxy implements IProxy {
 			Screen gui = Minecraft.getInstance().screen;
 			if (gui == null || !gui.isPauseScreen()) {
 				ticksInGame++;
-			}
-
-			//Init shaders in the first tick. Doing it anywhere before this seems to crash the game.
-			if (!shadersInitialized) {
-				ShaderHandler.init();
-				shadersInitialized = true;
 			}
 		}
 
@@ -276,12 +263,6 @@ public class ClientProxy implements IProxy {
 			}
 		}
 
-		//For shader development
-		if (keyBindings.length >= 8 && keyBindings[7].consumeClick()) {
-			ShaderHandler.init();
-			EffortlessBuilding.log(player, "Reloaded shaders");
-		}
-
 	}
 
 	public static void openModifierSettings() {
@@ -367,7 +348,6 @@ public class ClientProxy implements IProxy {
 		keyBindings[4] = new KeyMapping("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
 		keyBindings[5] = new KeyMapping("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
 		keyBindings[6] = new KeyMapping("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
-		//keyBindings[7] = new KeyBinding("Reload shaders", KeyConflictContext.UNIVERSAL, InputMappings.getInputByCode(GLFW.GLFW_KEY_TAB, 0), "key.effortlessbuilding.category");
 
 		// register all the key bindings
 		for (KeyMapping keyBinding : keyBindings) {

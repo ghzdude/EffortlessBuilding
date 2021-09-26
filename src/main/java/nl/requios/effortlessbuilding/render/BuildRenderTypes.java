@@ -1,26 +1,38 @@
 package nl.requios.effortlessbuilding.render;
 
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import nl.requios.effortlessbuilding.BuildConfig;
+import nl.requios.effortlessbuilding.EffortlessBuilding;
 import org.lwjgl.opengl.*;
 
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BuildRenderTypes extends RenderType {
+	public static ResourceLocation shaderMaskTextureLocation = new ResourceLocation(EffortlessBuilding.MODID, "textures/shader_mask.png");
+
 	public static final RenderType LINES;
 	public static final RenderType PLANES;
 
-	private static final int primaryTextureUnit = 0;
-	private static final int secondaryTextureUnit = 2;
+	public static ShaderInstance dissolveShaderInstance;
+	private static final ShaderStateShard RENDERTYPE_DISSOLVE_SHADER = new ShaderStateShard(() -> dissolveShaderInstance);
+
+	//Between 0 and 7, but dont override vanilla textures
+	//Also update dissolve.fsh SamplerX
+	private static final int maskTextureIndex = 7;
 
 	static {
 		final LineStateShard LINE = new LineStateShard(OptionalDouble.of(2.0));
@@ -58,39 +70,27 @@ public class BuildRenderTypes extends RenderType {
 			DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, false, false, renderState);
 	}
 
+
+	// Dummy constructor needed to make java happy
 	public BuildRenderTypes(String p_173178_, VertexFormat p_173179_, VertexFormat.Mode p_173180_, int p_173181_, boolean p_173182_, boolean p_173183_, Runnable p_173184_, Runnable p_173185_) {
 		super(p_173178_, p_173179_, p_173180_, p_173181_, p_173182_, p_173183_, p_173184_, p_173185_);
 	}
 
-	public static RenderType getBlockPreviewRenderType(float dissolve, BlockPos blockPos, BlockPos firstPos,
-													   BlockPos secondPos, boolean red) {
-//        RenderSystem.pushLightingAttributes();
-//        RenderSystem.pushTextureAttributes();
-//        RenderSystem.enableCull();
-//        RenderSystem.enableTexture();
-//        Minecraft.getInstance().textureManager.bindTexture(ShaderHandler.shaderMaskTextureLocation);
-//
-//        RenderSystem.enableBlend();
-//        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-//        RenderSystem.blendColor(1f, 1f, 1f, 0.8f);
-		//end
-//        ShaderHandler.releaseShader();
+	public static RenderType getBlockPreviewRenderType(float dissolve, BlockPos blockPos, BlockPos firstPos, BlockPos secondPos, boolean red) {
 
-		//highjacking texturing state (which does nothing by default) to do my own things
+		Boolean useShaders = BuildConfig.visuals.useShaders.get();
+		//TODO 1.17 don't use shaders if config says no
 
 		String stateName = "eb_texturing_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
-		RenderStateShard.TexturingStateShard MY_TEXTURING = new RenderStateShard.TexturingStateShard(stateName, () -> {
-//            RenderSystem.pushLightingAttributes();
-//            RenderSystem.pushTextureAttributes();
-
-			ShaderHandler.useShader(ShaderHandler.dissolve, generateShaderCallback(dissolve, Vec3.atLowerCornerOf(blockPos), Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos), blockPos == secondPos, red));
+		TexturingStateShard MY_TEXTURING = new TexturingStateShard(stateName, () -> {
+			setShaderParameters(dissolveShaderInstance, dissolve, Vec3.atLowerCornerOf(blockPos), Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos), blockPos == secondPos, red);
 			RenderSystem.setShaderColor(1f, 1f, 1f, 0.8f);
-		}, ShaderHandler::releaseShader);
+		}, () -> {});
 
 		RenderType.CompositeState renderState = RenderType.CompositeState.builder()
-				.setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
-				.setTextureState(new RenderStateShard.TextureStateShard(ShaderHandler.shaderMaskTextureLocation, false, false))
+				.setShaderState(RENDERTYPE_DISSOLVE_SHADER)
 				.setTexturingState(MY_TEXTURING)
+				.setTextureState(new RenderStateShard.TextureStateShard(shaderMaskTextureLocation, false, false))
 				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
 				//TODO 1.17
 	//			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
@@ -105,49 +105,26 @@ public class BuildRenderTypes extends RenderType {
 			DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 256, true, true, renderState);
 	}
 
-	private static Consumer<Integer> generateShaderCallback(final float dissolve, final Vec3 blockpos,
+	private static void setShaderParameters(ShaderInstance shader, final float dissolve, final Vec3 blockpos,
 															final Vec3 firstpos, final Vec3 secondpos,
 															final boolean highlight, final boolean red) {
-		Minecraft mc = Minecraft.getInstance();
-		return (Integer shader) -> {
-			int percentileUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "dissolve");
-			int highlightUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "highlight");
-			int redUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "red");
-			int blockposUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "blockpos");
-			int firstposUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "firstpos");
-			int secondposUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "secondpos");
-			int imageUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "image");
-			int maskUniform = ARBShaderObjects.glGetUniformLocationARB(shader, "mask");
+		Uniform percentileUniform = shader.getUniform("dissolve");
+		Uniform highlightUniform = shader.getUniform("highlight");
+		Uniform redUniform = shader.getUniform("red");
+		Uniform blockposUniform = shader.getUniform("blockpos");
+		Uniform firstposUniform = shader.getUniform("firstpos");
+		Uniform secondposUniform = shader.getUniform("secondpos");
 
-			RenderSystem.enableTexture();
-			GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+		RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+		RenderSystem.setShaderTexture(maskTextureIndex, shaderMaskTextureLocation);
 
-			//mask
-			ARBShaderObjects.glUniform1iARB(maskUniform, secondaryTextureUnit);
-			glActiveTexture(ARBMultitexture.GL_TEXTURE0_ARB + secondaryTextureUnit);
-			RenderSystem.setShaderTexture(0, ShaderHandler.shaderMaskTextureLocation);
-			//mc.getTextureManager().bindForSetup(ShaderHandler.shaderMaskTextureLocation);//getTexture(ShaderHandler.shaderMaskTextureLocation).bindTexture();
-			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, mc.getTextureManager().getTexture(ShaderHandler.shaderMaskTextureLocation).getGlTextureId());
+		percentileUniform.set(dissolve);
+		highlightUniform.set(highlight ? 1 : 0);
+		redUniform.set(red ? 1 : 0);
 
-			//image
-			ARBShaderObjects.glUniform1iARB(imageUniform, primaryTextureUnit);
-			glActiveTexture(ARBMultitexture.GL_TEXTURE0_ARB + primaryTextureUnit);
-			RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-			//mc.getTextureManager().bindForSetup(TextureAtlas.LOCATION_BLOCKS);//.getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).bindTexture();
-			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, mc.getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).getGlTextureId());
-
-			//blockpos
-			ARBShaderObjects.glUniform3fARB(blockposUniform, (float) blockpos.x, (float) blockpos.y, (float) blockpos.z);
-			ARBShaderObjects.glUniform3fARB(firstposUniform, (float) firstpos.x, (float) firstpos.y, (float) firstpos.z);
-			ARBShaderObjects.glUniform3fARB(secondposUniform, (float) secondpos.x, (float) secondpos.y, (float) secondpos.z);
-
-			//dissolve
-			ARBShaderObjects.glUniform1fARB(percentileUniform, dissolve);
-			//highlight
-			ARBShaderObjects.glUniform1iARB(highlightUniform, highlight ? 1 : 0);
-			//red
-			ARBShaderObjects.glUniform1iARB(redUniform, red ? 1 : 0);
-		};
+		blockposUniform.set((float) blockpos.x, (float) blockpos.y, (float) blockpos.z);
+		firstposUniform.set((float) firstpos.x, (float) firstpos.y, (float) firstpos.z);
+		secondposUniform.set((float) secondpos.x, (float) secondpos.y, (float) secondpos.z);
 	}
 
 	public static void glActiveTexture(int texture) {
