@@ -21,7 +21,7 @@ public class ModifierRenderer {
 	protected static final Color colorZ = new Color(52, 247, 255);
 	protected static final Color colorRadial = new Color(52, 247, 255);
 	protected static final int lineAlpha = 200;
-	protected static final int planeAlpha = 75;
+	protected static final int planeAlpha = 50;
 	protected static final Vec3 epsilon = new Vec3(0.001, 0.001, 0.001); //prevents z-fighting
 
 	public static void render(PoseStack matrixStack, MultiBufferSource.BufferSource renderTypeBuffer, ModifierSettingsManager.ModifierSettings modifierSettings) {

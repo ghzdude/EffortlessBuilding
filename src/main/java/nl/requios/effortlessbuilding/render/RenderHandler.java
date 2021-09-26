@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -53,8 +54,6 @@ public class RenderHandler {
 		PoseStack matrixStack = event.getMatrixStack();
 		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
 		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(bufferBuilder);
-		if (renderTypeBuffer == null)
-			return;
 
 		Player player = Minecraft.getInstance().player;
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
@@ -193,8 +192,8 @@ public class RenderHandler {
 
 		try {
 			BakedModel model = dispatcher.getBlockModel(blockState);
-			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer,
-				blockState, model, 1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY);
+			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer, blockState, model,
+					1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
 //        blockRendererDispatcher.getBlockModelRenderer().renderModel(world, blockRendererDispatcher.getModelForState(blockState),
 //                blockState, logicPos, matrixStack, renderTypeBuffer.getBuffer(renderType), true, new Random(), blockState.getPositionRandom(logicPos), i);
 		} catch (NullPointerException e) {

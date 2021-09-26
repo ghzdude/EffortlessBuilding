@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -29,8 +30,12 @@ public class BuildRenderTypes extends RenderType {
 		//LINES
 		renderState = CompositeState.builder()
 				.setLineState(LINE)
+				.setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER)
 				.setLayeringState(VIEW_OFFSET_Z_LAYERING)
 				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setTextureState(RenderStateShard.NO_TEXTURE)
+				.setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+				.setLightmapState(RenderStateShard.NO_LIGHTMAP)
 				.setWriteMaskState(COLOR_DEPTH_WRITE)
 				.setCullState(RenderStateShard.NO_CULL)
 				.createCompositeState(false);
@@ -39,12 +44,16 @@ public class BuildRenderTypes extends RenderType {
 
 		//PLANES
 		renderState = CompositeState.builder()
-			.setLineState(LINE)
-			.setLayeringState(VIEW_OFFSET_Z_LAYERING)
-			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-			.setWriteMaskState(COLOR_WRITE)
-			.setCullState(RenderStateShard.NO_CULL)
-			.createCompositeState(false);
+				.setLineState(LINE)
+				.setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER)
+				.setLayeringState(VIEW_OFFSET_Z_LAYERING)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setTextureState(RenderStateShard.NO_TEXTURE)
+				.setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+				.setLightmapState(RenderStateShard.NO_LIGHTMAP)
+				.setWriteMaskState(COLOR_WRITE)
+				.setCullState(RenderStateShard.NO_CULL)
+				.createCompositeState(false);
 		PLANES = RenderType.create("eb_planes",
 			DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, false, false, renderState);
 	}
@@ -79,16 +88,17 @@ public class BuildRenderTypes extends RenderType {
 		}, ShaderHandler::releaseShader);
 
 		RenderType.CompositeState renderState = RenderType.CompositeState.builder()
-			.setTextureState(new RenderStateShard.TextureStateShard(ShaderHandler.shaderMaskTextureLocation, false, false))
-			.setTexturingState(MY_TEXTURING)
-			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(ShaderHandler.shaderMaskTextureLocation, false, false))
+				.setTexturingState(MY_TEXTURING)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
 				//TODO 1.17
-//			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
-//			.setAlphaState(DEFAULT_ALPHA)
-			.setCullState(new RenderStateShard.CullStateShard(true))
-			.setLightmapState(new RenderStateShard.LightmapStateShard(false))
-			.setOverlayState(new RenderStateShard.OverlayStateShard(false))
-			.createCompositeState(true);
+	//			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
+	//			.setAlphaState(DEFAULT_ALPHA)
+				.setCullState(new RenderStateShard.CullStateShard(true))
+				.setLightmapState(new RenderStateShard.LightmapStateShard(false))
+				.setOverlayState(new RenderStateShard.OverlayStateShard(false))
+				.createCompositeState(true);
 		//Unique name for every combination, otherwise it will reuse the previous one
 		String name = "eb_block_previews_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
 		return RenderType.create(name,
