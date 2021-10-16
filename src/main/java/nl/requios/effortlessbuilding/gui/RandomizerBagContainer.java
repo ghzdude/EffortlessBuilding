@@ -58,7 +58,7 @@ public class RandomizerBagContainer extends AbstractContainerMenu {
 		}
 	}
 
-	@Override
+    @Override
 	public boolean stillValid(Player playerIn) {
 		return true;
 	}

@@ -35,8 +35,8 @@ public class RandomizerBagScreen extends AbstractContainerScreen<RandomizerBagCo
 
 	@Override
 	protected void renderLabels(PoseStack ms, int mouseX, int mouseY) {
-		font.drawShadow(ms, this.title, 8, 6, 0x404040);
-		font.drawShadow(ms, inventory.getDisplayName(), 8, imageHeight - 96 + 2, 0x404040);
+		this.font.draw(ms, this.title, 8, 6, 0x404040);
+		this.font.draw(ms, this.playerInventoryTitle, 8, imageHeight - 96 + 2, 0x404040);
 	}
 
 	@Override
