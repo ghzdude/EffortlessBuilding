@@ -6,13 +6,16 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.Direction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.ModClientEventHandler;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
@@ -96,11 +99,7 @@ public class RadialMenu extends Screen {
 
 		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
-		//TODO 1.17
-//		RenderSystem.disableAlphaTest();
 		RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-		//TODO 1.17
-//		RenderSystem.shadeModel(GL11.GL_SMOOTH);
 		final Tesselator tessellator = Tesselator.getInstance();
 		final BufferBuilder buffer = tessellator.getBuilder();
 
@@ -140,9 +139,9 @@ public class RadialMenu extends Screen {
 		//Add actions
 		buttons.add(new MenuButton(ActionEnum.UNDO.name, ActionEnum.UNDO, -buttonDistance - 26, -13, Direction.UP));
 		buttons.add(new MenuButton(ActionEnum.REDO.name, ActionEnum.REDO, -buttonDistance, -13, Direction.UP));
-		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS.name, ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 26 - 13, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS.name, ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 13, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.REPLACE.name, ActionEnum.REPLACE, -buttonDistance + 13, 13, Direction.DOWN));
+//		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS.name, ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 26 - 13, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS.name, ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 26, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.REPLACE.name, ActionEnum.REPLACE, -buttonDistance, 13, Direction.DOWN));
 
 		//Add buildmode dependent options
 		OptionEnum[] options = currentBuildMode.options;
@@ -157,6 +156,21 @@ public class RadialMenu extends Screen {
 		doAction = null;
 
 		//Draw buildmode backgrounds
+		drawBuildModeBackgrounds(currentBuildMode, buffer, middleX, middleY, mouseXCenter, mouseYCenter, mouseRadians, ringInnerEdge, ringOuterEdge, quarterCircle, modes);
+
+		//Draw action backgrounds
+		drawActionBackgrounds(buffer, middleX, middleY, mouseXCenter, mouseYCenter, buttons);
+
+		tessellator.end();
+
+		drawIcons(ms, tessellator, buffer, middleX, middleY, ringInnerEdge, ringOuterEdge, modes, buttons);
+
+		drawTexts(ms, currentBuildMode, middleX, middleY, textDistance, buttonDistance, modes, buttons, options);
+
+		ms.popPose();
+	}
+
+	private void drawBuildModeBackgrounds(BuildModeEnum currentBuildMode, BufferBuilder buffer, double middleX, double middleY, double mouseXCenter, double mouseYCenter, double mouseRadians, double ringInnerEdge, double ringOuterEdge, double quarterCircle, ArrayList<MenuRegion> modes) {
 		if (!modes.isEmpty()) {
 			final int totalModes = Math.max(3, modes.size());
 			int currentMode = 0;
@@ -201,7 +215,7 @@ public class RadialMenu extends Screen {
 
 				//check if mouse is over this region
 				final boolean isMouseInQuad = inTriangle(x1m1, y1m1, x2m2, y2m2, x2m1, y2m1, mouseXCenter, mouseYCenter)
-					|| inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mouseXCenter, mouseYCenter);
+											  || inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mouseXCenter, mouseYCenter);
 
 				if (beginRadians <= mouseRadians && mouseRadians <= endRadians && isMouseInQuad) {
 					r = 0.6f;
@@ -220,8 +234,9 @@ public class RadialMenu extends Screen {
 				currentMode++;
 			}
 		}
+	}
 
-		//Draw action backgrounds
+	private void drawActionBackgrounds(BufferBuilder buffer, double middleX, double middleY, double mouseXCenter, double mouseYCenter, ArrayList<MenuButton> buttons) {
 		for (final MenuButton btn : buttons) {
 			float r = 0.5f;
 			float g = 0.5f;
@@ -256,21 +271,13 @@ public class RadialMenu extends Screen {
 			buffer.vertex(middleX + btn.x2, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
 			buffer.vertex(middleX + btn.x2, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
 		}
+	}
 
-		tessellator.end();
-
-		//TODO 1.17
-//		RenderSystem.shadeModel(GL11.GL_FLAT);
-
-		ms.translate(0f, 0f, 5f);
+	private void drawIcons(PoseStack ms, Tesselator tessellator, BufferBuilder buffer, double middleX, double middleY, double ringInnerEdge, double ringOuterEdge, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
+		ms.pushPose();
 		RenderSystem.enableTexture();
+		RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-		RenderSystem.disableBlend();
-		//TODO 1.17
-//		RenderSystem.enableAlphaTest();
-		RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-
-		buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
 		//Draw buildmode icons
 		for (final MenuRegion menuRegion : modes) {
@@ -278,56 +285,24 @@ public class RadialMenu extends Screen {
 			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.6 + 0.4 * ringInnerEdge);
 			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.6 + 0.4 * ringInnerEdge);
 
-			final TextureAtlasSprite sprite = ModClientEventHandler.getBuildModeIcon(menuRegion.mode);
-
-			final double x1 = x - 8;
-			final double x2 = x + 8;
-			final double y1 = y - 8;
-			final double y2 = y + 8;
-
-			final float f = 1f;
-			final float a = 1f;
-
-			final double u1 = 0;
-			final double u2 = 16;
-			final double v1 = 0;
-			final double v2 = 16;
-
-			buffer.vertex(middleX + x1, middleY + y1, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v1)).color(f, f, f, a).endVertex();
-			buffer.vertex(middleX + x1, middleY + y2, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v2)).color(f, f, f, a).endVertex();
-			buffer.vertex(middleX + x2, middleY + y2, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v2)).color(f, f, f, a).endVertex();
-			buffer.vertex(middleX + x2, middleY + y1, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v1)).color(f, f, f, a).endVertex();
+			RenderSystem.setShaderTexture(0, new ResourceLocation(EffortlessBuilding.MODID, "textures/icons/" + menuRegion.mode.name().toLowerCase() + ".png"));
+			blit(ms, (int) (middleX + x - 8), (int) (middleY + y - 8), 16, 16, 0, 0, 18, 18, 18, 18);
 		}
 
 		//Draw action icons
 		for (final MenuButton button : buttons) {
 
-			final float f = 1f;
-			final float a = 1f;
+			final double x = (button.x1 + button.x2) / 2 + 0.01;
+			final double y = (button.y1 + button.y2) / 2 + 0.01;
 
-			final double u1 = 0;
-			final double u2 = 16;
-			final double v1 = 0;
-			final double v2 = 16;
-
-			final TextureAtlasSprite sprite = ModClientEventHandler.getModeOptionIcon(button.action);
-
-			final double btnmiddleX = (button.x1 + button.x2) / 2 + 0.01;
-			final double btnmiddleY = (button.y1 + button.y2) / 2 + 0.01;
-			final double btnx1 = btnmiddleX - 8;
-			final double btnx2 = btnmiddleX + 8;
-			final double btny1 = btnmiddleY - 8;
-			final double btny2 = btnmiddleY + 8;
-
-			buffer.vertex(middleX + btnx1, middleY + btny1, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v1)).color(f, f, f, a).endVertex();
-			buffer.vertex(middleX + btnx1, middleY + btny2, getBlitOffset()).uv(sprite.getU(u1), sprite.getV(v2)).color(f, f, f, a).endVertex();
-			buffer.vertex(middleX + btnx2, middleY + btny2, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v2)).color(f, f, f, a).endVertex();
-			buffer.vertex(middleX + btnx2, middleY + btny1, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v1)).color(f, f, f, a).endVertex();
+			RenderSystem.setShaderTexture(0, new ResourceLocation(EffortlessBuilding.MODID, "textures/icons/" + button.action.name().toLowerCase() + ".png"));
+			blit(ms, (int) (middleX + x - 8), (int) (middleY + y - 8), 16, 16, 0, 0, 18, 18, 18, 18);
 		}
 
-		tessellator.end();
+		ms.popPose();
+	}
 
-		//Draw strings
+	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, double textDistance, double buttonDistance, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options) {
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
 
 		//Draw option strings
@@ -364,66 +339,71 @@ public class RadialMenu extends Screen {
 		for (final MenuButton button : buttons) {
 			if (button.highlighted) {
 				String text = ChatFormatting.AQUA + button.name;
-				int wrap = 120;
-				String keybind = ""; // FIXME
-				String keybindFormatted = "";
 
 				//Add keybind in brackets
-				if (button.action == ActionEnum.UNDO) {
-					keybind = I18n.get(ClientProxy.keyBindings[4].saveString());
-				}
-				if (button.action == ActionEnum.REDO) {
-					keybind = I18n.get(ClientProxy.keyBindings[5].saveString());
-				}
-				if (button.action == ActionEnum.REPLACE) {
-					keybind = I18n.get(ClientProxy.keyBindings[1].saveString());
-				}
-				if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) {
-					keybind = I18n.get(ClientProxy.keyBindings[0].saveString());
-				}
-				if (currentBuildMode.options.length > 0) {
-					//Add (ctrl) to first two actions of first option
-					if (button.action == currentBuildMode.options[0].actions[0]
-						|| button.action == currentBuildMode.options[0].actions[1]) {
-						keybind = I18n.get(ClientProxy.keyBindings[6].saveString());
-						if (keybind.equals("Left Control")) keybind = "Ctrl";
-					}
-				}
+				String keybind = findKeybind(button, currentBuildMode);
+				String keybindFormatted = "";
 				if (!keybind.isEmpty())
 					keybindFormatted = ChatFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
 
 				if (button.textSide == Direction.WEST) {
 
 					font.draw(ms, text, (int) (middleX + button.x1 - 8) - font.width(text),
-						(int) (middleY + button.y1 + 6), 0xffffffff);
+							(int) (middleY + button.y1 + 6), 0xffffffff);
 
 				} else if (button.textSide == Direction.EAST) {
 
 					font.draw(ms, text, (int) (middleX + button.x2 + 8),
-						(int) (middleY + button.y1 + 6), 0xffffffff);
+							(int) (middleY + button.y1 + 6), 0xffffffff);
 
 				} else if (button.textSide == Direction.UP || button.textSide == Direction.NORTH) {
 
 					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
-						(int) (middleY + button.y1 - 26), 0xffffffff);
+							(int) (middleY + button.y1 - 26), 0xffffffff);
 
 					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
-						(int) (middleY + button.y1 - 14), 0xffffffff);
+							(int) (middleY + button.y1 - 14), 0xffffffff);
 
 				} else if (button.textSide == Direction.DOWN || button.textSide == Direction.SOUTH) {
 
 					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
-						(int) (middleY + button.y1 + 26), 0xffffffff);
+							(int) (middleY + button.y1 + 26), 0xffffffff);
 
 					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
-						(int) (middleY + button.y1 + 38), 0xffffffff);
+							(int) (middleY + button.y1 + 38), 0xffffffff);
 
 				}
 
 			}
 		}
+	}
 
-		ms.popPose();
+	private String findKeybind(MenuButton button, BuildModeEnum currentBuildMode){
+		String result = "";
+		int keybindingIndex = -1;
+		if (button.action == ActionEnum.UNDO) keybindingIndex = 4;
+		if (button.action == ActionEnum.REDO) keybindingIndex = 5;
+		if (button.action == ActionEnum.REPLACE) keybindingIndex = 1;
+		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 0;
+
+		if (keybindingIndex != -1) {
+			KeyMapping keyMap = ClientProxy.keyBindings[keybindingIndex];
+
+			if (!keyMap.getKeyModifier().name().equals("none")) {
+				result = keyMap.getKeyModifier().name() + " ";
+			}
+			result += I18n.get(keyMap.getKey().getName());
+		}
+
+		if (currentBuildMode.options.length > 0) {
+			//Add (ctrl) to first two actions of first option
+			if (button.action == currentBuildMode.options[0].actions[0]
+				|| button.action == currentBuildMode.options[0].actions[1]) {
+				result = I18n.get(ClientProxy.keyBindings[6].getKey().getName());
+				if (result.equals("Left Control")) result = "Ctrl";
+			}
+		}
+		return result;
 	}
 
 	private boolean inTriangle(final double x1, final double y1, final double x2, final double y2,
