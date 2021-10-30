@@ -3,7 +3,7 @@
 #moj_import <fog.glsl>
 
 uniform sampler2D Sampler0;
-uniform sampler2D Sampler7;
+uniform sampler2D Sampler2;
 
 uniform float GameTime;
 uniform vec4 ColorModulator;
@@ -27,10 +27,6 @@ in vec4 normal;
 out vec4 fragColor;
 
 void main() {
-    vec4 color2 = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
-    fragColor = linear_fog(color2, vertexDistance, FogStart, FogEnd, FogColor);
-    return;
-
     //convert gametime to seconds (roughly)
     float time = GameTime * 1200;
 
@@ -58,7 +54,7 @@ void main() {
         maskcoord = vec2(worldpos.x, worldpos.y);
 
     maskcoord /= 20.0;
-    vec4 maskColor = texture2D(Sampler7, maskcoord);
+    vec4 maskColor = texture2D(Sampler2, maskcoord);
     float maskgs = maskColor.r;
 
     color.rgb *= vertexColor.rgb;

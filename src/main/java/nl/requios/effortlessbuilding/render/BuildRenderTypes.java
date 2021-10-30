@@ -32,7 +32,7 @@ public class BuildRenderTypes extends RenderType {
 
 	//Between 0 and 7, but dont override vanilla textures
 	//Also update dissolve.fsh SamplerX
-	private static final int maskTextureIndex = 7;
+	private static final int maskTextureIndex = 2;
 
 	static {
 		final LineStateShard LINE = new LineStateShard(OptionalDouble.of(2.0));
@@ -78,29 +78,20 @@ public class BuildRenderTypes extends RenderType {
 
 	public static RenderType getBlockPreviewRenderType(float dissolve, BlockPos blockPos, BlockPos firstPos, BlockPos secondPos, boolean red) {
 
-		Boolean useShaders = BuildConfig.visuals.useShaders.get();
-		//TODO 1.17 don't use shaders if config says no
-
 		String stateName = "eb_texturing_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
 		TexturingStateShard MY_TEXTURING = new TexturingStateShard(stateName, () -> {
 			setShaderParameters(dissolveShaderInstance, dissolve, Vec3.atLowerCornerOf(blockPos), Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos), blockPos == secondPos, red);
-//			RenderSystem.setShaderColor(1f, 1f, 1f, 0.8f);
+			RenderSystem.setShaderColor(1f, 1f, 1f, 0.8f);
 		}, () -> {});
 
 		RenderType.CompositeState renderState = RenderType.CompositeState.builder()
 				.setShaderState(RENDERTYPE_DISSOLVE_SHADER)
-//				.setTexturingState(MY_TEXTURING)
-//				.setTextureState(new RenderStateShard.TextureStateShard(shaderMaskTextureLocation, false, false))
+				.setTexturingState(MY_TEXTURING)
 				.setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
 				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
 				.setLightmapState(RenderStateShard.NO_LIGHTMAP)
+				.setCullState(RenderStateShard.CULL)
 				.setOutputState(RenderStateShard.TRANSLUCENT_TARGET)
-				//TODO 1.17
-	//			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
-	//			.setAlphaState(DEFAULT_ALPHA)
-//				.setCullState(new RenderStateShard.CullStateShard(true))
-//				.setLightmapState(new RenderStateShard.LightmapStateShard(false))
-//				.setOverlayState(new RenderStateShard.OverlayStateShard(false))
 				.createCompositeState(true);
 		//Unique name for every combination, otherwise it will reuse the previous one
 		String name = "eb_block_previews_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
@@ -118,25 +109,15 @@ public class BuildRenderTypes extends RenderType {
 		Uniform firstposUniform = shader.getUniform("firstpos");
 		Uniform secondposUniform = shader.getUniform("secondpos");
 
-		RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
 		RenderSystem.setShaderTexture(maskTextureIndex, shaderMaskTextureLocation);
 
-//		percentileUniform.set(dissolve);
-//		highlightUniform.set(highlight ? 1 : 0);
-//		redUniform.set(red ? 1 : 0);
-//
-//		blockposUniform.set((float) blockpos.x, (float) blockpos.y, (float) blockpos.z);
-//		firstposUniform.set((float) firstpos.x, (float) firstpos.y, (float) firstpos.z);
-//		secondposUniform.set((float) secondpos.x, (float) secondpos.y, (float) secondpos.z);
-	}
+		if (percentileUniform != null) percentileUniform.set(dissolve); else EffortlessBuilding.log("percentileUniform is null");
+		if (highlightUniform != null) highlightUniform.set(highlight ? 1 : 0); else EffortlessBuilding.log("highlightUniform is null");
+		if (redUniform != null) redUniform.set(red ? 1 : 0); else EffortlessBuilding.log("redUniform is null");
 
-	public static void glActiveTexture(int texture) {
-		if (GL.getCapabilities().GL_ARB_multitexture && !GL.getCapabilities().OpenGL13) {
-			ARBMultitexture.glActiveTextureARB(texture);
-		} else {
-			GL13.glActiveTexture(texture);
-		}
-
+		if (blockposUniform != null) blockposUniform.set((float) blockpos.x, (float) blockpos.y, (float) blockpos.z); else EffortlessBuilding.log("blockposUniform is null");
+		if (firstposUniform != null) firstposUniform.set((float) firstpos.x, (float) firstpos.y, (float) firstpos.z); else EffortlessBuilding.log("firstposUniform is null");
+		if (secondposUniform != null) secondposUniform.set((float) secondpos.x, (float) secondpos.y, (float) secondpos.z); else EffortlessBuilding.log("secondposUniform is null");
 	}
 
 	private class ShaderInfo {
