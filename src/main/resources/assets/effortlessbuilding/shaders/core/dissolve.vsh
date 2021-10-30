@@ -25,7 +25,7 @@ void main() {
 
     vertexPosition = gl_Position.xyz;
     vertexDistance = length((ModelViewMat * vec4(Position + ChunkOffset, 1.0)).xyz);
-    vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
+    vertexColor = Color;
     texCoord0 = UV0;
     normal = ProjMat * ModelViewMat * vec4(Normal, 0.0);
 }

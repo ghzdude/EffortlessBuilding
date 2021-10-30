@@ -84,25 +84,28 @@ public class BuildRenderTypes extends RenderType {
 		String stateName = "eb_texturing_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
 		TexturingStateShard MY_TEXTURING = new TexturingStateShard(stateName, () -> {
 			setShaderParameters(dissolveShaderInstance, dissolve, Vec3.atLowerCornerOf(blockPos), Vec3.atLowerCornerOf(firstPos), Vec3.atLowerCornerOf(secondPos), blockPos == secondPos, red);
-			RenderSystem.setShaderColor(1f, 1f, 1f, 0.8f);
+//			RenderSystem.setShaderColor(1f, 1f, 1f, 0.8f);
 		}, () -> {});
 
 		RenderType.CompositeState renderState = RenderType.CompositeState.builder()
 				.setShaderState(RENDERTYPE_DISSOLVE_SHADER)
-				.setTexturingState(MY_TEXTURING)
-				.setTextureState(new RenderStateShard.TextureStateShard(shaderMaskTextureLocation, false, false))
+//				.setTexturingState(MY_TEXTURING)
+//				.setTextureState(new RenderStateShard.TextureStateShard(shaderMaskTextureLocation, false, false))
+				.setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
 				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setLightmapState(RenderStateShard.NO_LIGHTMAP)
+				.setOutputState(RenderStateShard.TRANSLUCENT_TARGET)
 				//TODO 1.17
 	//			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
 	//			.setAlphaState(DEFAULT_ALPHA)
-				.setCullState(new RenderStateShard.CullStateShard(true))
-				.setLightmapState(new RenderStateShard.LightmapStateShard(false))
-				.setOverlayState(new RenderStateShard.OverlayStateShard(false))
+//				.setCullState(new RenderStateShard.CullStateShard(true))
+//				.setLightmapState(new RenderStateShard.LightmapStateShard(false))
+//				.setOverlayState(new RenderStateShard.OverlayStateShard(false))
 				.createCompositeState(true);
 		//Unique name for every combination, otherwise it will reuse the previous one
 		String name = "eb_block_previews_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
 		return RenderType.create(name,
-			DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 256, true, true, renderState);
+			DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 2097152, true, true, renderState);
 	}
 
 	private static void setShaderParameters(ShaderInstance shader, final float dissolve, final Vec3 blockpos,
@@ -118,13 +121,13 @@ public class BuildRenderTypes extends RenderType {
 		RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
 		RenderSystem.setShaderTexture(maskTextureIndex, shaderMaskTextureLocation);
 
-		percentileUniform.set(dissolve);
-		highlightUniform.set(highlight ? 1 : 0);
-		redUniform.set(red ? 1 : 0);
-
-		blockposUniform.set((float) blockpos.x, (float) blockpos.y, (float) blockpos.z);
-		firstposUniform.set((float) firstpos.x, (float) firstpos.y, (float) firstpos.z);
-		secondposUniform.set((float) secondpos.x, (float) secondpos.y, (float) secondpos.z);
+//		percentileUniform.set(dissolve);
+//		highlightUniform.set(highlight ? 1 : 0);
+//		redUniform.set(red ? 1 : 0);
+//
+//		blockposUniform.set((float) blockpos.x, (float) blockpos.y, (float) blockpos.z);
+//		firstposUniform.set((float) firstpos.x, (float) firstpos.y, (float) firstpos.z);
+//		secondposUniform.set((float) secondpos.x, (float) secondpos.y, (float) secondpos.z);
 	}
 
 	public static void glActiveTexture(int texture) {

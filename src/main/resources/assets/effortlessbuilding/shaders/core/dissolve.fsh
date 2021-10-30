@@ -27,6 +27,9 @@ in vec4 normal;
 out vec4 fragColor;
 
 void main() {
+    vec4 color2 = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
+    fragColor = linear_fog(color2, vertexDistance, FogStart, FogEnd, FogColor);
+    return;
 
     //convert gametime to seconds (roughly)
     float time = GameTime * 1200;
