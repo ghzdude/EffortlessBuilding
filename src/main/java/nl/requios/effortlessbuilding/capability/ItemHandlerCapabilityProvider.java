@@ -8,13 +8,16 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class ItemHandlerCapabilityProvider implements ICapabilitySerializable<CompoundTag> {
-	IItemHandler itemHandler = new ItemStackHandler(RandomizerBagItem.INV_SIZE);
+	IItemHandler itemHandler;
+
+	public ItemHandlerCapabilityProvider(int size) {
+		itemHandler = new ItemStackHandler(size);
+	}
 
 	@Nonnull
 	@Override

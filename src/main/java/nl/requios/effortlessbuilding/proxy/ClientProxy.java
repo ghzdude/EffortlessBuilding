@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.proxy;
 
-import com.mojang.blaze3d.platform.ScreenManager;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,7 +41,8 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.gui.RandomizerBagContainer;
+import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagScreen;
+import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.RandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
@@ -359,6 +359,8 @@ public class ClientProxy implements IProxy {
 		}
 
 		MenuScreens.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new);
+		MenuScreens.register(EffortlessBuilding.GOLDEN_RANDOMIZER_BAG_CONTAINER.get(), GoldenRandomizerBagScreen::new);
+		MenuScreens.register(EffortlessBuilding.DIAMOND_RANDOMIZER_BAG_CONTAINER.get(), DiamondRandomizerBagScreen::new);
 	}
 
 	public Player getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {

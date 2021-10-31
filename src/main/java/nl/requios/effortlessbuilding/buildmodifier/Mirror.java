@@ -9,7 +9,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
+import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,9 +70,11 @@ public class Mirror {
 		if (!isEnabled(m, startPos)) return blockStates;
 
 		//Randomizer bag synergy
+		AbstractRandomizerBagItem randomizerBagItem = null;
 		IItemHandler bagInventory = null;
-		if (!itemStack.isEmpty() && itemStack.getItem() instanceof RandomizerBagItem) {
-			bagInventory = RandomizerBagItem.getBagInventory(itemStack);
+		if (!itemStack.isEmpty() && itemStack.getItem() instanceof AbstractRandomizerBagItem) {
+			randomizerBagItem = (AbstractRandomizerBagItem) itemStack.getItem() ;
+			bagInventory = randomizerBagItem.getBagInventory(itemStack);
 		}
 
 		if (m.mirrorX)
@@ -93,7 +95,7 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		if (bagInventory != null) {
-			itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
+			itemStack = ((AbstractRandomizerBagItem)itemStack.getItem()).pickRandomStack(bagInventory);
 			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
@@ -118,7 +120,7 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		if (bagInventory != null) {
-			itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
+			itemStack = ((AbstractRandomizerBagItem)itemStack.getItem()).pickRandomStack(bagInventory);
 			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 
@@ -141,7 +143,7 @@ public class Mirror {
 
 		//Randomizer bag synergy
 		if (bagInventory != null) {
-			itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
+			itemStack = ((AbstractRandomizerBagItem)itemStack.getItem()).pickRandomStack(bagInventory);
 			oldBlockState = BuildModifiers.getBlockStateFromItem(itemStack, player, oldBlockPos, Direction.UP, new Vec3(0, 0, 0), hand);
 		}
 

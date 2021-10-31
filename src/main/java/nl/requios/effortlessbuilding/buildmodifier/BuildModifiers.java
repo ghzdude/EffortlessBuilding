@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.helper.InventoryHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
+import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class BuildModifiers {
 	//Called from BuildModes
 	public static void onBlockPlaced(Player player, List<BlockPos> startCoordinates, Direction sideHit, Vec3 hitVec, boolean placeStartPos) {
 		Level world = player.level;
-		RandomizerBagItem.renewRandomness();
+		AbstractRandomizerBagItem.renewRandomness();
 
 		//Format hitvec to 0.x
 		hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
@@ -192,7 +192,7 @@ public class BuildModifiers {
 		ItemStack itemBlock = ItemStack.EMPTY;
 		if (itemStack.getItem() instanceof BlockItem) itemBlock = itemStack;
 		else itemBlock = CompatHelper.getItemBlockFromStack(itemStack);
-		RandomizerBagItem.resetRandomness();
+		AbstractRandomizerBagItem.resetRandomness();
 
 		//Add blocks in posList first
 		for (BlockPos blockPos : posList) {

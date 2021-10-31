@@ -32,7 +32,7 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.Modif
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
+import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
 import java.util.ArrayList;
@@ -168,7 +168,7 @@ public class BlockPreviewRenderer {
 					previousSecondPos = secondPos;
 
 					//if so, renew randomness of randomizer bag
-					RandomizerBagItem.renewRandomness();
+					AbstractRandomizerBagItem.renewRandomness();
 					//and play sound (max once every tick)
 					if (newCoordinates.size() > 1 && blockStates.size() > 1 && soundTime < ClientProxy.ticksInGame - 0) {
 						soundTime = ClientProxy.ticksInGame;

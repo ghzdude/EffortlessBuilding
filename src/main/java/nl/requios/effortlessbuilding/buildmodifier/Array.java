@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.Vec3i;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
+import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,17 +45,19 @@ public class Array {
 		Vec3i offset = new Vec3i(a.offset.getX(), a.offset.getY(), a.offset.getZ());
 
 		//Randomizer bag synergy
+		AbstractRandomizerBagItem randomizerBagItem = null;
 		IItemHandler bagInventory = null;
-		if (!itemStack.isEmpty() && itemStack.getItem() instanceof RandomizerBagItem) {
-			bagInventory = RandomizerBagItem.getBagInventory(itemStack);
+		if (!itemStack.isEmpty() && itemStack.getItem() instanceof AbstractRandomizerBagItem) {
+			randomizerBagItem = (AbstractRandomizerBagItem) itemStack.getItem() ;
+			bagInventory = randomizerBagItem.getBagInventory(itemStack);
 		}
 
 		for (int i = 0; i < a.count; i++) {
 			pos = pos.offset(offset);
 
 			//Randomizer bag synergy
-			if (bagInventory != null) {
-				itemStack = RandomizerBagItem.pickRandomStack(bagInventory);
+			if (randomizerBagItem != null) {
+				itemStack = randomizerBagItem.pickRandomStack(bagInventory);
 				blockState = BuildModifiers
 					.getBlockStateFromItem(itemStack, player, startPos, Direction.UP, new Vec3(0, 0, 0), InteractionHand.MAIN_HAND);
 			}

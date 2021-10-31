@@ -7,16 +7,16 @@
     ],
     "key": {
         "O": {
-            "item": "minecraft:ender_pearl"
+            "item": "minecraft:leather"
         },
 		"#": {
-            "item": "minecraft:slime_ball"
+            "item": "minecraft:diamond"
         },
 		"x": {
-			"item": "minecraft:chorus_fruit"
-		}
+            "item": "minecraft:amethyst_shard"
+        }
     },
     "result": {
-        "item": "effortlessbuilding:reach_upgrade2"
+        "item": "effortlessbuilding:diamond_randomizer_bag"
     }
 }

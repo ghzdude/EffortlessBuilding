@@ -1,61 +1,63 @@
 package nl.requios.effortlessbuilding.gui;
 
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.InteractionHand;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
+import nl.requios.effortlessbuilding.item.DiamondRandomizerBagItem;
 
-public class RandomizerBagContainer extends AbstractContainerMenu {
+public class DiamondRandomizerBagContainer extends AbstractContainerMenu {
 
-	private static final int INV_START = RandomizerBagItem.INV_SIZE,
+	private static final int INV_START = DiamondRandomizerBagItem.INV_SIZE,
 			INV_END = INV_START + 26,
 			HOTBAR_START = INV_END + 1,
 			HOTBAR_END = HOTBAR_START + 8;
 	private final IItemHandler bagInventory;
 
-	public RandomizerBagContainer(MenuType<?> type, int id){
+	public DiamondRandomizerBagContainer(MenuType<?> type, int id){
 		super(type, id);
 		bagInventory = null;
 	}
 
 	//Client
-	public RandomizerBagContainer(int id, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
+	public DiamondRandomizerBagContainer(int id, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
 		this(id, playerInventory);
 	}
 
 	//Server?
-	public RandomizerBagContainer(int containerId, Inventory playerInventory) {
-		this(containerId, playerInventory, new ItemStackHandler(RandomizerBagItem.INV_SIZE));
+	public DiamondRandomizerBagContainer(int containerId, Inventory playerInventory) {
+		this(containerId, playerInventory, new ItemStackHandler(DiamondRandomizerBagItem.INV_SIZE));
 	}
 
-	public RandomizerBagContainer(int containerId, Inventory playerInventory, IItemHandler inventory) {
-		super(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), containerId);
+	public DiamondRandomizerBagContainer(int containerId, Inventory playerInventory, IItemHandler inventory) {
+		super(EffortlessBuilding.DIAMOND_RANDOMIZER_BAG_CONTAINER.get(), containerId);
 		bagInventory = inventory;
 
-		for (int i = 0; i < RandomizerBagItem.INV_SIZE; ++i) {
-			this.addSlot(new SlotItemHandler(bagInventory, i, 44 + (18 * i), 20));
+		for (int i = 0; i < 3; ++i) {
+			for (int j = 0; j < 9; ++j) {
+				this.addSlot(new SlotItemHandler(bagInventory, j + i * 9, 8 + j * 18, 18 + i * 18));
+			}
 		}
 
 		// add player inventory slots
 		for (int i = 0; i < 3; ++i) {
 			for (int j = 0; j < 9; ++j) {
-				addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 51 + i * 18));
+				addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
 
 		// add hotbar slots
 		for (int i = 0; i < 9; ++i) {
-			addSlot(new Slot(playerInventory, i, 8 + i * 18, 109));
+			addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
 		}
 	}
 

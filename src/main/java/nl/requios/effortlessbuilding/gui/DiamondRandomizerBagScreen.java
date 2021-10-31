@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -14,15 +14,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
-public class RandomizerBagScreen extends AbstractContainerScreen<RandomizerBagContainer> {
+public class DiamondRandomizerBagScreen extends AbstractContainerScreen<DiamondRandomizerBagContainer> {
 	private Inventory inventory;
 
-	private static final ResourceLocation guiTextures = new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/container/randomizerbag.png");
+	private static final ResourceLocation guiTextures = new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/container/diamondrandomizerbag.png");
 
-	public RandomizerBagScreen(RandomizerBagContainer randomizerBagContainer, Inventory playerInventory, Component title) {
+	public DiamondRandomizerBagScreen(DiamondRandomizerBagContainer randomizerBagContainer, Inventory playerInventory, Component title) {
 		super(randomizerBagContainer, playerInventory, title);
 		this.inventory = playerInventory;
-		imageHeight = 134;
+		imageHeight = 167;
 	}
 
 	@Override
