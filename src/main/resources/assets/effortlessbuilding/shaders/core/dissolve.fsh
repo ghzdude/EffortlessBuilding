@@ -32,7 +32,7 @@ void main() {
 
     vec3 pixelposition = floor(vertexPosition * 8.0) / 8.0;
     vec3 worldpos = blockpos + pixelposition.xyz;
-    vec4 texcolor = texture2D(Sampler0, texCoord0) * vertexColor * ColorModulator;
+    vec4 texcolor = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
     vec4 color = texcolor;
     vec3 firstposc = firstpos + 0.51; //center in block
     vec3 secondposc = secondpos + 0.5;
@@ -54,7 +54,7 @@ void main() {
         maskcoord = vec2(worldpos.x, worldpos.y);
 
     maskcoord /= 20.0;
-    vec4 maskColor = texture2D(Sampler2, maskcoord);
+    vec4 maskColor = texture(Sampler2, maskcoord);
     float maskgs = maskColor.r;
 
     color.rgb *= vertexColor.rgb;
