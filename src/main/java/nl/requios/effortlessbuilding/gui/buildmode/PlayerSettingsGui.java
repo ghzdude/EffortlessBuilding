@@ -19,6 +19,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fmlclient.gui.widget.ExtendedButton;
 import net.minecraftforge.fmlclient.gui.widget.Slider;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

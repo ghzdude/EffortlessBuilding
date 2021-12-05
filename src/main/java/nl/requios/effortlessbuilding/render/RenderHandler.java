@@ -79,82 +79,35 @@ public class RenderHandler {
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer player = mc.player;
 
-		//check if chisel and bits tool in hand (and has menu)
-//        final boolean hasChiselInHand = CompatHelper.chiselsAndBitsProxy.isHoldingChiselTool(EnumHand.MAIN_HAND);
+		//TODO delete
+//		if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
+//			final boolean wasVisible = RadialMenu.instance.isVisible();
+//
+//			if (RadialMenu.instance.isVisible()) {
+//				int scaledWidth = mc.getWindow().getGuiScaledWidth();
+//				int scaledHeight = mc.getWindow().getGuiScaledHeight();
+//				RadialMenu.instance.configure(scaledWidth, scaledHeight);
 
-		final RenderGameOverlayEvent.ElementType type = event.getType();
-		//TODO 1.13 compatibility
-		if (type == RenderGameOverlayEvent.ElementType.ALL /*&& !hasChiselInHand*/) {
-			final boolean wasVisible = RadialMenu.instance.isVisible();
+//				if (!wasVisible) {
+//					mc.mouseHandler.releaseMouse();
+//				}
+//
+//				if (mc.mouseHandler.isMouseGrabbed()) {
+//					KeyMapping.releaseAll();
+//				}
 
-			if (ClientProxy.keyBindings[3].isDown()) {
-				if (ReachHelper.getMaxReach(player) > 0) {
-					RadialMenu.instance.actionUsed = false;
-					RadialMenu.instance.raiseVisibility();
-				} else if (ClientProxy.keyBindings[3].consumeClick()) {
-					EffortlessBuilding.log(player, "Build modes are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
-				}
-			} else {
-				if (!RadialMenu.instance.actionUsed) {
-					ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
+				//final int mouseX = ((int) mc.mouseHandler.xpos()) * scaledWidth / mc.getWindow().getWidth();
+				//final int mouseY = scaledHeight - ((int) mc.mouseHandler.ypos()) * scaledHeight / mc.getWindow().getHeight() - 1;
 
-					if (RadialMenu.instance.switchTo != null) {
-						playRadialMenuSound();
-						modeSettings.setBuildMode(RadialMenu.instance.switchTo);
-						ModeSettingsManager.setModeSettings(player, modeSettings);
-						PacketHandler.INSTANCE.sendToServer(new ModeSettingsMessage(modeSettings));
-
-						EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().name), true);
-					}
-
-					//Perform button action
-					ModeOptions.ActionEnum action = RadialMenu.instance.doAction;
-					if (action != null) {
-						ModeOptions.performAction(player, action);
-						PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
-					}
-
-					playRadialMenuSound();
-				}
-
-				RadialMenu.instance.actionUsed = true;
-				RadialMenu.instance.decreaseVisibility();
-			}
-
-			if (RadialMenu.instance.isVisible()) {
-
-				int scaledWidth = mc.getWindow().getGuiScaledWidth();
-				int scaledHeight = mc.getWindow().getGuiScaledHeight();
-				RadialMenu.instance.configure(scaledWidth, scaledHeight);
-
-				if (!wasVisible) {
-					mc.mouseHandler.releaseMouse();
-				}
-
-				if (mc.mouseHandler.isMouseGrabbed()) {
-					KeyMapping.releaseAll();
-				}
-
-				final int mouseX = ((int) mc.mouseHandler.xpos()) * scaledWidth / mc.getWindow().getWidth();
-				final int mouseY = scaledHeight - ((int) mc.mouseHandler.ypos()) * scaledHeight / mc.getWindow().getHeight() - 1;
-
-				net.minecraftforge.client.ForgeHooksClient.drawScreen(RadialMenu.instance, event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks());
-			} else {
-				if (wasVisible &&
-					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_MODIFIER_SETTINGS &&
-					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_PLAYER_SETTINGS) {
-					mc.mouseHandler.grabMouse();
-				}
-			}
-		}
-	}
-
-	public static void playRadialMenuSound() {
-		final float volume = 0.1f;
-		if (volume >= 0.0001f) {
-			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, volume, 1.0f, Minecraft.getInstance().player.blockPosition());
-			Minecraft.getInstance().getSoundManager().play(sound);
-		}
+				//net.minecraftforge.client.ForgeHooksClient.drawScreen(RadialMenu.instance, event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks());
+//			} else {
+//				if (wasVisible &&
+//					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_MODIFIER_SETTINGS &&
+//					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_PLAYER_SETTINGS) {
+//					mc.mouseHandler.grabMouse();
+//				}
+//			}
+//		}
 	}
 
 	protected static VertexConsumer beginLines(MultiBufferSource.BufferSource renderTypeBuffer) {
@@ -231,7 +184,7 @@ public class RenderHandler {
 		LevelRenderer.renderVoxelShape(matrixStack, buffer, collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
 	}
 
-	//TODO 1.14
+	//TODO
 	//Sends breaking progress for all coordinates to renderglobal, so all blocks get visually broken
 //    @Override
 //    public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {

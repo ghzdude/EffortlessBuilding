@@ -87,17 +87,27 @@ public class ModifierSettingsGui extends Screen {
 	public boolean charTyped(char typedChar, int keyCode) {
 		super.charTyped(typedChar, keyCode);
 		scrollPane.charTyped(typedChar, keyCode);
+		return false;
+	}
+
+	@Override
+	public boolean keyPressed(int keyCode, int p_96553_, int p_96554_) {
 		if (keyCode == ClientProxy.keyBindings[0].getKey().getValue()) {
 			minecraft.player.closeContainer();
+			return true;
 		}
-		return false;
+
+		return super.keyPressed(keyCode, p_96553_, p_96554_);
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		renderables.forEach(renderable -> {
-			if (renderable instanceof Button button) button.mouseClicked(mouseX, mouseY, mouseButton);
+			if (renderable instanceof Button) {
+				Button button = (Button) renderable;
+				button.mouseClicked(mouseX, mouseY, mouseButton);
+			}
 		});
 		return scrollPane.mouseClicked(mouseX, mouseY, mouseButton);
 	}

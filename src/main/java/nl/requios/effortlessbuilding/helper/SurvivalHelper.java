@@ -85,7 +85,7 @@ public class SurvivalHelper {
 			}
 
 			if (!player.isCreative() && Block.byItem(itemstack.getItem()) == block) {
-				CompatHelper.shrinkStack(origstack, itemstack, player);
+				itemstack.shrink(1);
 			}
 
 			return true;

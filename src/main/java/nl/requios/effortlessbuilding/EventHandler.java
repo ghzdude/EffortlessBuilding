@@ -51,7 +51,6 @@ public class EventHandler {
 	}
 
 	@SubscribeEvent
-	//Only called serverside (except with lilypads...)
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
 		if (event.getWorld().isClientSide()) return;
 
