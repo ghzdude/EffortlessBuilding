@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -37,7 +36,7 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 
 /**
- * From Chisels and Bits by AlgorithmX2
+ * Initially from Chisels and Bits by AlgorithmX2
  * https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java
  */
 
@@ -73,12 +72,11 @@ public class RadialMenu extends Screen {
 		if (!ClientProxy.isKeybindDown(2)) {
 			onClose();
 		}
-
 	}
 
 	@Override
 	public void render(PoseStack ms, final int mouseX, final int mouseY, final float partialTicks) {
-		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(Minecraft.getInstance().player).getBuildMode();
+		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(minecraft.player).getBuildMode();
 
 		ms.pushPose();
 		ms.translate(0, 0, 200);
@@ -446,7 +444,7 @@ public class RadialMenu extends Screen {
 
 			EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().name), true);
 
-			performedActionUsingMouse = true;
+			if (fromMouseClick) performedActionUsingMouse = true;
 		}
 
 		//Perform button action
@@ -457,7 +455,7 @@ public class RadialMenu extends Screen {
 			ModeOptions.performAction(player, action);
 			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
 
-			performedActionUsingMouse = true;
+			if (fromMouseClick) performedActionUsingMouse = true;
 		}
 	}
 

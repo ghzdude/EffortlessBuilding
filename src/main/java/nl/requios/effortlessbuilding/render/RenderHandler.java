@@ -1,44 +1,32 @@
 package nl.requios.effortlessbuilding.render;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
-import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
-import nl.requios.effortlessbuilding.network.ModeActionMessage;
-import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
-import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
-
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 
 /***
  * Main render class for Effortless Building
@@ -71,43 +59,6 @@ public class RenderHandler {
 		BlockPreviewRenderer.render(matrixStack, renderTypeBuffer, player, modifierSettings, modeSettings);
 
 		matrixStack.popPose();
-	}
-
-	@SubscribeEvent
-	//Display Radial Menu
-	public static void onRenderGameOverlay(final RenderGameOverlayEvent.Post event) {
-		Minecraft mc = Minecraft.getInstance();
-		LocalPlayer player = mc.player;
-
-		//TODO delete
-//		if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
-//			final boolean wasVisible = RadialMenu.instance.isVisible();
-//
-//			if (RadialMenu.instance.isVisible()) {
-//				int scaledWidth = mc.getWindow().getGuiScaledWidth();
-//				int scaledHeight = mc.getWindow().getGuiScaledHeight();
-//				RadialMenu.instance.configure(scaledWidth, scaledHeight);
-
-//				if (!wasVisible) {
-//					mc.mouseHandler.releaseMouse();
-//				}
-//
-//				if (mc.mouseHandler.isMouseGrabbed()) {
-//					KeyMapping.releaseAll();
-//				}
-
-				//final int mouseX = ((int) mc.mouseHandler.xpos()) * scaledWidth / mc.getWindow().getWidth();
-				//final int mouseY = scaledHeight - ((int) mc.mouseHandler.ypos()) * scaledHeight / mc.getWindow().getHeight() - 1;
-
-				//net.minecraftforge.client.ForgeHooksClient.drawScreen(RadialMenu.instance, event.getMatrixStack(), mouseX, mouseY, event.getPartialTicks());
-//			} else {
-//				if (wasVisible &&
-//					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_MODIFIER_SETTINGS &&
-//					RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_PLAYER_SETTINGS) {
-//					mc.mouseHandler.grabMouse();
-//				}
-//			}
-//		}
 	}
 
 	protected static VertexConsumer beginLines(MultiBufferSource.BufferSource renderTypeBuffer) {
