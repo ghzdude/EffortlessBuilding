@@ -14,13 +14,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
-public class RandomizerBagScreen extends ContainerScreen<RandomizerBagContainer> {
+public class DiamondRandomizerBagScreen extends ContainerScreen<DiamondRandomizerBagContainer> {
 	private static final ResourceLocation guiTextures =
-		new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/container/randomizerbag.png");
+			new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/container/diamondrandomizerbag.png");
 
-	public RandomizerBagScreen(RandomizerBagContainer randomizerBagContainer, PlayerInventory playerInventory, ITextComponent title) {
-		super(randomizerBagContainer, playerInventory, title);//new TranslationTextComponent("effortlessbuilding.screen.randomizer_bag"));
-		imageHeight = 134;
+	public DiamondRandomizerBagScreen(DiamondRandomizerBagContainer randomizerBagContainer, PlayerInventory playerInventory, ITextComponent title) {
+		super(randomizerBagContainer, playerInventory, title);
+		imageHeight = 167;
 	}
 
 	@Override

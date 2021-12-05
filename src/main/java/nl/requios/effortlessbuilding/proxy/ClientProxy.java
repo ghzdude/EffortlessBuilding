@@ -42,6 +42,8 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
+import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagScreen;
+import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.RandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
@@ -65,6 +67,33 @@ public class ClientProxy implements IProxy {
 	private static int placeCooldown = 0;
 	private static int breakCooldown = 0;
 	private static boolean shadersInitialized = false;
+
+	@Override
+	public void setup(FMLCommonSetupEvent event) {
+	}
+
+	@Override
+	public void clientSetup(FMLClientSetupEvent event) {
+		// register key bindings
+		keyBindings = new KeyBinding[6];
+
+		// instantiate the key bindings
+		keyBindings[0] = new KeyBinding("key.effortlessbuilding.hud.desc", KeyConflictContext.UNIVERSAL, InputMappings.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
+		keyBindings[1] = new KeyBinding("key.effortlessbuilding.replace.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_KP_SUBTRACT, 0), "key.effortlessbuilding.category");
+		keyBindings[2] = new KeyBinding("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category");
+		keyBindings[3] = new KeyBinding("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
+		keyBindings[4] = new KeyBinding("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
+		keyBindings[5] = new KeyBinding("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
+
+		// register all the key bindings
+		for (KeyBinding keyBinding : keyBindings) {
+			ClientRegistry.registerKeyBinding(keyBinding);
+		}
+
+		ScreenManager.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new);
+		ScreenManager.register(EffortlessBuilding.GOLDEN_RANDOMIZER_BAG_CONTAINER.get(), GoldenRandomizerBagScreen::new);
+		ScreenManager.register(EffortlessBuilding.DIAMOND_RANDOMIZER_BAG_CONTAINER.get(), DiamondRandomizerBagScreen::new);
+	}
 
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -233,31 +262,33 @@ public class ClientProxy implements IProxy {
 			PacketHandler.INSTANCE.sendToServer(new ModifierSettingsMessage(modifierSettings));
 		}
 
-		//Creative/survival mode toggle
-		if (keyBindings[2].consumeClick()) {
-			if (player.isCreative()) {
-				player.chat("/gamemode survival");
+		//Radial menu
+		if (keyBindings[2].isDown()) {
+			if (ReachHelper.getMaxReach(player) > 0) {
+				if (!RadialMenu.instance.isVisible()) {
+					Minecraft.getInstance().setScreen(RadialMenu.instance);
+				}
 			} else {
-				player.chat("/gamemode creative");
+				EffortlessBuilding.log(player, "Build modes are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
 			}
 		}
 
 		//Undo (Ctrl+Z)
-		if (keyBindings[4].consumeClick()) {
+		if (keyBindings[3].consumeClick()) {
 			ModeOptions.ActionEnum action = ModeOptions.ActionEnum.UNDO;
 			ModeOptions.performAction(player, action);
 			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
 		}
 
 		//Redo (Ctrl+Y)
-		if (keyBindings[5].consumeClick()) {
+		if (keyBindings[4].consumeClick()) {
 			ModeOptions.ActionEnum action = ModeOptions.ActionEnum.REDO;
 			ModeOptions.performAction(player, action);
 			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
 		}
 
 		//Change placement mode
-		if (keyBindings[6].consumeClick()) {
+		if (keyBindings[5].consumeClick()) {
 			//Toggle between first two actions of the first option of the current build mode
 			BuildModes.BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 			if (currentBuildMode.options.length > 0) {
@@ -273,49 +304,24 @@ public class ClientProxy implements IProxy {
 				}
 			}
 		}
-
-		//For shader development
-		if (keyBindings.length >= 8 && keyBindings[7].consumeClick()) {
-			ShaderHandler.init();
-			EffortlessBuilding.log(player, "Reloaded shaders");
-		}
-
 	}
 
 	public static void openModifierSettings() {
 		Minecraft mc = Minecraft.getInstance();
-		ClientPlayerEntity player = mc.player;
-		if (player == null)
-			return;
-
-		RadialMenu.instance.setVisibility(0f);
+		PlayerEntity player = mc.player;
+		if (player == null) return;
 
 		//Disabled if max reach is 0, might be set in the config that way.
 		if (ReachHelper.getMaxReach(player) == 0) {
 			EffortlessBuilding.log(player, "Build modifiers are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
 		} else {
-			if (mc.screen == null) {
-				mc.setScreen(new ModifierSettingsGui());
-			} else {
-				player.closeContainer();
-			}
+			mc.setScreen(new ModifierSettingsGui());
 		}
 	}
 
 	public static void openPlayerSettings() {
 		Minecraft mc = Minecraft.getInstance();
-		ClientPlayerEntity player = mc.player;
-		if (player == null)
-			return;
-
-		RadialMenu.instance.setVisibility(0f);
-
-		//Disabled if max reach is 0, might be set in the config that way.
-		if (mc.screen == null) {
-			mc.setScreen(new PlayerSettingsGui());
-		} else {
-			player.closeContainer();
-		}
+		mc.setScreen(new PlayerSettingsGui());
 	}
 
 	@SubscribeEvent
@@ -324,6 +330,12 @@ public class ClientProxy implements IProxy {
 		if (player != null) {
 			BuildModes.initializeMode(player);
 		}
+	}
+
+	public static boolean isKeybindDown(int keybindIndex) {
+		return InputMappings.isKeyDown(
+				Minecraft.getInstance().getWindow().getWindow(),
+				ClientProxy.keyBindings[2].getKey().getValue());
 	}
 
 	public static RayTraceResult getLookingAt(PlayerEntity player) {
@@ -338,41 +350,6 @@ public class ClientProxy implements IProxy {
 //        return player.rayTrace(raytraceRange, 1f, RayTraceFluidMode.NEVER);
 		//TODO 1.14 check if correct
 		return world.clip(new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player));
-	}
-
-	@Override
-	public void setup(FMLCommonSetupEvent event) {
-	}
-
-	@Override
-	public void clientSetup(FMLClientSetupEvent event) {
-		// register key bindings
-		keyBindings = new KeyBinding[7];
-
-		// instantiate the key bindings
-		keyBindings[0] = new KeyBinding("key.effortlessbuilding.hud.desc", KeyConflictContext.UNIVERSAL, InputMappings.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
-		keyBindings[1] = new KeyBinding("key.effortlessbuilding.replace.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_KP_SUBTRACT, 0), "key.effortlessbuilding.category");
-		keyBindings[2] = new KeyBinding("key.effortlessbuilding.creative.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_F4, 0), "key.effortlessbuilding.category");
-		keyBindings[3] = new KeyBinding("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category") {
-			@Override
-			public boolean same(KeyBinding other) {
-				//Does not conflict with Chisels and Bits radial menu
-				if (other.getKey().getValue() == getKey().getValue() && other.getName().equals("mod.chiselsandbits.other.mode"))
-					return false;
-				return super.same(other);
-			}
-		};
-		keyBindings[4] = new KeyBinding("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
-		keyBindings[5] = new KeyBinding("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
-		keyBindings[6] = new KeyBinding("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputMappings.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
-		//keyBindings[7] = new KeyBinding("Reload shaders", KeyConflictContext.UNIVERSAL, InputMappings.getInputByCode(GLFW.GLFW_KEY_TAB, 0), "key.effortlessbuilding.category");
-
-		// register all the key bindings
-		for (KeyBinding keyBinding : keyBindings) {
-			ClientRegistry.registerKeyBinding(keyBinding);
-		}
-
-		DeferredWorkQueue.runLater(() -> ScreenManager.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new));
 	}
 
 	public PlayerEntity getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {

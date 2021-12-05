@@ -1,14 +1,10 @@
 package nl.requios.effortlessbuilding;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -18,22 +14,17 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
-import nl.requios.effortlessbuilding.command.CommandReach;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
+import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagContainer;
+import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.RandomizerBagContainer;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
-import nl.requios.effortlessbuilding.item.ItemReachUpgrade1;
-import nl.requios.effortlessbuilding.item.ItemReachUpgrade2;
-import nl.requios.effortlessbuilding.item.ItemReachUpgrade3;
+import nl.requios.effortlessbuilding.item.*;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import nl.requios.effortlessbuilding.proxy.IProxy;
@@ -47,43 +38,36 @@ import org.apache.logging.log4j.Logger;
 public class EffortlessBuilding {
 	public static final String MODID = "effortlessbuilding";
 	public static final Logger logger = LogManager.getLogger();
-	public static final ItemRandomizerBag ITEM_RANDOMIZER_BAG = new ItemRandomizerBag();
-	public static final ItemReachUpgrade1 ITEM_REACH_UPGRADE_1 = new ItemReachUpgrade1();
-	public static final ItemReachUpgrade2 ITEM_REACH_UPGRADE_2 = new ItemReachUpgrade2();
-	public static final ItemReachUpgrade3 ITEM_REACH_UPGRADE_3 = new ItemReachUpgrade3();
-	public static final Block[] BLOCKS = {
-	};
-	public static final Item[] ITEMS = {
-		ITEM_RANDOMIZER_BAG,
-		ITEM_REACH_UPGRADE_1,
-		ITEM_REACH_UPGRADE_2,
-		ITEM_REACH_UPGRADE_3
-	};
-	public static final DeferredRegister<ContainerType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, EffortlessBuilding.MODID);
-	public static final RegistryObject<ContainerType<RandomizerBagContainer>> RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("randomizer_bag", () -> registerContainer(RandomizerBagContainer::new));
-	public static final ResourceLocation RANDOMIZER_BAG_GUI = new ResourceLocation(EffortlessBuilding.MODID, "randomizer_bag");
+
 	public static EffortlessBuilding instance;
 	public static IProxy proxy = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
+
+	//Registration
+	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+	private static final DeferredRegister<ContainerType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, EffortlessBuilding.MODID);
+
+	public static final RegistryObject<Item> RANDOMIZER_BAG_ITEM = ITEMS.register("randomizer_bag", RandomizerBagItem::new);
+	public static final RegistryObject<Item> GOLDEN_RANDOMIZER_BAG_ITEM = ITEMS.register("golden_randomizer_bag", GoldenRandomizerBagItem::new);
+	public static final RegistryObject<Item> DIAMOND_RANDOMIZER_BAG_ITEM = ITEMS.register("diamond_randomizer_bag", DiamondRandomizerBagItem::new);
+	public static final RegistryObject<Item> REACH_UPGRADE_1_ITEM = ITEMS.register("reach_upgrade1", ReachUpgrade1Item::new);
+	public static final RegistryObject<Item> REACH_UPGRADE_2_ITEM = ITEMS.register("reach_upgrade2", ReachUpgrade2Item::new);
+	public static final RegistryObject<Item> REACH_UPGRADE_3_ITEM = ITEMS.register("reach_upgrade3", ReachUpgrade3Item::new);
+
+	public static final RegistryObject<ContainerType<RandomizerBagContainer>> RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("randomizer_bag", () -> registerContainer(RandomizerBagContainer::new));
+	public static final RegistryObject<ContainerType<GoldenRandomizerBagContainer>> GOLDEN_RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("golden_randomizer_bag", () -> registerContainer(GoldenRandomizerBagContainer::new));
+	public static final RegistryObject<ContainerType<DiamondRandomizerBagContainer>> DIAMOND_RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("diamond_randomizer_bag", () -> registerContainer(DiamondRandomizerBagContainer::new));
 
 	public EffortlessBuilding() {
 		instance = this;
 
-		// Register the setup method for modloading
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-		// Register the enqueueIMC method for modloading
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-		// Register the processIMC method for modloading
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-		// Register the clientSetup method for modloading
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
+		// Register ourselves for server and other game events we are interested in
+		FMLJavaModLoadingContext.get().getModEventBus().register(this);
+
+		ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
 		//Register config
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BuildConfig.spec);
-
-		// Register ourselves for server and other game events we are interested in
-		MinecraftForge.EVENT_BUS.register(this);
-
-		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
 
 	public static <T extends Container> ContainerType<T> registerContainer(IContainerFactory<T> fact){
@@ -127,26 +111,5 @@ public class EffortlessBuilding {
 	public void clientSetup(final FMLClientSetupEvent event) {
 
 		proxy.clientSetup(event);
-	}
-
-	@SubscribeEvent
-	public void enqueueIMC(final InterModEnqueueEvent event) {
-
-		// some example code to dispatch IMC to another mod
-//        InterModComms.sendTo("examplemod", "helloworld", () -> { logger.info("Hello world from the MDK"); return "Hello world";});
-	}
-
-	@SubscribeEvent
-	public void processIMC(final InterModProcessEvent event) {
-
-		// some example code to receive and process InterModComms from other mods
-//        logger.info("Got IMC {}", event.getIMCStream().
-//                map(m->m.getMessageSupplier().get()).
-//                collect(Collectors.toList()));
-	}
-
-	@SubscribeEvent
-	public void onServerStarting(FMLServerStartingEvent event) {
-		CommandReach.register(event.getServer().getCommands().getDispatcher());
 	}
 }

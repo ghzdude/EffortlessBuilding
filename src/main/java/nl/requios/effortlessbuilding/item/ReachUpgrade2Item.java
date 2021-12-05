@@ -22,11 +22,10 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class ItemReachUpgrade3 extends Item {
+public class ReachUpgrade2Item extends Item {
 
-	public ItemReachUpgrade3() {
+	public ReachUpgrade2Item() {
 		super(new Item.Properties().tab(ItemGroup.TAB_TOOLS).stacksTo(1));
-		this.setRegistryName(EffortlessBuilding.MODID, "reach_upgrade3");
 	}
 
 	@Override
@@ -39,22 +38,19 @@ public class ItemReachUpgrade3 extends Item {
 
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 		int currentLevel = modifierSettings.getReachUpgrade();
-		if (currentLevel == 2) {
-			modifierSettings.setReachUpgrade(3);
+		if (currentLevel == 1) {
+			modifierSettings.setReachUpgrade(2);
 			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
 			player.playSound(soundEvent, 1f, 1f);
-		} else if (currentLevel < 2) {
-			if (currentLevel == 0)
-				if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 1 and 2 first.");
-			if (currentLevel == 1)
-				if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 2 first.");
+		} else if (currentLevel < 1) {
+			if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 1 first.");
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
-		} else if (currentLevel > 2) {
+		} else if (currentLevel > 1) {
 			if (world.isClientSide)
 				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + ReachHelper
 					.getMaxReach(player) + ".");
@@ -67,7 +63,7 @@ public class ItemReachUpgrade3 extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-		tooltip.add(new StringTextComponent(TextFormatting.GRAY + "Consume to increase reach to " + TextFormatting.BLUE + BuildConfig.reach.maxReachLevel3.get()));
+		tooltip.add(new StringTextComponent(TextFormatting.GRAY + "Consume to increase reach to " + TextFormatting.BLUE + BuildConfig.reach.maxReachLevel2.get()));
 		tooltip.add(new StringTextComponent(TextFormatting.GRAY + "Previous upgrades need to be consumed first"));
 	}
 

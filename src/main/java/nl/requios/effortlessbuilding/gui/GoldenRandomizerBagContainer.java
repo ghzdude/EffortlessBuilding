@@ -13,37 +13,37 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.item.RandomizerBagItem;
+import nl.requios.effortlessbuilding.item.GoldenRandomizerBagItem;
 
-public class RandomizerBagContainer extends Container {
+public class GoldenRandomizerBagContainer extends Container {
 
-	private static final int INV_START = RandomizerBagItem.INV_SIZE,
+	private static final int INV_START = GoldenRandomizerBagItem.INV_SIZE,
 			INV_END = INV_START + 26,
 			HOTBAR_START = INV_END + 1,
 			HOTBAR_END = HOTBAR_START + 8;
 	private final IItemHandler bagInventory;
 
-	public RandomizerBagContainer(ContainerType<?> type, int id){
+	public GoldenRandomizerBagContainer(ContainerType<?> type, int id){
 		super(type, id);
 		bagInventory = null;
 	}
 
 	//Client
-	public RandomizerBagContainer(int id, PlayerInventory playerInventory, PacketBuffer packetBuffer) {
+	public GoldenRandomizerBagContainer(int id, PlayerInventory playerInventory, PacketBuffer packetBuffer) {
 		this(id, playerInventory);
 	}
 
 	//Server?
-	public RandomizerBagContainer(int containerId, PlayerInventory playerInventory) {
-		this(containerId, playerInventory, new ItemStackHandler(RandomizerBagItem.INV_SIZE));
+	public GoldenRandomizerBagContainer(int containerId, PlayerInventory playerInventory) {
+		this(containerId, playerInventory, new ItemStackHandler(GoldenRandomizerBagItem.INV_SIZE));
 	}
 
-	public RandomizerBagContainer(int containerId, PlayerInventory playerInventory, IItemHandler inventory) {
-		super(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), containerId);
+	public GoldenRandomizerBagContainer(int containerId, PlayerInventory playerInventory, IItemHandler inventory) {
+		super(EffortlessBuilding.GOLDEN_RANDOMIZER_BAG_CONTAINER.get(), containerId);
 		bagInventory = inventory;
 
-		for (int i = 0; i < RandomizerBagItem.INV_SIZE; ++i) {
-			this.addSlot(new SlotItemHandler(bagInventory, i, 44 + (18 * i), 20));
+		for (int i = 0; i < GoldenRandomizerBagItem.INV_SIZE; ++i) {
+			this.addSlot(new SlotItemHandler(bagInventory, i, 8 + (18 * i), 20));
 		}
 
 		// add player inventory slots

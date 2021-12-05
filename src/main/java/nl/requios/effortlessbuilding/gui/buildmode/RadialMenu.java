@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
-import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -12,22 +12,26 @@ import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.ModClientEventHandler;
+import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
+import nl.requios.effortlessbuilding.network.ModeActionMessage;
+import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
+import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import org.apache.commons.lang3.text.WordUtils;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
-import static nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
 import static nl.requios.effortlessbuilding.buildmode.ModeOptions.*;
 
 import nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
@@ -35,7 +39,7 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 
 /**
- * From Chisels and Bits by AlgorithmX2
+ * Initially from Chisels and Bits by AlgorithmX2
  * https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java
  */
 
@@ -44,54 +48,44 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 public class RadialMenu extends Screen {
 
 	public static final RadialMenu instance = new RadialMenu();
-	private final float TIME_SCALE = 0.01f;
 	public BuildModeEnum switchTo = null;
 	public ActionEnum doAction = null;
-	public boolean actionUsed = false;
-	private float visibility = 0.0f;
-	private Stopwatch lastChange = Stopwatch.createStarted();
+	public boolean performedActionUsingMouse;
+	private float visibility;
 
 	public RadialMenu() {
 		super(new TranslationTextComponent("effortlessbuilding.screen.radial_menu"));
 	}
 
-	private float clampVis(final float f) {
-		return Math.max(0.0f, Math.min(1.0f, f));
-	}
-
-	public void raiseVisibility() {
-		visibility = clampVis(visibility + lastChange.elapsed(TimeUnit.MILLISECONDS) * TIME_SCALE);
-		lastChange = Stopwatch.createStarted();
-	}
-
-	public void decreaseVisibility() {
-		visibility = clampVis(visibility - lastChange.elapsed(TimeUnit.MILLISECONDS) * TIME_SCALE);
-		lastChange = Stopwatch.createStarted();
-	}
-
-	public void setVisibility(float visibility) {
-		this.visibility = visibility;
-	}
-
 	public boolean isVisible() {
-		return visibility > 0.001;
+		return Minecraft.getInstance().screen instanceof RadialMenu;
 	}
 
-	public void configure(final int scaledWidth, final int scaledHeight) {
-		Minecraft mc = Minecraft.getInstance();
-		font = mc.font;
-		width = scaledWidth;
-		height = scaledHeight;
+	@Override
+	protected void init() {
+		super.init();
+		performedActionUsingMouse = false;
+		visibility = 0f;
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+
+		if (!ClientProxy.isKeybindDown(2)) {
+			onClose();
+		}
 	}
 
 	@Override
 	public void render(MatrixStack ms, final int mouseX, final int mouseY, final float partialTicks) {
-		if (!isVisible()) return;
-
-		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(Minecraft.getInstance().player).getBuildMode();
+		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(minecraft.player).getBuildMode();
 
 		RenderSystem.pushMatrix();
 		RenderSystem.translatef(0.0F, 0.0F, 200.0F);
+
+		visibility += 0.3f * partialTicks;
+		if (visibility > 1f) visibility = 1f;
 
 		final int startColor = (int) (visibility * 98) << 24;
 		final int endColor = (int) (visibility * 128) << 24;
@@ -142,9 +136,9 @@ public class RadialMenu extends Screen {
 		//Add actions
 		buttons.add(new MenuButton(ActionEnum.UNDO.name, ActionEnum.UNDO, -buttonDistance - 26, -13, Direction.UP));
 		buttons.add(new MenuButton(ActionEnum.REDO.name, ActionEnum.REDO, -buttonDistance, -13, Direction.UP));
-		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS.name, ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 26 - 13, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS.name, ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 13, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.REPLACE.name, ActionEnum.REPLACE, -buttonDistance + 13, 13, Direction.DOWN));
+//		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS.name, ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 26 - 13, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS.name, ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 26, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.REPLACE.name, ActionEnum.REPLACE, -buttonDistance, 13, Direction.DOWN));
 
 		//Add buildmode dependent options
 		OptionEnum[] options = currentBuildMode.options;
@@ -370,10 +364,10 @@ public class RadialMenu extends Screen {
 
 				//Add keybind in brackets
 				if (button.action == ActionEnum.UNDO) {
-					keybind = I18n.get(ClientProxy.keyBindings[4].saveString());
+					keybind = I18n.get(ClientProxy.keyBindings[3].saveString());
 				}
 				if (button.action == ActionEnum.REDO) {
-					keybind = I18n.get(ClientProxy.keyBindings[5].saveString());
+					keybind = I18n.get(ClientProxy.keyBindings[4].saveString());
 				}
 				if (button.action == ActionEnum.REPLACE) {
 					keybind = I18n.get(ClientProxy.keyBindings[1].saveString());
@@ -385,7 +379,7 @@ public class RadialMenu extends Screen {
 					//Add (ctrl) to first two actions of first option
 					if (button.action == currentBuildMode.options[0].actions[0]
 						|| button.action == currentBuildMode.options[0].actions[1]) {
-						keybind = I18n.get(ClientProxy.keyBindings[6].saveString());
+						keybind = I18n.get(ClientProxy.keyBindings[5].saveString());
 						if (keybind.equals("Left Control")) keybind = "Ctrl";
 					}
 				}
@@ -438,24 +432,60 @@ public class RadialMenu extends Screen {
 		return n > 0 ? 1 : -1;
 	}
 
-	/**
-	 * Called when the mouse is clicked. Args : mouseX, mouseY, clickedButton
-	 */
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-		EffortlessBuilding.log("mouse clicked");
+		performAction(true);
 
-		KeyBinding.setAll();
-		KeyBinding.set(ClientProxy.keyBindings[3].getKey(), true);
-
-		if (mouseButton == 0) {
-			this.minecraft.setScreen(null);
-
-			if (this.minecraft.screen == null) {
-				this.minecraft.setWindowActive(true);
-			}
-		}
 		return super.mouseClicked(mouseX, mouseY, mouseButton);
+	}
+
+	@Override
+	public void onClose() {
+		super.onClose();
+		//After onClose so it can open another screen
+		if (!performedActionUsingMouse) performAction(false);
+	}
+
+	private void performAction(boolean fromMouseClick) {
+		PlayerEntity player = Minecraft.getInstance().player;
+
+		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
+
+		if (switchTo != null) {
+			playRadialMenuSound();
+
+			modeSettings.setBuildMode(switchTo);
+			ModeSettingsManager.setModeSettings(player, modeSettings);
+			PacketHandler.INSTANCE.sendToServer(new ModeSettingsMessage(modeSettings));
+
+			EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().name), true);
+
+			if (fromMouseClick) performedActionUsingMouse = true;
+		}
+
+		//Perform button action
+		ModeOptions.ActionEnum action = doAction;
+		if (action != null) {
+			playRadialMenuSound();
+
+			ModeOptions.performAction(player, action);
+			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
+
+			if (fromMouseClick) performedActionUsingMouse = true;
+		}
+	}
+
+	public static void playRadialMenuSound() {
+		final float volume = 0.1f;
+		if (volume >= 0.0001f) {
+			SimpleSound sound = new SimpleSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, volume, 1.0f, Minecraft.getInstance().player.blockPosition());
+			Minecraft.getInstance().getSoundManager().play(sound);
+		}
 	}
 
 	private static class MenuButton {

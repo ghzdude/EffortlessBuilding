@@ -17,11 +17,10 @@ import net.minecraft.world.World;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.helper.InventoryHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class BuildModifiers {
 	//Called from BuildModes
 	public static void onBlockPlaced(PlayerEntity player, List<BlockPos> startCoordinates, Direction sideHit, Vector3d hitVec, boolean placeStartPos) {
 		World world = player.level;
-		ItemRandomizerBag.renewRandomness();
+		AbstractRandomizerBagItem.renewRandomness();
 
 		//Format hitvec to 0.x
 		hitVec = new Vector3d(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
@@ -193,7 +192,7 @@ public class BuildModifiers {
 		ItemStack itemBlock = ItemStack.EMPTY;
 		if (itemStack.getItem() instanceof BlockItem) itemBlock = itemStack;
 		else itemBlock = CompatHelper.getItemBlockFromStack(itemStack);
-		ItemRandomizerBag.resetRandomness();
+		AbstractRandomizerBagItem.resetRandomness();
 
 		//Add blocks in posList first
 		for (BlockPos blockPos : posList) {

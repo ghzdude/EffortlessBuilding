@@ -7,16 +7,16 @@
     ],
     "key": {
         "O": {
-            "item": "minecraft:nether_star"
+            "item": "minecraft:leather"
         },
 		"#": {
             "item": "minecraft:diamond"
         },
 		"x": {
-			"item": "minecraft:purple_dye"
-		}
+            "item": "minecraft:purple_dye"
+        }
     },
     "result": {
-        "item": "effortlessbuilding:reach_upgrade3"
+        "item": "effortlessbuilding:diamond_randomizer_bag"
     }
 }
