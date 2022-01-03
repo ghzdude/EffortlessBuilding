@@ -3,10 +3,7 @@ package nl.requios.effortlessbuilding.capability;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.core.Direction;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,8 +18,7 @@ import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 @Mod.EventBusSubscriber
 public class ModeCapabilityManager {
 
-	@CapabilityInject(IModeCapability.class)
-	public final static Capability<IModeCapability> MODE_CAPABILITY = null;
+	public static Capability<IModeCapability> MODE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
 	// Allows for the capability to persist after death.
 	@SubscribeEvent

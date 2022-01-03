@@ -1,13 +1,13 @@
 modLoader="javafml"
 # Forge for 1.17.1 is version 37
-loaderVersion="[37,)"
+loaderVersion="[39,)"
 license="GNU LESSER GENERAL PUBLIC LICENSE"
 issueTrackerURL="https://bitbucket.org/Requios/effortless-building/issues?status=new&status=open"
 showAsResourcePack=false
 
 [[mods]]
     modId="effortlessbuilding"
-    version="1.0.0.0"
+    version="${file.jarVersion}"
     displayName="Effortless Building"
     displayURL="https://minecraft.curseforge.com/projects/effortless-building"
     logoFile="logo.png"
@@ -20,13 +20,13 @@ Makes building easier by providing tools like mirrors, arrays, build modes and a
 [[dependencies.effortlessbuilding]]
     modId="forge"
     mandatory=true
-    versionRange="[37,)"
+    versionRange="[39,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.effortlessbuilding]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.17.1,1.18)"
+    versionRange="[1.18.1,1.19)"
     ordering="NONE"
     side="BOTH"

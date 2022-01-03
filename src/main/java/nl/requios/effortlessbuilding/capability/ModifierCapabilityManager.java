@@ -5,10 +5,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -26,8 +23,7 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.Modif
 @Mod.EventBusSubscriber
 public class ModifierCapabilityManager {
 
-	@CapabilityInject(IModifierCapability.class)
-	public final static Capability<IModifierCapability> MODIFIER_CAPABILITY = null;
+	public final static Capability<IModifierCapability> MODIFIER_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
 	// Allows for the capability to persist after death.
 	@SubscribeEvent

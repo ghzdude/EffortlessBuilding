@@ -35,8 +35,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class SurvivalHelper {
 
-	private static final Tag.Named<Block> NEEDS_NETHERITE_TOOL = BlockTags.bind("forge:needs_netherite_tool");
-
 	//Used for all placing of blocks in this mod.
 	//Checks if area is loaded, if player has the right permissions, if existing block can be replaced (drops it if so) and consumes an item from the stack.
 	//Based on ItemBlock#onItemUse
@@ -221,17 +219,13 @@ public class SurvivalHelper {
 			case 0:
 				return !state.is(BlockTags.NEEDS_STONE_TOOL) &&
 					   !state.is(BlockTags.NEEDS_IRON_TOOL) &&
-					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL) &&
-					   !state.is(NEEDS_NETHERITE_TOOL);
+					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL);
 			case 1:
 				return !state.is(BlockTags.NEEDS_IRON_TOOL) &&
-					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL) &&
-					   !state.is(NEEDS_NETHERITE_TOOL);
+					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL);
 			case 2:
-				return !state.is(BlockTags.NEEDS_DIAMOND_TOOL) &&
-					   !state.is(NEEDS_NETHERITE_TOOL);
+				return !state.is(BlockTags.NEEDS_DIAMOND_TOOL);
 			case 3:
-				return !state.is(NEEDS_NETHERITE_TOOL);
 			case 4:
 				return true;
 		}

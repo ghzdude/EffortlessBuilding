@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.fmlclient.gui.GuiUtils;
+import net.minecraftforge.client.gui.GuiUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

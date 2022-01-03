@@ -23,7 +23,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.ClientRegistry;
+import net.minecraftforge.client.event.ScreenOpenEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
@@ -33,8 +34,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fmlclient.registry.ClientRegistry;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
@@ -316,7 +316,7 @@ public class ClientProxy implements IProxy {
 	}
 
 	@SubscribeEvent
-	public static void onGuiOpen(GuiOpenEvent event) {
+	public static void onGuiOpen(ScreenOpenEvent event) {
 		Player player = Minecraft.getInstance().player;
 		if (player != null) {
 			BuildModes.initializeMode(player);

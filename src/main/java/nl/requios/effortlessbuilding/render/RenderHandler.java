@@ -19,7 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -35,11 +35,11 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 public class RenderHandler {
 
 	@SubscribeEvent
-	public static void onRender(RenderWorldLastEvent event) {
+	public static void onRender(RenderLevelLastEvent event) {
 		if (event.getPhase() != EventPriority.NORMAL)
 			return;
 
-		PoseStack matrixStack = event.getMatrixStack();
+		PoseStack matrixStack = event.getPoseStack();
 		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
 		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(bufferBuilder);
 
