@@ -17,27 +17,19 @@ import javax.annotation.Nonnull;
 @Mod.EventBusSubscriber
 public class ModifierSettingsManager {
 
-	private static ModifierSettings cache = null;
-
 	//Retrieves the buildsettings of a player through the modifierCapability capability
 	//Never returns null
 	@Nonnull
 	public static ModifierSettings getModifierSettings(Player player) {
-		if (cache != null) return cache;
-
 		LazyOptional<ModifierCapabilityManager.IModifierCapability> modifierCapability =
-			player.getCapability(ModifierCapabilityManager.MODIFIER_CAPABILITY, null);
+				player.getCapability(ModifierCapabilityManager.MODIFIER_CAPABILITY, null);
 
 		if (modifierCapability.isPresent()) {
 			ModifierCapabilityManager.IModifierCapability capability = modifierCapability.orElse(null);
-			cache = capability.getModifierData();
-			if (cache == null) {
-				cache = new ModifierSettings();
-				capability.setModifierData(cache);
+			if (capability.getModifierData() == null){
+				capability.setModifierData(new ModifierSettings());
 			}
-			//Add invalidation listener, to invalidate cache
-			modifierCapability.addListener(self -> cache = null);
-			return cache;
+			return capability.getModifierData();
 		}
 
 		EffortlessBuilding.logger.warn("Player does not have modifierCapability: " + player);
