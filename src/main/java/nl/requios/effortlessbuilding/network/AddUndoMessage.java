@@ -6,11 +6,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.BlockSet;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
+import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -67,25 +71,31 @@ public class AddUndoMessage {
 			ctx.get().enqueueWork(() -> {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside
-
-					Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
-					//Add to undo stack clientside
-					//Only the appropriate player that needs to add this to the undo stack gets this message
-					UndoRedo.addUndo(player, new BlockSet(
-						new ArrayList<BlockPos>() {{
-							add(message.getCoordinate());
-						}},
-						new ArrayList<BlockState>() {{
-							add(message.getPreviousBlockState());
-						}},
-						new ArrayList<BlockState>() {{
-							add(message.getNewBlockState());
-						}},
-						new Vec3(0, 0, 0),
-						message.getCoordinate(), message.getCoordinate()));
+					DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHandler.handle(message, ctx));
 				}
 			});
 			ctx.get().setPacketHandled(true);
+		}
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	public static class ClientHandler {
+		public static void handle(AddUndoMessage message, Supplier<NetworkEvent.Context> ctx) {
+			Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
+			//Add to undo stack clientside
+			//Only the appropriate player that needs to add this to the undo stack gets this message
+			UndoRedo.addUndo(player, new BlockSet(
+					new ArrayList<BlockPos>() {{
+						add(message.getCoordinate());
+					}},
+					new ArrayList<BlockState>() {{
+						add(message.getPreviousBlockState());
+					}},
+					new ArrayList<BlockState>() {{
+						add(message.getNewBlockState());
+					}},
+					new Vec3(0, 0, 0),
+					message.getCoordinate(), message.getCoordinate()));
 		}
 	}
 }

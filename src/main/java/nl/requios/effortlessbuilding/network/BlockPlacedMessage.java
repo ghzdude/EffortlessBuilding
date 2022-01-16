@@ -6,6 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
@@ -95,14 +98,21 @@ public class BlockPlacedMessage {
 			ctx.get().enqueueWork(() -> {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside
-					//Nod RenderHandler to do the dissolve shader effect
-					BlockPreviewRenderer.onBlocksPlaced();
+					DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHandler.handle(message, ctx));
 				} else {
 					//Received serverside
 					BuildModes.onBlockPlacedMessage(ctx.get().getSender(), message);
 				}
 			});
 			ctx.get().setPacketHandled(true);
+		}
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	public static class ClientHandler {
+		public static void handle(BlockPlacedMessage message, Supplier<NetworkEvent.Context> ctx) {
+			//Nod RenderHandler to do the dissolve shader effect
+			BlockPreviewRenderer.onBlocksPlaced();
 		}
 	}
 }

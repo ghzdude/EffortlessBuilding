@@ -8,6 +8,9 @@ import nl.requios.effortlessbuilding.EffortlessBuilding;
 
 import java.util.function.Supplier;
 
+/**
+ * Send packet to client to translate and log the containing message
+ */
 public class TranslatedLogMessage {
 	private final String prefix;
 	private final String translationKey;
