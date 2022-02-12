@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,14 +13,19 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 
-public class CommandReach {
+public class ReachCommand {
 
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("reach").then(Commands.literal("set").then(Commands.argument("level", IntegerArgumentType.integer(0, 3)).executes((context) -> {
+		dispatcher.register(
+				Commands.literal("reach")
+						.then(Commands.literal("set")
+								.then(Commands.argument("level", IntegerArgumentType.integer(0, 3))
+										.executes((context) -> {
 			return setReachLevel(context.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(context, "level"));
-		}))).then(Commands.literal("get").executes((context -> {
+										})))
+						.then(Commands.literal("get").executes((context -> {
 			return getReachLevel(context.getSource().getPlayerOrException());
-		}))));
+						}))));
 	}
 
 	private static int setReachLevel(ServerPlayer player, int level) {

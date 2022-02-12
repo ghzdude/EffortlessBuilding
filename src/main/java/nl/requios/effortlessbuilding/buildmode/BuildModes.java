@@ -117,6 +117,8 @@ public class BuildModes {
 			return;
 		}
 
+		if (!ReachHelper.canBreakFar(player)) return;
+
 		//If first click
 		if (currentlyBreaking.get(player) == null) {
 			//If startpos is null, dont do anything
@@ -245,20 +247,23 @@ public class BuildModes {
 	}
 
 	public enum BuildModeEnum {
-		NORMAL("effortlessbuilding.mode.normal", new Normal()),
-		NORMAL_PLUS("effortlessbuilding.mode.normal_plus", new NormalPlus(), OptionEnum.BUILD_SPEED),
-		LINE("effortlessbuilding.mode.line", new Line() /*, OptionEnum.THICKNESS*/),
-		WALL("effortlessbuilding.mode.wall", new Wall(), OptionEnum.FILL),
-		FLOOR("effortlessbuilding.mode.floor", new Floor(), OptionEnum.FILL),
-		DIAGONAL_LINE("effortlessbuilding.mode.diagonal_line", new DiagonalLine() /*, OptionEnum.THICKNESS*/),
-		DIAGONAL_WALL("effortlessbuilding.mode.diagonal_wall", new DiagonalWall() /*, OptionEnum.FILL*/),
-		SLOPE_FLOOR("effortlessbuilding.mode.slope_floor", new SlopeFloor(), OptionEnum.RAISED_EDGE),
-		CIRCLE("effortlessbuilding.mode.circle", new Circle(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
-		CYLINDER("effortlessbuilding.mode.cylinder", new Cylinder(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
-		SPHERE("effortlessbuilding.mode.sphere", new Sphere(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
-		CUBE("effortlessbuilding.mode.cube", new Cube(), OptionEnum.CUBE_FILL);
+		NORMAL("normal", new Normal()),
+		NORMAL_PLUS("normal_plus", new NormalPlus(), OptionEnum.BUILD_SPEED),
+		LINE("line", new Line() /*, OptionEnum.THICKNESS*/),
+		WALL("wall", new Wall(), OptionEnum.FILL),
+		FLOOR("floor", new Floor(), OptionEnum.FILL),
+		DIAGONAL_LINE("diagonal_line", new DiagonalLine() /*, OptionEnum.THICKNESS*/),
+		DIAGONAL_WALL("diagonal_wall", new DiagonalWall() /*, OptionEnum.FILL*/),
+		SLOPE_FLOOR("slope_floor", new SlopeFloor(), OptionEnum.RAISED_EDGE),
+		CIRCLE("circle", new Circle(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
+		CYLINDER("cylinder", new Cylinder(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
+		SPHERE("sphere", new Sphere(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
+		CUBE("cube", new Cube(), OptionEnum.CUBE_FILL),
+		PYRAMID("pyramid", new Pyramid()),
+		CONE("cone", new Cone()),
+		DOME("dome", new Dome());
 
-		public String name;
+		private String name;
 		public IBuildMode instance;
 		public OptionEnum[] options;
 
@@ -266,6 +271,14 @@ public class BuildModes {
 			this.name = name;
 			this.instance = instance;
 			this.options = options;
+		}
+
+		public String getNameKey() {
+			return "effortlessbuilding.mode." + name;
+		}
+
+		public String getDescriptionKey() {
+			return "effortlessbuilding.modedescription." + name;
 		}
 	}
 }

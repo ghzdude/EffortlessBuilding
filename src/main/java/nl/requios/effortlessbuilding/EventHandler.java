@@ -10,8 +10,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -23,7 +23,7 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
-import nl.requios.effortlessbuilding.command.CommandReach;
+import nl.requios.effortlessbuilding.command.ReachCommand;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
@@ -46,8 +46,8 @@ public class EventHandler {
 	}
 
 	@SubscribeEvent
-	public void onServerStarting(ServerStartingEvent event) {
-		CommandReach.register(event.getServer().getCommands().getDispatcher());
+	public void onRegisterCommands(RegisterCommandsEvent event) {
+		ReachCommand.register(event.getDispatcher());
 	}
 
 	@SubscribeEvent
@@ -111,44 +111,44 @@ public class EventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void breakSpeed(PlayerEvent.BreakSpeed event) {
-		//Disable if config says so
-		if (!BuildConfig.survivalBalancers.increasedMiningTime.get()) return;
-
-		if (event.getPlayer() instanceof FakePlayer) return;
-
-		Player player = event.getPlayer();
-		Level world = player.level;
-		BlockPos pos = event.getPos();
-
-		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
-
-		float originalBlockHardness = event.getState().getDestroySpeed(world, pos);
-		if (originalBlockHardness < 0) return; //Dont break bedrock
-		float totalBlockHardness = 0;
-		//get coordinates
-		List<BlockPos> coordinates = BuildModifiers.findCoordinates(player, pos);
-		for (int i = 1; i < coordinates.size(); i++) {
-			BlockPos coordinate = coordinates.get(i);
-			//get existing blockstates at those coordinates
-			BlockState blockState = world.getBlockState(coordinate);
-			//add hardness for each blockstate, if can break
-			if (SurvivalHelper.canBreak(world, player, coordinate))
-				totalBlockHardness += blockState.getDestroySpeed(world, coordinate);
-		}
-
-		//Grabbing percentage from config
-		float percentage = (float) BuildConfig.survivalBalancers.miningTimePercentage.get() / 100;
-		totalBlockHardness *= percentage;
-		totalBlockHardness += originalBlockHardness;
-
-		float newSpeed = event.getOriginalSpeed() / totalBlockHardness * originalBlockHardness;
-		if (Float.isNaN(newSpeed) || newSpeed == 0f) newSpeed = 1f;
-		event.setNewSpeed(newSpeed);
-
-		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
-	}
+//	@SubscribeEvent
+//	public static void breakSpeed(PlayerEvent.BreakSpeed event) {
+//		//Disable if config says so
+//		if (!BuildConfig.survivalBalancers.increasedMiningTime.get()) return;
+//
+//		if (event.getPlayer() instanceof FakePlayer) return;
+//
+//		Player player = event.getPlayer();
+//		Level world = player.level;
+//		BlockPos pos = event.getPos();
+//
+//		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
+//
+//		float originalBlockHardness = event.getState().getDestroySpeed(world, pos);
+//		if (originalBlockHardness < 0) return; //Dont break bedrock
+//		float totalBlockHardness = 0;
+//		//get coordinates
+//		List<BlockPos> coordinates = BuildModifiers.findCoordinates(player, pos);
+//		for (int i = 1; i < coordinates.size(); i++) {
+//			BlockPos coordinate = coordinates.get(i);
+//			//get existing blockstates at those coordinates
+//			BlockState blockState = world.getBlockState(coordinate);
+//			//add hardness for each blockstate, if can break
+//			if (SurvivalHelper.canBreak(world, player, coordinate))
+//				totalBlockHardness += blockState.getDestroySpeed(world, coordinate);
+//		}
+//
+//		//Grabbing percentage from config
+//		float percentage = (float) BuildConfig.survivalBalancers.miningTimePercentage.get() / 100;
+//		totalBlockHardness *= percentage;
+//		totalBlockHardness += originalBlockHardness;
+//
+//		float newSpeed = event.getOriginalSpeed() / totalBlockHardness * originalBlockHardness;
+//		if (Float.isNaN(newSpeed) || newSpeed == 0f) newSpeed = 1f;
+//		event.setNewSpeed(newSpeed);
+//
+//		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
+//	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
