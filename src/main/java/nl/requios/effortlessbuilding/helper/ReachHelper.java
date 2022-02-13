@@ -49,6 +49,6 @@ public class ReachHelper {
 	}
 
 	public static boolean canBreakFar(Player player) {
-		return player.isCreative() || BuildConfig.survivalBalancers.breakFar.get();
+		return player.isCreative();
 	}
 }

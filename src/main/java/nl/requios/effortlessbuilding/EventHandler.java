@@ -1,13 +1,10 @@
 package nl.requios.effortlessbuilding;
 
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -18,20 +15,15 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
-import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
-import nl.requios.effortlessbuilding.command.ReachCommand;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
 import nl.requios.effortlessbuilding.network.ClearUndoMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
-
-import java.util.List;
 
 @Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class EventHandler {
@@ -43,11 +35,6 @@ public class EventHandler {
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_mode"), new ModeCapabilityManager.Provider());
 		}
-	}
-
-	@SubscribeEvent
-	public void onRegisterCommands(RegisterCommandsEvent event) {
-		ReachCommand.register(event.getDispatcher());
 	}
 
 	@SubscribeEvent
@@ -110,45 +97,6 @@ public class EventHandler {
 			}
 		}
 	}
-
-//	@SubscribeEvent
-//	public static void breakSpeed(PlayerEvent.BreakSpeed event) {
-//		//Disable if config says so
-//		if (!BuildConfig.survivalBalancers.increasedMiningTime.get()) return;
-//
-//		if (event.getPlayer() instanceof FakePlayer) return;
-//
-//		Player player = event.getPlayer();
-//		Level world = player.level;
-//		BlockPos pos = event.getPos();
-//
-//		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
-//
-//		float originalBlockHardness = event.getState().getDestroySpeed(world, pos);
-//		if (originalBlockHardness < 0) return; //Dont break bedrock
-//		float totalBlockHardness = 0;
-//		//get coordinates
-//		List<BlockPos> coordinates = BuildModifiers.findCoordinates(player, pos);
-//		for (int i = 1; i < coordinates.size(); i++) {
-//			BlockPos coordinate = coordinates.get(i);
-//			//get existing blockstates at those coordinates
-//			BlockState blockState = world.getBlockState(coordinate);
-//			//add hardness for each blockstate, if can break
-//			if (SurvivalHelper.canBreak(world, player, coordinate))
-//				totalBlockHardness += blockState.getDestroySpeed(world, coordinate);
-//		}
-//
-//		//Grabbing percentage from config
-//		float percentage = (float) BuildConfig.survivalBalancers.miningTimePercentage.get() / 100;
-//		totalBlockHardness *= percentage;
-//		totalBlockHardness += originalBlockHardness;
-//
-//		float newSpeed = event.getOriginalSpeed() / totalBlockHardness * originalBlockHardness;
-//		if (Float.isNaN(newSpeed) || newSpeed == 0f) newSpeed = 1f;
-//		event.setNewSpeed(newSpeed);
-//
-//		//EffortlessBuilding.log(player, String.valueOf(event.getNewSpeed()));
-//	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
