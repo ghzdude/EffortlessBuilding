@@ -18,8 +18,8 @@
     "effortlessbuilding:reach_upgrade2": "Reach Upgrade 2",
     "effortlessbuilding:reach_upgrade3": "Reach Upgrade 3",
 
-    "effortlessbuilding.mode.normal": "Normal",
-    "effortlessbuilding.mode.normal_plus": "Normal+",
+    "effortlessbuilding.mode.normal": "Disable",
+    "effortlessbuilding.mode.normal_plus": "Single",
     "effortlessbuilding.mode.line": "Line",
     "effortlessbuilding.mode.wall": "Wall",
     "effortlessbuilding.mode.floor": "Floor",
@@ -35,7 +35,7 @@
     "effortlessbuilding.mode.dome": "Dome",
 	
     "effortlessbuilding.modedescription.normal": "Disable mod and use vanilla placement rules",
-	"effortlessbuilding.modedescription.normal_plus": "Single block, but with increased reach and placement preview",
+	"effortlessbuilding.modedescription.normal_plus": "Like vanilla, but with increased reach and placement preview",
 	"effortlessbuilding.modedescription.line": "",
 	"effortlessbuilding.modedescription.wall": "",
 	"effortlessbuilding.modedescription.floor": "",

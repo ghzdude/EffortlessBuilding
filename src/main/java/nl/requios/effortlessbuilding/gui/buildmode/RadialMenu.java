@@ -58,6 +58,7 @@ public class RadialMenu extends Screen {
 
 	private final double ringInnerEdge = 40;
 	private final double ringOuterEdge = 80;
+	private final double categoryLineOuterEdge = 42;
 	private final double textDistance = 90;
 	private final double buttonDistance = 120;
 	private final float fadeSpeed = 0.3f;
@@ -182,15 +183,14 @@ public class RadialMenu extends Screen {
 	private void drawRadialButtonBackgrounds(BuildModeEnum currentBuildMode, BufferBuilder buffer, double middleX, double middleY, double mouseXCenter, double mouseYCenter, double mouseRadians, double ringInnerEdge, double ringOuterEdge, double quarterCircle, ArrayList<MenuRegion> modes) {
 		if (!modes.isEmpty()) {
 			final int totalModes = Math.max(3, modes.size());
-			int currentMode = 0;
-			final double fragment = Math.PI * 0.005;
-			final double fragment2 = Math.PI * 0.0025;
-			final double perObject = 2.0 * Math.PI / totalModes;
+			final double fragment = Math.PI * 0.005; //gap between buttons in radians at inner edge
+			final double fragment2 = Math.PI * 0.0025; //gap between buttons in radians at outer edge
+			final double radiansPerObject = 2.0 * Math.PI / totalModes;
 
 			for (int i = 0; i < modes.size(); i++) {
 				MenuRegion menuRegion = modes.get(i);
-				final double beginRadians = currentMode * perObject - quarterCircle;
-				final double endRadians = (currentMode + 1) * perObject - quarterCircle;
+				final double beginRadians = i * radiansPerObject - quarterCircle;
+				final double endRadians = (i + 1) * radiansPerObject - quarterCircle;
 
 				menuRegion.x1 = Math.cos(beginRadians);
 				menuRegion.x2 = Math.cos(endRadians);
@@ -227,7 +227,18 @@ public class RadialMenu extends Screen {
 				buffer.vertex(middleX + x2m2, middleY + y2m2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
 				buffer.vertex(middleX + x1m2, middleY + y1m2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
 
-				currentMode++;
+				//Category line
+				color = menuRegion.mode.category.color;
+
+				final double x1m3 = Math.cos(beginRadians + fragment) * categoryLineOuterEdge;
+				final double x2m3 = Math.cos(endRadians - fragment) * categoryLineOuterEdge;
+				final double y1m3 = Math.sin(beginRadians + fragment) * categoryLineOuterEdge;
+				final double y2m3 = Math.sin(endRadians - fragment) * categoryLineOuterEdge;
+
+				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x2m3, middleY + y2m3, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x1m3, middleY + y1m3, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
 			}
 		}
 	}

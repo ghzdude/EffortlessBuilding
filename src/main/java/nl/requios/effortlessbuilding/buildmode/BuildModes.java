@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.buildmode;
 
+import com.mojang.math.Vector4f;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
@@ -247,29 +248,31 @@ public class BuildModes {
 	}
 
 	public enum BuildModeEnum {
-		NORMAL("normal", new Normal()),
-		NORMAL_PLUS("normal_plus", new NormalPlus(), OptionEnum.BUILD_SPEED),
-		LINE("line", new Line() /*, OptionEnum.THICKNESS*/),
-		WALL("wall", new Wall(), OptionEnum.FILL),
-		FLOOR("floor", new Floor(), OptionEnum.FILL),
-		DIAGONAL_LINE("diagonal_line", new DiagonalLine() /*, OptionEnum.THICKNESS*/),
-		DIAGONAL_WALL("diagonal_wall", new DiagonalWall() /*, OptionEnum.FILL*/),
-		SLOPE_FLOOR("slope_floor", new SlopeFloor(), OptionEnum.RAISED_EDGE),
-		CIRCLE("circle", new Circle(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
-		CYLINDER("cylinder", new Cylinder(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
-		SPHERE("sphere", new Sphere(), OptionEnum.CIRCLE_START, OptionEnum.FILL),
-		CUBE("cube", new Cube(), OptionEnum.CUBE_FILL),
-		PYRAMID("pyramid", new Pyramid()),
-		CONE("cone", new Cone()),
-		DOME("dome", new Dome());
+		NORMAL("normal", new Normal(), BuildModeCategoryEnum.BASIC),
+		NORMAL_PLUS("normal_plus", new NormalPlus(), BuildModeCategoryEnum.BASIC, OptionEnum.BUILD_SPEED),
+		LINE("line", new Line(), BuildModeCategoryEnum.BASIC /*, OptionEnum.THICKNESS*/),
+		WALL("wall", new Wall(), BuildModeCategoryEnum.BASIC, OptionEnum.FILL),
+		FLOOR("floor", new Floor(), BuildModeCategoryEnum.BASIC, OptionEnum.FILL),
+		CUBE("cube", new Cube(), BuildModeCategoryEnum.BASIC, OptionEnum.CUBE_FILL),
+		DIAGONAL_LINE("diagonal_line", new DiagonalLine(),  BuildModeCategoryEnum.DIAGONAL /*, OptionEnum.THICKNESS*/),
+		DIAGONAL_WALL("diagonal_wall", new DiagonalWall(),  BuildModeCategoryEnum.DIAGONAL /*, OptionEnum.FILL*/),
+		SLOPE_FLOOR("slope_floor", new SlopeFloor(), BuildModeCategoryEnum.DIAGONAL, OptionEnum.RAISED_EDGE),
+		CIRCLE("circle", new Circle(), BuildModeCategoryEnum.CIRCULAR, OptionEnum.CIRCLE_START, OptionEnum.FILL),
+		CYLINDER("cylinder", new Cylinder(), BuildModeCategoryEnum.CIRCULAR, OptionEnum.CIRCLE_START, OptionEnum.FILL),
+		SPHERE("sphere", new Sphere(), BuildModeCategoryEnum.CIRCULAR, OptionEnum.CIRCLE_START, OptionEnum.FILL);
+//		PYRAMID("pyramid", new Pyramid(), BuildModeCategoryEnum.ROOF),
+//		CONE("cone", new Cone(), BuildModeCategoryEnum.ROOF),
+//		DOME("dome", new Dome(), BuildModeCategoryEnum.ROOF);
 
-		private String name;
-		public IBuildMode instance;
-		public OptionEnum[] options;
+		private final String name;
+		public final IBuildMode instance;
+		public final BuildModeCategoryEnum category;
+		public final OptionEnum[] options;
 
-		BuildModeEnum(String name, IBuildMode instance, OptionEnum... options) {
+		BuildModeEnum(String name, IBuildMode instance, BuildModeCategoryEnum category, OptionEnum... options) {
 			this.name = name;
 			this.instance = instance;
+			this.category = category;
 			this.options = options;
 		}
 
@@ -279,6 +282,19 @@ public class BuildModes {
 
 		public String getDescriptionKey() {
 			return "effortlessbuilding.modedescription." + name;
+		}
+	}
+
+	public enum BuildModeCategoryEnum {
+		BASIC(new Vector4f(0f, .5f, 1f, .8f)),
+		DIAGONAL(new Vector4f(0.56f, 0.28f, 0.87f, .8f)),
+		CIRCULAR(new Vector4f(0.29f, 0.76f, 0.3f, 1f)),
+		ROOF(new Vector4f(0.83f, 0.87f, 0.23f, .8f));
+
+		public final Vector4f color;
+
+		BuildModeCategoryEnum(Vector4f color) {
+			this.color = color;
 		}
 	}
 }
