@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.helper;
 
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
@@ -233,7 +234,7 @@ public class SurvivalHelper {
 		return false;
 	}
 
-	//From EntityPlayer#canPlayerEdit
+	//From Player#mayUseItemAt
 	private static boolean canPlayerEdit(Player player, Level world, BlockPos pos, ItemStack stack) {
 		if (!world.mayInteract(player, pos)) return false;
 
@@ -242,9 +243,8 @@ public class SurvivalHelper {
 			return true;
 		} else {
 			//Adventure mode
-			BlockInWorld blockworldstate = new BlockInWorld(world, pos, false);
-			return stack.hasAdventureModePlaceTagForBlock(world.getTagManager(), blockworldstate);
-
+			BlockInWorld blockinworld = new BlockInWorld(world, pos, false);
+			return stack.hasAdventureModePlaceTagForBlock(world.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), blockinworld);
 		}
 	}
 
