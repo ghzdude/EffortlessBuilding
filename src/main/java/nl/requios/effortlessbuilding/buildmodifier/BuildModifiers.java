@@ -198,12 +198,15 @@ public class BuildModifiers {
 		for (BlockPos blockPos : posList) {
 			if (!(itemStack.getItem() instanceof BlockItem)) itemBlock = CompatHelper.getItemBlockFromStack(itemStack);
 			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, InteractionHand.MAIN_HAND);
+			if (blockState == null) continue;
+
 			blockStates.add(blockState);
 			itemStacks.add(itemBlock);
 		}
 
 		for (BlockPos blockPos : posList) {
 			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, InteractionHand.MAIN_HAND);
+			if (blockState == null) continue;
 
 			List<BlockState> arrayBlockStates = Array.findBlockStates(player, blockPos, blockState, itemStack, itemStacks);
 			blockStates.addAll(arrayBlockStates);
@@ -214,6 +217,8 @@ public class BuildModifiers {
 			for (int i = 0; i < arrayCoordinates.size(); i++) {
 				BlockPos coordinate = arrayCoordinates.get(i);
 				BlockState blockState1 = arrayBlockStates.get(i);
+				if (blockState1 == null) continue;
+
 				blockStates.addAll(Mirror.findBlockStates(player, coordinate, blockState1, itemStack, itemStacks));
 				blockStates.addAll(RadialMirror.findBlockStates(player, coordinate, blockState1, itemStack, itemStacks));
 			}

@@ -71,7 +71,7 @@ public class RadialMirror {
 		double startAngleInSlice = startAngleToCenterMod % sliceAngle;
 
 		//Rotate the original blockstate
-		blockState = rotateOriginalBlockState(startAngleToCenter, blockState);
+		blockState = rotateOriginalBlockState(player, startPos, startAngleToCenter, blockState);
 
 		//Randomizer bag synergy
 		AbstractRandomizerBagItem randomizerBagItem = null;
@@ -102,11 +102,11 @@ public class RadialMirror {
 				newBlockState = BuildModifiers
 					.getBlockStateFromItem(itemStack, player, startPos, Direction.UP, new Vec3(0, 0, 0), InteractionHand.MAIN_HAND);
 
-				newBlockState = rotateOriginalBlockState(startAngleToCenter, newBlockState);
+				newBlockState = rotateOriginalBlockState(player, startPos, startAngleToCenter, newBlockState);
 			}
 
 			//rotate
-			newBlockState = rotateBlockState(relNewVec, newBlockState, r.alternate && i % 2 == 1);
+			newBlockState = rotateBlockState(player, startPos, relNewVec, newBlockState, r.alternate && i % 2 == 1);
 
 			blockStates.add(newBlockState);
 			itemStacks.add(itemStack);
@@ -115,36 +115,36 @@ public class RadialMirror {
 		return blockStates;
 	}
 
-	private static BlockState rotateOriginalBlockState(double startAngleToCenter, BlockState blockState) {
+	private static BlockState rotateOriginalBlockState(Player player, BlockPos startPos, double startAngleToCenter, BlockState blockState) {
 		BlockState newBlockState = blockState;
 
 		if (startAngleToCenter < -0.751 * Math.PI || startAngleToCenter > 0.749 * Math.PI) {
-			newBlockState = blockState.rotate(Rotation.CLOCKWISE_180);
+			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_180);
 		} else if (startAngleToCenter < -0.251 * Math.PI) {
-			newBlockState = blockState.rotate(Rotation.COUNTERCLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level, startPos, Rotation.COUNTERCLOCKWISE_90);
 		} else if (startAngleToCenter > 0.249 * Math.PI) {
-			newBlockState = blockState.rotate(Rotation.CLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_90);
 		}
 
 		return newBlockState;
 	}
 
-	private static BlockState rotateBlockState(Vec3 relVec, BlockState blockState, boolean alternate) {
+	private static BlockState rotateBlockState(Player player, BlockPos startPos, Vec3 relVec, BlockState blockState, boolean alternate) {
 		BlockState newBlockState;
 		double angleToCenter = Mth.atan2(relVec.x, relVec.z); //between -PI and PI
 
 		if (angleToCenter < -0.751 * Math.PI || angleToCenter > 0.749 * Math.PI) {
-			newBlockState = blockState.rotate(Rotation.CLOCKWISE_180);
+			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_180);
 			if (alternate) {
 				newBlockState = newBlockState.mirror(Mirror.FRONT_BACK);
 			}
 		} else if (angleToCenter < -0.251 * Math.PI) {
-			newBlockState = blockState.rotate(Rotation.CLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_90);
 			if (alternate) {
 				newBlockState = newBlockState.mirror(Mirror.LEFT_RIGHT);
 			}
 		} else if (angleToCenter > 0.249 * Math.PI) {
-			newBlockState = blockState.rotate(Rotation.COUNTERCLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level, startPos, Rotation.COUNTERCLOCKWISE_90);
 			if (alternate) {
 				newBlockState = newBlockState.mirror(Mirror.LEFT_RIGHT);
 			}
