@@ -71,9 +71,4 @@ public class ReachUpgrade2Item extends Item {
 		tooltip.add(Component.literal(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + BuildConfig.reach.maxReachLevel2.get()));
 		tooltip.add(Component.literal(ChatFormatting.GRAY + "Previous upgrades need to be consumed first"));
 	}
-
-	@Override
-	public String getDescriptionId() {
-		return this.getDescriptionId();
-	}
 }

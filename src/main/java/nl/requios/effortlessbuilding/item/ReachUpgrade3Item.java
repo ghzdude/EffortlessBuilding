@@ -74,8 +74,4 @@ public class ReachUpgrade3Item extends Item {
 		tooltip.add(Component.literal(ChatFormatting.GRAY + "Previous upgrades need to be consumed first"));
 	}
 
-	@Override
-	public String getDescriptionId() {
-		return this.getDescriptionId();
-	}
 }

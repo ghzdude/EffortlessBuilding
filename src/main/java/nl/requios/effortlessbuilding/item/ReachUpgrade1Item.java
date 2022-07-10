@@ -66,8 +66,4 @@ public class ReachUpgrade1Item extends Item {
 		tooltip.add(Component.literal(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + BuildConfig.reach.maxReachLevel1.get()));
 	}
 
-	@Override
-	public String getDescriptionId() {
-		return this.getDescriptionId();
-	}
 }
