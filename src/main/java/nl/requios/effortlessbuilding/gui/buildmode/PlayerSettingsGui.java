@@ -12,7 +12,6 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.gui.widget.ExtendedButton;
@@ -32,7 +31,7 @@ public class PlayerSettingsGui extends Screen {
 	private Button closeButton;
 
 	public PlayerSettingsGui() {
-		super(new TranslatableComponent("effortlessbuilding.screen.player_settings"));
+		super(Component.translatable("effortlessbuilding.screen.player_settings"));
 	}
 
 	@Override
