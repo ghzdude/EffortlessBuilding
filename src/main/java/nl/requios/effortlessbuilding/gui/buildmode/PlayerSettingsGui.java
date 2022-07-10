@@ -15,7 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.gui.widget.ExtendedButton;
-import net.minecraftforge.client.gui.widget.Slider;
+import net.minecraftforge.client.gui.widget.ForgeSlider;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -52,9 +52,7 @@ public class PlayerSettingsGui extends Screen {
 		addRenderableOnly(shaderTypeButton);
 
 		yy += 50;
-		Slider slider = new Slider(right - 200, yy, 200, 20, Component.empty(), Component.empty(), 0.5, 2.0, 1.0, true, true, (button) -> {
-
-		});
+		ForgeSlider slider = new ForgeSlider(right - 200, yy, 200, 20, Component.empty(), Component.empty(), 0.5, 2.0, 1.0, true);
 		addRenderableOnly(slider);
 
 		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, Component.literal("Done"), (button) -> this.minecraft.player.closeContainer());
