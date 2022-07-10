@@ -217,9 +217,4 @@ public abstract class AbstractRandomizerBagItem extends Item {
             tooltip.add(Component.literal(ChatFormatting.YELLOW + "Experimental on servers: may lose inventory"));
         }
     }
-
-    @Override
-    public String getDescriptionId() {
-        return this.getDescriptionId();
-    }
 }

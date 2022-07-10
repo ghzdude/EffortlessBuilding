@@ -1,6 +1,6 @@
 modLoader="javafml"
 # Forge for 1.17.1 is version 37
-loaderVersion="[39,)"
+loaderVersion="[41,)"
 license="GNU LESSER GENERAL PUBLIC LICENSE"
 issueTrackerURL="https://bitbucket.org/Requios/effortless-building/issues?status=new&status=open"
 showAsResourcePack=false
@@ -20,13 +20,13 @@ Makes building easier by providing tools like mirrors, arrays, build modes and a
 [[dependencies.effortlessbuilding]]
     modId="forge"
     mandatory=true
-    versionRange="[39,)"
+    versionRange="[41,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.effortlessbuilding]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.1,1.19)"
+    versionRange="[1.18.1,1.20)"
     ordering="NONE"
     side="BOTH"
