@@ -2,12 +2,10 @@ package nl.requios.effortlessbuilding.gui.elements;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -30,7 +28,7 @@ public class GuiIconButton extends Button {
 	}
 
 	public GuiIconButton(int x, int y, int width, int height, int iconX, int iconY, int iconWidth, int iconHeight, int iconAltX, int iconAltY, ResourceLocation resourceLocation, Button.OnPress onPress) {
-		super(x, y, width, height, TextComponent.EMPTY, onPress);
+		super(x, y, width, height, Component.empty(), onPress);
 		this.iconX = iconX;
 		this.iconY = iconY;
 		this.iconWidth = iconWidth;

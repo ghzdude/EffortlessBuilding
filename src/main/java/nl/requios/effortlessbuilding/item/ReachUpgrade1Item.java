@@ -7,7 +7,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.BuildConfig;
@@ -64,11 +63,11 @@ public class ReachUpgrade1Item extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(new TextComponent(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + BuildConfig.reach.maxReachLevel1.get()));
+		tooltip.add(Component.literal(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + BuildConfig.reach.maxReachLevel1.get()));
 	}
 
 	@Override
 	public String getDescriptionId() {
-		return this.getRegistryName().toString();
+		return this.getDescriptionId();
 	}
 }

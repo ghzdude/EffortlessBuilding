@@ -12,7 +12,6 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -54,12 +53,12 @@ public class PlayerSettingsGui extends Screen {
 		addRenderableOnly(shaderTypeButton);
 
 		yy += 50;
-		Slider slider = new Slider(right - 200, yy, 200, 20, TextComponent.EMPTY, TextComponent.EMPTY, 0.5, 2.0, 1.0, true, true, (button) -> {
+		Slider slider = new Slider(right - 200, yy, 200, 20, Component.empty(), Component.empty(), 0.5, 2.0, 1.0, true, true, (button) -> {
 
 		});
 		addRenderableOnly(slider);
 
-		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, new TextComponent("Done"), (button) -> this.minecraft.player.closeContainer());
+		closeButton = new ExtendedButton(left + 50, bottom - 20, 180, 20, Component.literal("Done"), (button) -> this.minecraft.player.closeContainer());
 		addRenderableOnly(closeButton);
 	}
 
@@ -111,7 +110,7 @@ public class PlayerSettingsGui extends Screen {
 		}
 
 		ShaderType(String name) {
-			this.name = new TextComponent(name);
+			this.name = Component.literal(name);
 		}
 	}
 

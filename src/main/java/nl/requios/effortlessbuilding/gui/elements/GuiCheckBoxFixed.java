@@ -3,7 +3,7 @@ package nl.requios.effortlessbuilding.gui.elements;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.GuiUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,7 +17,7 @@ public class GuiCheckBoxFixed extends Button {
 	private boolean isChecked;
 
 	public GuiCheckBoxFixed(int xPos, int yPos, String displayString, boolean isChecked) {
-		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, new TextComponent(displayString), b -> {
+		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, Component.literal(displayString), b -> {
 		});
 		this.isChecked = isChecked;
 		this.boxWidth = 11;
