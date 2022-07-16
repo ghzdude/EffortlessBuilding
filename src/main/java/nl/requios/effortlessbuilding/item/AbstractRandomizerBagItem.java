@@ -129,7 +129,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
         if (ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown()) { //ctx.isPlacerSneaking()
             if (world.isClientSide) return InteractionResult.SUCCESS;
             //Open inventory
-            NetworkHooks.openGui((ServerPlayer) player, getContainerProvider(item));
+            NetworkHooks.openScreen((ServerPlayer) player, getContainerProvider(item));
         } else {
             if (world.isClientSide) return InteractionResult.SUCCESS;
 
@@ -182,7 +182,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
         if (player.isShiftKeyDown()) {
             if (world.isClientSide) return new InteractionResultHolder<>(InteractionResult.SUCCESS, bag);
             //Open inventory
-            NetworkHooks.openGui((ServerPlayer) player, getContainerProvider(bag));
+            NetworkHooks.openScreen((ServerPlayer) player, getContainerProvider(bag));
         } else {
             //Use item
             //Get bag inventory

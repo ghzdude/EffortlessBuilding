@@ -9,7 +9,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -39,7 +39,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
-		if (event.getWorld().isClientSide()) return;
+		if (event.getLevel().isClientSide()) return;
 
 		if (!(event.getEntity() instanceof Player)) return;
 
@@ -74,7 +74,7 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onBlockBroken(BlockEvent.BreakEvent event) {
-		if (event.getWorld().isClientSide()) return;
+		if (event.getLevel().isClientSide()) return;
 
 		if (event.getPlayer() instanceof FakePlayer) return;
 
@@ -100,16 +100,16 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		if (event.getPlayer() instanceof FakePlayer) return;
-		Player player = event.getPlayer();
+		if (event.getEntity() instanceof FakePlayer) return;
+		Player player = event.getEntity();
 		ModifierSettingsManager.handleNewPlayer(player);
 		ModeSettingsManager.handleNewPlayer(player);
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		if (event.getPlayer() instanceof FakePlayer) return;
-		Player player = event.getPlayer();
+		if (event.getEntity() instanceof FakePlayer) return;
+		Player player = event.getEntity();
 		if (player.getCommandSenderWorld().isClientSide) return;
 
 		UndoRedo.clear(player);
@@ -118,16 +118,16 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-		if (event.getPlayer() instanceof FakePlayer) return;
-		Player player = event.getPlayer();
+		if (event.getEntity() instanceof FakePlayer) return;
+		Player player = event.getEntity();
 		ModifierSettingsManager.handleNewPlayer(player);
 		ModeSettingsManager.handleNewPlayer(player);
 	}
 
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-		if (event.getPlayer() instanceof FakePlayer) return;
-		Player player = event.getPlayer();
+		if (event.getEntity() instanceof FakePlayer) return;
+		Player player = event.getEntity();
 		if (player.getCommandSenderWorld().isClientSide) return;
 
 		//Set build mode to normal
@@ -151,12 +151,12 @@ public class EventHandler {
 
 	@SubscribeEvent
 	public static void onPlayerClone(PlayerEvent.Clone event) {
-		if (event.getPlayer() instanceof FakePlayer) return;
+		if (event.getEntity() instanceof FakePlayer) return;
 		//Attach capabilities on death, otherwise crash
 		Player oldPlayer = event.getOriginal();
 		oldPlayer.revive();
 
-		Player newPlayer = event.getPlayer();
+		Player newPlayer = event.getEntity();
 		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
 		ModeSettingsManager.setModeSettings(newPlayer, ModeSettingsManager.getModeSettings(oldPlayer));
 	}

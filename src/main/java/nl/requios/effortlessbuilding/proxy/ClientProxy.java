@@ -23,9 +23,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ClientRegistry;
-import net.minecraftforge.client.event.ScreenOpenEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.event.TickEvent;
@@ -81,11 +80,6 @@ public class ClientProxy implements IProxy {
 		keyBindings[3] = new KeyMapping("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
 		keyBindings[4] = new KeyMapping("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
 		keyBindings[5] = new KeyMapping("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
-
-		// register all the key bindings
-		for (KeyMapping keyBinding : keyBindings) {
-			ClientRegistry.registerKeyBinding(keyBinding);
-		}
 
 		MenuScreens.register(EffortlessBuilding.RANDOMIZER_BAG_CONTAINER.get(), RandomizerBagScreen::new);
 		MenuScreens.register(EffortlessBuilding.GOLDEN_RANDOMIZER_BAG_CONTAINER.get(), GoldenRandomizerBagScreen::new);
@@ -226,7 +220,7 @@ public class ClientProxy implements IProxy {
 	}
 
 	@SubscribeEvent(receiveCanceled = true)
-	public static void onKeyPress(InputEvent.KeyInputEvent event) {
+	public static void onKeyPress(InputEvent.Key event) {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null)
 			return;
@@ -310,7 +304,7 @@ public class ClientProxy implements IProxy {
 	}
 
 	@SubscribeEvent
-	public static void onGuiOpen(ScreenOpenEvent event) {
+	public static void onGuiOpen(ScreenEvent event) {
 		Player player = Minecraft.getInstance().player;
 		if (player != null) {
 			BuildModes.initializeMode(player);
