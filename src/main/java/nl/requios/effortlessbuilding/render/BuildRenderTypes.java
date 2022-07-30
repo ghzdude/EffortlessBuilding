@@ -2,24 +2,18 @@ package nl.requios.effortlessbuilding.render;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import nl.requios.effortlessbuilding.BuildConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import org.lwjgl.opengl.*;
 
 import java.util.OptionalDouble;
-import java.util.function.Consumer;
-import java.util.function.Function;
+
 
 public class BuildRenderTypes extends RenderType {
 	public static ResourceLocation shaderMaskTextureLocation = new ResourceLocation(EffortlessBuilding.MODID, "textures/shader_mask.png");

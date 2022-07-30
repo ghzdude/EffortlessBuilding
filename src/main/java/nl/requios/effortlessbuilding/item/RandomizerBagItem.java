@@ -1,7 +1,6 @@
 package nl.requios.effortlessbuilding.item;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +33,7 @@ public class RandomizerBagItem extends AbstractRandomizerBagItem {
 
 		@Override
 		public Component getDisplayName() {
-			return new TranslatableComponent("effortlessbuilding:randomizer_bag");
+			return Component.translatable("effortlessbuilding:randomizer_bag");
 		}
 
 		@Nullable

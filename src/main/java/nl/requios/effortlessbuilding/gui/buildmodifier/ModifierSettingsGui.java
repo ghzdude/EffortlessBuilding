@@ -2,11 +2,9 @@ package nl.requios.effortlessbuilding.gui.buildmodifier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -19,9 +17,6 @@ import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @OnlyIn(Dist.CLIENT)
 public class ModifierSettingsGui extends Screen {
 
@@ -33,7 +28,7 @@ public class ModifierSettingsGui extends Screen {
 	private RadialMirrorSettingsGui radialMirrorSettingsGui;
 
 	public ModifierSettingsGui() {
-		super(new TranslatableComponent("effortlessbuilding.screen.modifier_settings"));
+		super(Component.translatable("effortlessbuilding.screen.modifier_settings"));
 	}
 
 	@Override
@@ -55,7 +50,7 @@ public class ModifierSettingsGui extends Screen {
 
 		//Close button
 		int y = height - 26;
-		buttonClose = new Button(width / 2 - 100, y, 200, 20, new TextComponent("Close"), (button) -> {
+		buttonClose = new Button(width / 2 - 100, y, 200, 20, Component.literal("Close"), (button) -> {
 			Minecraft.getInstance().player.closeContainer();
 		});
 		addRenderableOnly(buttonClose);

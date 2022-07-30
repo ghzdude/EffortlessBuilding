@@ -19,14 +19,16 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
-import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
+
+import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 
 /***
  * Main render class for Effortless Building
@@ -35,8 +37,8 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 public class RenderHandler {
 
 	@SubscribeEvent
-	public static void onRender(RenderLevelLastEvent event) {
-		if (event.getPhase() != EventPriority.NORMAL)
+	public static void onRender(RenderLevelStageEvent event) {
+		if (event.getPhase() != EventPriority.NORMAL || event.getStage() != AFTER_PARTICLES)
 			return;
 
 		PoseStack matrixStack = event.getPoseStack();
@@ -91,15 +93,10 @@ public class RenderHandler {
 		RenderType blockPreviewRenderType = BuildRenderTypes.getBlockPreviewRenderType(dissolve, blockPos, firstPos, secondPos, red);
 		VertexConsumer buffer = renderTypeBuffer.getBuffer(blockPreviewRenderType);
 
-//        MinecraftServer server = Minecraft.getInstance().getIntegratedServer();
-//        World world = DimensionManager.getWorld(server, DimensionType.OVERWORLD, false, true);
-
 		try {
 			BakedModel model = dispatcher.getBlockModel(blockState);
 			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer, blockState, model,
-					1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
-//        blockRendererDispatcher.getBlockModelRenderer().renderModel(world, blockRendererDispatcher.getModelForState(blockState),
-//                blockState, logicPos, matrixStack, renderTypeBuffer.getBuffer(renderType), true, new Random(), blockState.getPositionRandom(logicPos), i);
+					1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, blockPreviewRenderType);
 		} catch (NullPointerException e) {
 			EffortlessBuilding.logger.warn("RenderHandler::renderBlockPreview cannot render " + blockState.getBlock().toString());
 

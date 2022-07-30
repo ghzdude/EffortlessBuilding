@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -43,7 +43,7 @@ public class EffortlessBuilding {
 
 	//Registration
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-	private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, EffortlessBuilding.MODID);
+	private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, EffortlessBuilding.MODID);
 
 	public static final RegistryObject<Item> RANDOMIZER_BAG_ITEM = ITEMS.register("randomizer_bag", RandomizerBagItem::new);
 	public static final RegistryObject<Item> GOLDEN_RANDOMIZER_BAG_ITEM = ITEMS.register("golden_randomizer_bag", GoldenRandomizerBagItem::new);
@@ -103,7 +103,7 @@ public class EffortlessBuilding {
 	}
 
 	public static void log(Player player, String msg, boolean actionBar) {
-		player.displayClientMessage(new TextComponent(msg), actionBar);
+		player.displayClientMessage(Component.literal(msg), actionBar);
 	}
 
 	//Log with translation supported, call either on client or server (which then sends a message)

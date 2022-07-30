@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -130,7 +129,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
         if (ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown()) { //ctx.isPlacerSneaking()
             if (world.isClientSide) return InteractionResult.SUCCESS;
             //Open inventory
-            NetworkHooks.openGui((ServerPlayer) player, getContainerProvider(item));
+            NetworkHooks.openScreen((ServerPlayer) player, getContainerProvider(item));
         } else {
             if (world.isClientSide) return InteractionResult.SUCCESS;
 
@@ -183,7 +182,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
         if (player.isShiftKeyDown()) {
             if (world.isClientSide) return new InteractionResultHolder<>(InteractionResult.SUCCESS, bag);
             //Open inventory
-            NetworkHooks.openGui((ServerPlayer) player, getContainerProvider(bag));
+            NetworkHooks.openScreen((ServerPlayer) player, getContainerProvider(bag));
         } else {
             //Use item
             //Get bag inventory
@@ -212,15 +211,10 @@ public abstract class AbstractRandomizerBagItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(new TextComponent(ChatFormatting.BLUE + "Rightclick" + ChatFormatting.GRAY + " to place a random block"));
-        tooltip.add(new TextComponent(ChatFormatting.BLUE + "Sneak + rightclick" + ChatFormatting.GRAY + " to open inventory"));
+        tooltip.add(Component.literal(ChatFormatting.BLUE + "Rightclick" + ChatFormatting.GRAY + " to place a random block"));
+        tooltip.add(Component.literal(ChatFormatting.BLUE + "Sneak + rightclick" + ChatFormatting.GRAY + " to open inventory"));
         if (world != null && world.players().size() > 1) {
-            tooltip.add(new TextComponent(ChatFormatting.YELLOW + "Experimental on servers: may lose inventory"));
+            tooltip.add(Component.literal(ChatFormatting.YELLOW + "Experimental on servers: may lose inventory"));
         }
-    }
-
-    @Override
-    public String getDescriptionId() {
-        return this.getRegistryName().toString();
     }
 }

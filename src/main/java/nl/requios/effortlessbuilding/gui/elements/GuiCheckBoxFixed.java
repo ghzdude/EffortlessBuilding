@@ -3,8 +3,8 @@ package nl.requios.effortlessbuilding.gui.elements;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.client.gui.GuiUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.gui.ScreenUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -17,7 +17,7 @@ public class GuiCheckBoxFixed extends Button {
 	private boolean isChecked;
 
 	public GuiCheckBoxFixed(int xPos, int yPos, String displayString, boolean isChecked) {
-		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, new TextComponent(displayString), b -> {
+		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, Component.literal(displayString), b -> {
 		});
 		this.isChecked = isChecked;
 		this.boxWidth = 11;
@@ -30,7 +30,7 @@ public class GuiCheckBoxFixed extends Button {
 		if (this.visible) {
 			Minecraft mc = Minecraft.getInstance();
 			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.boxWidth && mouseY < this.y + this.height;
-			GuiUtils.drawContinuousTexturedBox(ms, WIDGETS_LOCATION, this.x, this.y, 0, 46, this.boxWidth, this.height, 200, 20, 2, 3, 2, 2, this.getBlitOffset());
+			ScreenUtils.blitWithBorder(ms, WIDGETS_LOCATION, this.x, this.y, 0, 46, this.boxWidth, this.height, 200, 20, 2, 3, 2, 2, this.getBlitOffset());
 			this.renderBg(ms, mc, mouseX, mouseY);
 			int color = 14737632;
 

@@ -7,15 +7,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,15 +40,15 @@ public class GuiNumberField extends GuiComponent {
 		this.width = width;
 		this.height = height;
 
-		textField = new EditBox(font, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2, TextComponent.EMPTY);
-		minusButton = new Button(x, y - 1, buttonWidth, height + 2, new TextComponent("-"), button -> {
+		textField = new EditBox(font, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2, Component.empty());
+		minusButton = new Button(x, y - 1, buttonWidth, height + 2, Component.literal("-"), button -> {
 			float valueChanged = 1f;
 			if (Screen.hasControlDown()) valueChanged = 5f;
 			if (Screen.hasShiftDown()) valueChanged = 10f;
 
 			setNumber(getNumber() - valueChanged);
 		});
-		plusButton = new Button(x + width - buttonWidth, y - 1, buttonWidth, height + 2, new TextComponent("+"), button -> {
+		plusButton = new Button(x + width - buttonWidth, y - 1, buttonWidth, height + 2, Component.literal("+"), button -> {
 			float valueChanged = 1f;
 			if (Screen.hasControlDown()) valueChanged = 5f;
 			if (Screen.hasShiftDown()) valueChanged = 10f;
@@ -124,17 +123,17 @@ public class GuiNumberField extends GuiComponent {
 		}
 
 		if (insideMinusButton) {
-			textLines.add(new TextComponent("Hold ").append(new TextComponent("shift ").withStyle(ChatFormatting.AQUA)).append("for ")
-				.append(new TextComponent("10").withStyle(ChatFormatting.RED)));
-			textLines.add(new TextComponent("Hold ").append(new TextComponent("ctrl ").withStyle(ChatFormatting.AQUA)).append("for ")
-				.append(new TextComponent("5").withStyle(ChatFormatting.RED)));
+			textLines.add(Component.literal("Hold ").append(Component.literal("shift ").withStyle(ChatFormatting.AQUA)).append("for ")
+				.append(Component.literal("10").withStyle(ChatFormatting.RED)));
+			textLines.add(Component.literal("Hold ").append(Component.literal("ctrl ").withStyle(ChatFormatting.AQUA)).append("for ")
+				.append(Component.literal("5").withStyle(ChatFormatting.RED)));
 		}
 
 		if (insidePlusButton) {
-			textLines.add(new TextComponent("Hold ").append(new TextComponent("shift ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
-				.append(new TextComponent("10").withStyle(ChatFormatting.RED)));
-			textLines.add(new TextComponent("Hold ").append(new TextComponent("ctrl ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
-				.append(new TextComponent("5").withStyle(ChatFormatting.RED)));
+			textLines.add(Component.literal("Hold ").append(Component.literal("shift ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
+				.append(Component.literal("10").withStyle(ChatFormatting.RED)));
+			textLines.add(Component.literal("Hold ").append(Component.literal("ctrl ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
+				.append(Component.literal("5").withStyle(ChatFormatting.RED)));
 		}
 
 		screen.renderComponentTooltip(ms, textLines, mouseX - 10, mouseY + 25);
