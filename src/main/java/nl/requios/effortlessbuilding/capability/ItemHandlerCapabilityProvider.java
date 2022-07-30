@@ -1,42 +1,37 @@
 package nl.requios.effortlessbuilding.capability;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ItemHandlerCapabilityProvider implements ICapabilitySerializable<NBTTagCompound> {
-    IItemHandler itemHandler = new ItemStackHandler(ItemRandomizerBag.INV_SIZE);
+public class ItemHandlerCapabilityProvider implements ICapabilitySerializable<CompoundTag> {
+	IItemHandler itemHandler;
 
-    @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
-            return true;
-        return false;
-    }
+	public ItemHandlerCapabilityProvider(int size) {
+		itemHandler = new ItemStackHandler(size);
+	}
 
-    @Nullable
-    @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
-            return (T) itemHandler;
-        return null;
-    }
+	@Nonnull
+	@Override
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+		return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> itemHandler));
+	}
 
-    @Override
-    public NBTTagCompound serializeNBT() {
-        return ((ItemStackHandler) itemHandler).serializeNBT();
-    }
+	@Override
+	public CompoundTag serializeNBT() {
+		return ((ItemStackHandler) itemHandler).serializeNBT();
+	}
 
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-        ((ItemStackHandler) itemHandler).deserializeNBT(nbt);
-    }
+	@Override
+	public void deserializeNBT(CompoundTag nbt) {
+		((ItemStackHandler) itemHandler).deserializeNBT(nbt);
+	}
 }

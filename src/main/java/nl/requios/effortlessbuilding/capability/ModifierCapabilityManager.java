@@ -1,16 +1,16 @@
 package nl.requios.effortlessbuilding.capability;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.capabilities.*;
+import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
@@ -18,164 +18,169 @@ import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.*;
+import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
 
 @Mod.EventBusSubscriber
 public class ModifierCapabilityManager {
 
-    @CapabilityInject(IModifierCapability.class)
-    public final static Capability<IModifierCapability> modifierCapability = null;
+	public final static Capability<IModifierCapability> MODIFIER_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    public interface IModifierCapability {
-        ModifierSettings getModifierData();
+	// Allows for the capability to persist after death.
+	@SubscribeEvent
+	public static void clonePlayer(PlayerEvent.Clone event) {
+		LazyOptional<IModifierCapability> original = event.getOriginal().getCapability(MODIFIER_CAPABILITY, null);
+		LazyOptional<IModifierCapability> clone = event.getEntity().getCapability(MODIFIER_CAPABILITY, null);
+		clone.ifPresent(cloneModifierCapability ->
+			original.ifPresent(originalModifierCapability ->
+				cloneModifierCapability.setModifierData(originalModifierCapability.getModifierData())));
+	}
 
-        void setModifierData(ModifierSettings modifierSettings);
-    }
+	public interface IModifierCapability {
+		ModifierSettings getModifierData();
 
-    public static class ModifierCapability implements IModifierCapability {
-        private ModifierSettings modifierSettings;
+		void setModifierData(ModifierSettings modifierSettings);
+	}
 
-        @Override
-        public ModifierSettings getModifierData() {
-            return modifierSettings;
-        }
+	public static class ModifierCapability implements IModifierCapability {
+		private ModifierSettings modifierSettings;
 
-        @Override
-        public void setModifierData(ModifierSettings modifierSettings) {
-            this.modifierSettings = modifierSettings;
-        }
-    }
+		@Override
+		public ModifierSettings getModifierData() {
+			return modifierSettings;
+		}
 
-    public static class Storage implements Capability.IStorage<IModifierCapability> {
-        @Override
-        public NBTBase writeNBT(Capability<IModifierCapability> capability, IModifierCapability instance, EnumFacing side) {
-            NBTTagCompound compound = new NBTTagCompound();
-            ModifierSettings modifierSettings = instance.getModifierData();
-            if (modifierSettings == null) modifierSettings = new ModifierSettings();
+		@Override
+		public void setModifierData(ModifierSettings modifierSettings) {
+			this.modifierSettings = modifierSettings;
+		}
+	}
 
-            //MIRROR
-            Mirror.MirrorSettings m = modifierSettings.getMirrorSettings();
-            if (m == null) m = new Mirror.MirrorSettings();
-            compound.setBoolean("mirrorEnabled", m.enabled);
-            compound.setDouble("mirrorPosX", m.position.x);
-            compound.setDouble("mirrorPosY", m.position.y);
-            compound.setDouble("mirrorPosZ", m.position.z);
-            compound.setBoolean("mirrorX", m.mirrorX);
-            compound.setBoolean("mirrorY", m.mirrorY);
-            compound.setBoolean("mirrorZ", m.mirrorZ);
-            compound.setInteger("mirrorRadius", m.radius);
-            compound.setBoolean("mirrorDrawLines", m.drawLines);
-            compound.setBoolean("mirrorDrawPlanes", m.drawPlanes);
+	public static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<Tag> {
 
-            //ARRAY
-            Array.ArraySettings a = modifierSettings.getArraySettings();
-            if (a == null) a = new Array.ArraySettings();
-            compound.setBoolean("arrayEnabled", a.enabled);
-            compound.setInteger("arrayOffsetX", a.offset.getX());
-            compound.setInteger("arrayOffsetY", a.offset.getY());
-            compound.setInteger("arrayOffsetZ", a.offset.getZ());
-            compound.setInteger("arrayCount", a.count);
+		private final IModifierCapability instance = new ModifierCapability();
+		private LazyOptional<IModifierCapability> modifierCapabilityOptional = LazyOptional.of(() -> instance);
 
-            compound.setInteger("reachUpgrade", modifierSettings.getReachUpgrade());
+		public Provider() {
+			super(Provider.class);
+			gatherCapabilities();
+		}
 
-            //compound.setBoolean("quickReplace", buildSettings.doQuickReplace()); dont save quickreplace
+		@Nonnull
+		@Override
+		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+			if (cap == MODIFIER_CAPABILITY) return modifierCapabilityOptional.cast();
+			return LazyOptional.empty();
+		}
 
-            //RADIAL MIRROR
-            RadialMirror.RadialMirrorSettings r = modifierSettings.getRadialMirrorSettings();
-            if (r == null) r = new RadialMirror.RadialMirrorSettings();
-            compound.setBoolean("radialMirrorEnabled", r.enabled);
-            compound.setDouble("radialMirrorPosX", r.position.x);
-            compound.setDouble("radialMirrorPosY", r.position.y);
-            compound.setDouble("radialMirrorPosZ", r.position.z);
-            compound.setInteger("radialMirrorSlices", r.slices);
-            compound.setBoolean("radialMirrorAlternate", r.alternate);
-            compound.setInteger("radialMirrorRadius", r.radius);
-            compound.setBoolean("radialMirrorDrawLines", r.drawLines);
-            compound.setBoolean("radialMirrorDrawPlanes", r.drawPlanes);
+		@Override
+		public void invalidateCaps() {
+			super.invalidateCaps();
+			modifierCapabilityOptional.invalidate();
+		}
 
-            return compound;
-        }
+		@Override
+		public void reviveCaps() {
+			super.reviveCaps();
+			modifierCapabilityOptional = LazyOptional.of(() -> instance);
+		}
 
-        @Override
-        public void readNBT(Capability<IModifierCapability> capability, IModifierCapability instance, EnumFacing side, NBTBase nbt) {
-            NBTTagCompound compound = (NBTTagCompound) nbt;
+		@Override
+		public Tag serializeNBT() {
+			CompoundTag compound = new CompoundTag();
+			ModifierSettings modifierSettings = instance.getModifierData();
+			if (modifierSettings == null) modifierSettings = new ModifierSettings();
 
-            //MIRROR
-            boolean mirrorEnabled = compound.getBoolean("mirrorEnabled");
-            Vec3d mirrorPosition = new Vec3d(
-                    compound.getDouble("mirrorPosX"),
-                    compound.getDouble("mirrorPosY"),
-                    compound.getDouble("mirrorPosZ"));
-            boolean mirrorX = compound.getBoolean("mirrorX");
-            boolean mirrorY = compound.getBoolean("mirrorY");
-            boolean mirrorZ = compound.getBoolean("mirrorZ");
-            int mirrorRadius = compound.getInteger("mirrorRadius");
-            boolean mirrorDrawLines = compound.getBoolean("mirrorDrawLines");
-            boolean mirrorDrawPlanes = compound.getBoolean("mirrorDrawPlanes");
-            Mirror.MirrorSettings mirrorSettings = new Mirror.MirrorSettings(mirrorEnabled, mirrorPosition, mirrorX, mirrorY, mirrorZ, mirrorRadius, mirrorDrawLines, mirrorDrawPlanes);
+			//MIRROR
+			Mirror.MirrorSettings m = modifierSettings.getMirrorSettings();
+			if (m == null) m = new Mirror.MirrorSettings();
+			compound.putBoolean("mirrorEnabled", m.enabled);
+			compound.putDouble("mirrorPosX", m.position.x);
+			compound.putDouble("mirrorPosY", m.position.y);
+			compound.putDouble("mirrorPosZ", m.position.z);
+			compound.putBoolean("mirrorX", m.mirrorX);
+			compound.putBoolean("mirrorY", m.mirrorY);
+			compound.putBoolean("mirrorZ", m.mirrorZ);
+			compound.putInt("mirrorRadius", m.radius);
+			compound.putBoolean("mirrorDrawLines", m.drawLines);
+			compound.putBoolean("mirrorDrawPlanes", m.drawPlanes);
 
-            //ARRAY
-            boolean arrayEnabled = compound.getBoolean("arrayEnabled");
-            BlockPos arrayOffset = new BlockPos(
-                    compound.getInteger("arrayOffsetX"),
-                    compound.getInteger("arrayOffsetY"),
-                    compound.getInteger("arrayOffsetZ"));
-            int arrayCount = compound.getInteger("arrayCount");
-            Array.ArraySettings arraySettings = new Array.ArraySettings(arrayEnabled, arrayOffset, arrayCount);
+			//ARRAY
+			Array.ArraySettings a = modifierSettings.getArraySettings();
+			if (a == null) a = new Array.ArraySettings();
+			compound.putBoolean("arrayEnabled", a.enabled);
+			compound.putInt("arrayOffsetX", a.offset.getX());
+			compound.putInt("arrayOffsetY", a.offset.getY());
+			compound.putInt("arrayOffsetZ", a.offset.getZ());
+			compound.putInt("arrayCount", a.count);
 
-            int reachUpgrade = compound.getInteger("reachUpgrade");
+			compound.putInt("reachUpgrade", modifierSettings.getReachUpgrade());
 
-            //boolean quickReplace = compound.getBoolean("quickReplace"); //dont load quickreplace
+			//compound.putBoolean("quickReplace", buildSettings.doQuickReplace()); dont save quickreplace
 
-            //RADIAL MIRROR
-            boolean radialMirrorEnabled = compound.getBoolean("radialMirrorEnabled");
-            Vec3d radialMirrorPosition = new Vec3d(
-                    compound.getDouble("radialMirrorPosX"),
-                    compound.getDouble("radialMirrorPosY"),
-                    compound.getDouble("radialMirrorPosZ"));
-            int radialMirrorSlices = compound.getInteger("radialMirrorSlices");
-            boolean radialMirrorAlternate = compound.getBoolean("radialMirrorAlternate");
-            int radialMirrorRadius = compound.getInteger("radialMirrorRadius");
-            boolean radialMirrorDrawLines = compound.getBoolean("radialMirrorDrawLines");
-            boolean radialMirrorDrawPlanes = compound.getBoolean("radialMirrorDrawPlanes");
-            RadialMirror.RadialMirrorSettings radialMirrorSettings = new RadialMirror.RadialMirrorSettings(radialMirrorEnabled, radialMirrorPosition,
-                    radialMirrorSlices, radialMirrorAlternate, radialMirrorRadius, radialMirrorDrawLines, radialMirrorDrawPlanes);
+			//RADIAL MIRROR
+			RadialMirror.RadialMirrorSettings r = modifierSettings.getRadialMirrorSettings();
+			if (r == null) r = new RadialMirror.RadialMirrorSettings();
+			compound.putBoolean("radialMirrorEnabled", r.enabled);
+			compound.putDouble("radialMirrorPosX", r.position.x);
+			compound.putDouble("radialMirrorPosY", r.position.y);
+			compound.putDouble("radialMirrorPosZ", r.position.z);
+			compound.putInt("radialMirrorSlices", r.slices);
+			compound.putBoolean("radialMirrorAlternate", r.alternate);
+			compound.putInt("radialMirrorRadius", r.radius);
+			compound.putBoolean("radialMirrorDrawLines", r.drawLines);
+			compound.putBoolean("radialMirrorDrawPlanes", r.drawPlanes);
 
-            ModifierSettings modifierSettings = new ModifierSettings(mirrorSettings, arraySettings, radialMirrorSettings, false, reachUpgrade);
-            instance.setModifierData(modifierSettings);
-        }
-    }
+			return compound;
+		}
 
-    public static class Provider implements ICapabilitySerializable<NBTBase> {
-        IModifierCapability inst = modifierCapability.getDefaultInstance();
+		@Override
+		public void deserializeNBT(Tag nbt) {
+			CompoundTag compound = (CompoundTag) nbt;
 
-        @Override
-        public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-            return capability == modifierCapability;
-        }
+			//MIRROR
+			boolean mirrorEnabled = compound.getBoolean("mirrorEnabled");
+			Vec3 mirrorPosition = new Vec3(
+					compound.getDouble("mirrorPosX"),
+					compound.getDouble("mirrorPosY"),
+					compound.getDouble("mirrorPosZ"));
+			boolean mirrorX = compound.getBoolean("mirrorX");
+			boolean mirrorY = compound.getBoolean("mirrorY");
+			boolean mirrorZ = compound.getBoolean("mirrorZ");
+			int mirrorRadius = compound.getInt("mirrorRadius");
+			boolean mirrorDrawLines = compound.getBoolean("mirrorDrawLines");
+			boolean mirrorDrawPlanes = compound.getBoolean("mirrorDrawPlanes");
+			Mirror.MirrorSettings mirrorSettings = new Mirror.MirrorSettings(mirrorEnabled, mirrorPosition, mirrorX, mirrorY, mirrorZ, mirrorRadius, mirrorDrawLines, mirrorDrawPlanes);
 
-        @Override
-        public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-            if (capability == modifierCapability) return modifierCapability.<T>cast(inst);
-            return null;
-        }
+			//ARRAY
+			boolean arrayEnabled = compound.getBoolean("arrayEnabled");
+			BlockPos arrayOffset = new BlockPos(
+					compound.getInt("arrayOffsetX"),
+					compound.getInt("arrayOffsetY"),
+					compound.getInt("arrayOffsetZ"));
+			int arrayCount = compound.getInt("arrayCount");
+			Array.ArraySettings arraySettings = new Array.ArraySettings(arrayEnabled, arrayOffset, arrayCount);
 
-        @Override
-        public NBTBase serializeNBT() {
-            return modifierCapability.getStorage().writeNBT(modifierCapability, inst, null);
-        }
+			int reachUpgrade = compound.getInt("reachUpgrade");
 
-        @Override
-        public void deserializeNBT(NBTBase nbt) {
-            modifierCapability.getStorage().readNBT(modifierCapability, inst, null, nbt);
-        }
-    }
+			//boolean quickReplace = compound.getBoolean("quickReplace"); //dont load quickreplace
 
-    // Allows for the capability to persist after death.
-    @SubscribeEvent
-    public static void clonePlayer(PlayerEvent.Clone event) {
-        IModifierCapability original = event.getOriginal().getCapability(modifierCapability, null);
-        IModifierCapability clone = event.getEntity().getCapability(modifierCapability, null);
-        clone.setModifierData(original.getModifierData());
-    }
+			//RADIAL MIRROR
+			boolean radialMirrorEnabled = compound.getBoolean("radialMirrorEnabled");
+			Vec3 radialMirrorPosition = new Vec3(
+					compound.getDouble("radialMirrorPosX"),
+					compound.getDouble("radialMirrorPosY"),
+					compound.getDouble("radialMirrorPosZ"));
+			int radialMirrorSlices = compound.getInt("radialMirrorSlices");
+			boolean radialMirrorAlternate = compound.getBoolean("radialMirrorAlternate");
+			int radialMirrorRadius = compound.getInt("radialMirrorRadius");
+			boolean radialMirrorDrawLines = compound.getBoolean("radialMirrorDrawLines");
+			boolean radialMirrorDrawPlanes = compound.getBoolean("radialMirrorDrawPlanes");
+			RadialMirror.RadialMirrorSettings radialMirrorSettings = new RadialMirror.RadialMirrorSettings(radialMirrorEnabled, radialMirrorPosition,
+					radialMirrorSlices, radialMirrorAlternate, radialMirrorRadius, radialMirrorDrawLines, radialMirrorDrawPlanes);
+
+			ModifierSettings modifierSettings = new ModifierSettings(mirrorSettings, arraySettings, radialMirrorSettings, false, reachUpgrade);
+			instance.setModifierData(modifierSettings);
+		}
+
+	}
 }

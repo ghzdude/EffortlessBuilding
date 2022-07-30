@@ -1,5 +1,0 @@
-{
-    "conditions": {
-        "enable_reach_upgrades": "nl.requios.effortlessbuilding.helper.ReachConditionFactory"
-    }
-}

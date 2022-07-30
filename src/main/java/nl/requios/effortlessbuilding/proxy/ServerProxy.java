@@ -1,45 +1,33 @@
 package nl.requios.effortlessbuilding.proxy;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.IThreadListener;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
+import nl.requios.effortlessbuilding.network.PacketHandler;
+import nl.requios.effortlessbuilding.network.TranslatedLogMessage;
 
-public class ServerProxy implements IProxy
-{
-    //Only physical server! Singleplayer server is seen as clientproxy
-    @Override
-    public void preInit(FMLPreInitializationEvent event)
-    {
-    }
+import java.util.function.Supplier;
 
-    @Override
-    public void init(FMLInitializationEvent event)
-    {
-    }
+public class ServerProxy implements IProxy {
+	//Only physical server! Singleplayer server is seen as clientproxy
+	@Override
+	public void setup(FMLCommonSetupEvent event) {
 
-    @Override
-    public void postInit(FMLPostInitializationEvent event)
-    {
-    }
+	}
 
-    @Override
-    public void serverStarting(FMLServerStartingEvent event)
-    {
-    }
+	@Override
+	public void clientSetup(FMLClientSetupEvent event) {
+	}
 
-    @Override
-    public EntityPlayer getPlayerEntityFromContext(MessageContext ctx)
-    {
-        return ctx.getServerHandler().player;
-    }
+	public Player getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx) {
+		return ctx.get().getSender();
+	}
 
-    @Override
-    public IThreadListener getThreadListenerFromContext(MessageContext ctx) {
-        return ((EntityPlayerMP) getPlayerEntityFromContext(ctx)).getServerWorld();
-    }
+	@Override
+	public void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar) {
+		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new TranslatedLogMessage(prefix, translationKey, suffix, actionBar));
+	}
 }

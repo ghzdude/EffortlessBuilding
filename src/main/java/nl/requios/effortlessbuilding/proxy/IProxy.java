@@ -1,43 +1,18 @@
 package nl.requios.effortlessbuilding.proxy;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.IThreadListener;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.network.NetworkEvent;
 
-public interface IProxy
-{
-    /**
-     * Register entities and networking.
-     */
-    void preInit(FMLPreInitializationEvent event);
+import java.util.function.Supplier;
 
-    /**
-     * Register event listeners, recipes and advancements.
-     */
-    void init(FMLInitializationEvent event);
+public interface IProxy {
+	void setup(final FMLCommonSetupEvent event);
 
-    /**
-     * For doing inter-mod stuff like checking which mods are loaded or if you want a complete view of things across
-     * mods like having a list of all registered items to aid random item generation.
-     */
-    void postInit(FMLPostInitializationEvent event);
+	void clientSetup(final FMLClientSetupEvent event);
 
-    /**
-     * Server commands should be registered here.
-     */
-    void serverStarting(FMLServerStartingEvent event);
+	Player getPlayerEntityFromContext(Supplier<NetworkEvent.Context> ctx);
 
-    /**
-     * Returns a side-appropriate EntityPlayer for use during message handling.
-     *
-     * @param ctx the context
-     * @return the player entity from context
-     */
-    EntityPlayer getPlayerEntityFromContext(MessageContext ctx);
-
-    IThreadListener getThreadListenerFromContext(MessageContext ctx);
+	void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar);
 }

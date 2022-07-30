@@ -1,104 +1,108 @@
 package nl.requios.effortlessbuilding.capability;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.*;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.*;
+import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
 @Mod.EventBusSubscriber
 public class ModeCapabilityManager {
 
-    @CapabilityInject(IModeCapability.class)
-    public final static Capability<IModeCapability> modeCapability = null;
+	public static Capability<IModeCapability> MODE_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    public interface IModeCapability {
-        ModeSettings getModeData();
+	// Allows for the capability to persist after death.
+	@SubscribeEvent
+	public static void clonePlayer(PlayerEvent.Clone event) {
+		LazyOptional<IModeCapability> original = event.getOriginal().getCapability(MODE_CAPABILITY, null);
+		LazyOptional<IModeCapability> clone = event.getEntity().getCapability(MODE_CAPABILITY, null);
+		clone.ifPresent(cloneModeCapability ->
+			original.ifPresent(originalModeCapability ->
+				cloneModeCapability.setModeData(originalModeCapability.getModeData())));
+	}
 
-        void setModeData(ModeSettings modeSettings);
-    }
+	public interface IModeCapability {
+		ModeSettings getModeData();
 
-    public static class ModeCapability implements IModeCapability {
-        private ModeSettings modeSettings;
+		void setModeData(ModeSettings modeSettings);
+	}
 
-        @Override
-        public ModeSettings getModeData() {
-            return modeSettings;
-        }
+	public static class ModeCapability implements IModeCapability {
+		private ModeSettings modeSettings;
 
-        @Override
-        public void setModeData(ModeSettings modeSettings) {
-            this.modeSettings = modeSettings;
-        }
-    }
+		@Override
+		public ModeSettings getModeData() {
+			return modeSettings;
+		}
 
-    public static class Storage implements Capability.IStorage<IModeCapability> {
-        @Override
-        public NBTBase writeNBT(Capability<IModeCapability> capability, IModeCapability instance, EnumFacing side) {
-            NBTTagCompound compound = new NBTTagCompound();
-            ModeSettings modeSettings = instance.getModeData();
-            if (modeSettings == null) modeSettings = new ModeSettings();
+		@Override
+		public void setModeData(ModeSettings modeSettings) {
+			this.modeSettings = modeSettings;
+		}
+	}
 
-            //compound.setInteger("buildMode", modeSettings.getBuildMode().ordinal());
+	public static class Provider extends CapabilityProvider<Provider> implements ICapabilitySerializable<Tag> {
 
-            //TODO add mode settings
+		private IModeCapability instance = new ModeCapability();
+		private LazyOptional<IModeCapability> modeCapabilityOptional = LazyOptional.of(() -> instance);
 
-            return compound;
-        }
+		public Provider() {
+			super(Provider.class);
+			gatherCapabilities();
+		}
 
-        @Override
-        public void readNBT(Capability<IModeCapability> capability, IModeCapability instance, EnumFacing side, NBTBase nbt) {
-            NBTTagCompound compound = (NBTTagCompound) nbt;
+		@Nonnull
+		@Override
+		public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+			if (cap == MODE_CAPABILITY) return modeCapabilityOptional.cast();
+			return LazyOptional.empty();
+		}
 
-            //BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.values()[compound.getInteger("buildMode")];
+		@Override
+		public void invalidateCaps() {
+			super.invalidateCaps();
+			modeCapabilityOptional.invalidate();
+		}
 
-            //TODO add mode settings
+		@Override
+		public void reviveCaps() {
+			super.reviveCaps();
+			modeCapabilityOptional = LazyOptional.of(() -> instance);
+		}
 
-            ModeSettings modeSettings = new ModeSettings(BuildModes.BuildModeEnum.NORMAL);
-            instance.setModeData(modeSettings);
-        }
-    }
+		@Override
+		public Tag serializeNBT() {
+			CompoundTag compound = new CompoundTag();
+			ModeSettings modeSettings = instance.getModeData();
+			if (modeSettings == null) modeSettings = new ModeSettings();
 
-    public static class Provider implements ICapabilitySerializable<NBTBase> {
-        IModeCapability inst = modeCapability.getDefaultInstance();
+			//compound.putInteger("buildMode", modeSettings.getBuildMode().ordinal());
 
-        @Override
-        public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-            return capability == modeCapability;
-        }
+			//TODO add mode settings
 
-        @Override
-        public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-            if (capability == modeCapability) return modeCapability.<T>cast(inst);
-            return null;
-        }
+			return compound;
+		}
 
-        @Override
-        public NBTBase serializeNBT() {
-            return modeCapability.getStorage().writeNBT(modeCapability, inst, null);
-        }
+		@Override
+		public void deserializeNBT(Tag nbt) {
+			CompoundTag compound = (CompoundTag) nbt;
 
-        @Override
-        public void deserializeNBT(NBTBase nbt) {
-            modeCapability.getStorage().readNBT(modeCapability, inst, null, nbt);
-        }
-    }
+			//BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.values()[compound.getInteger("buildMode")];
 
-    // Allows for the capability to persist after death.
-    @SubscribeEvent
-    public static void clonePlayer(PlayerEvent.Clone event) {
-        IModeCapability original = event.getOriginal().getCapability(modeCapability, null);
-        IModeCapability clone = event.getEntity().getCapability(modeCapability, null);
-        clone.setModeData(original.getModeData());
-    }
+			//TODO add mode settings
+
+			ModeSettings modeSettings = new ModeSettings(BuildModes.BuildModeEnum.NORMAL);
+			instance.setModeData(modeSettings);
+		}
+
+	}
 }

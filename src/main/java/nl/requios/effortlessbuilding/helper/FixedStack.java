@@ -1,54 +1,52 @@
 package nl.requios.effortlessbuilding.helper;
 
-import nl.requios.effortlessbuilding.EffortlessBuilding;
-
 //Stack with fixed size. Removes (overwrites) oldest element on push.
 public class FixedStack<T> {
-    private T[] stack;
-    private int size;
-    private int top;
-    private int filled = 0; //how many valid items are in the stack
+	private final T[] stack;
+	private final int size;
+	private int top;
+	private int filled = 0; //how many valid items are in the stack
 
-    public FixedStack(T[] stack) {
-        this.stack = stack;
-        this.top = 0;
-        this.size = stack.length;
-    }
+	public FixedStack(T[] stack) {
+		this.stack = stack;
+		this.top = 0;
+		this.size = stack.length;
+	}
 
-    public void push(T object) {
-        if (top == stack.length)
-            top = 0;
+	public void push(T object) {
+		if (top == stack.length)
+			top = 0;
 
-        stack[top] = object;
-        top++;
+		stack[top] = object;
+		top++;
 
-        if (filled < size)
-            filled++;
-    }
+		if (filled < size)
+			filled++;
+	}
 
-    public T pop() {
-        if (filled <= 0) return null;
+	public T pop() {
+		if (filled <= 0) return null;
 
-        if (top - 1 < 0)
-            top = size;
+		if (top - 1 < 0)
+			top = size;
 
-        top--;
-        T object = stack[top];
-        filled--;
+		top--;
+		T object = stack[top];
+		filled--;
 
-        return object;
-    }
+		return object;
+	}
 
-    public void clear() {
-        top = 0;
-        filled = 0;
-    }
+	public void clear() {
+		top = 0;
+		filled = 0;
+	}
 
-    public int size() {
-        return size;
-    }
+	public int size() {
+		return size;
+	}
 
-    public boolean isEmpty() {
-        return filled <= 0;
-    }
+	public boolean isEmpty() {
+		return filled <= 0;
+	}
 }

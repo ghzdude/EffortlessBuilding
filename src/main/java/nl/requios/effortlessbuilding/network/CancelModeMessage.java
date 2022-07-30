@@ -1,45 +1,33 @@
 package nl.requios.effortlessbuilding.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.IThreadListener;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
+
+import java.util.function.Supplier;
 
 /**
  * Sends a message to the server indicating that a buildmode needs to be canceled for a player
  */
-public class CancelModeMessage implements IMessage {
+public class CancelModeMessage {
 
-    @Override
-    public void toBytes(ByteBuf buf) {
+	public static void encode(CancelModeMessage message, FriendlyByteBuf buf) {
+	}
 
-    }
+	public static CancelModeMessage decode(FriendlyByteBuf buf) {
+		return new CancelModeMessage();
+	}
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
+	public static class Handler {
+		public static void handle(CancelModeMessage message, Supplier<NetworkEvent.Context> ctx) {
+			ctx.get().enqueueWork(() -> {
+				Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
-    }
-
-    // The params of the IMessageHandler are <REQ, REPLY>
-    public static class MessageHandler implements IMessageHandler<CancelModeMessage, IMessage> {
-        // Do note that the default constructor is required, but implicitly defined in this case
-
-        @Override
-        public IMessage onMessage(CancelModeMessage message, MessageContext ctx) {
-
-            // Execute the action on the main server thread by adding it as a scheduled task
-            IThreadListener threadListener = EffortlessBuilding.proxy.getThreadListenerFromContext(ctx);
-            threadListener.addScheduledTask(() -> {
-                EntityPlayer player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
-
-                BuildModes.initializeMode(player);
-            });
-            // No response packet
-            return null;
-        }
-    }
+				BuildModes.initializeMode(player);
+			});
+			ctx.get().setPacketHandled(true);
+		}
+	}
 }

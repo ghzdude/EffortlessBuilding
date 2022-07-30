@@ -1,86 +1,97 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
+import nl.requios.effortlessbuilding.network.PacketHandler;
+
+import javax.annotation.Nonnull;
 
 @Mod.EventBusSubscriber
 public class ModeSettingsManager {
 
-    //Retrieves the buildsettings of a player through the modifierCapability capability
-    //Never returns null
-    public static ModeSettings getModeSettings(EntityPlayer player) {
-        if (player.hasCapability(ModeCapabilityManager.modeCapability, null)) {
-            ModeCapabilityManager.IModeCapability capability = player.getCapability(
-                    ModeCapabilityManager.modeCapability, null);
-            if (capability.getModeData() == null) {
-                capability.setModeData(new ModeSettings());
-            }
-            return capability.getModeData();
-        }
-        throw new IllegalArgumentException("Player does not have modeCapability capability");
-    }
+	//Retrieves the buildsettings of a player through the modeCapability capability
+	//Never returns null
+	@Nonnull
+	public static ModeSettings getModeSettings(Player player) {
+		LazyOptional<ModeCapabilityManager.IModeCapability> modeCapability =
+			player.getCapability(ModeCapabilityManager.MODE_CAPABILITY, null);
 
-    public static void setModeSettings(EntityPlayer player, ModeSettings modeSettings) {
-        if (player == null) {
-            EffortlessBuilding.log("Cannot set buildsettings, player is null");
-            return;
-        }
-        if (player.hasCapability(ModeCapabilityManager.modeCapability, null)) {
-            ModeCapabilityManager.IModeCapability capability = player.getCapability(
-                    ModeCapabilityManager.modeCapability, null);
+		if (modeCapability.isPresent()) {
+			ModeCapabilityManager.IModeCapability capability = modeCapability.orElse(null);
+			if (capability.getModeData() == null){
+				capability.setModeData(new ModeSettings());
+			}
+			return capability.getModeData();
+		}
 
-            capability.setModeData(modeSettings);
+		EffortlessBuilding.logger.warn("Player does not have modeCapability: " + player);
+		//Return dummy settings
+		return new ModeSettings();
+	}
 
-            //Initialize new mode
-            BuildModes.initializeMode(player);
-        } else {
-            EffortlessBuilding.log(player, "Saving buildsettings failed.");
-        }
-    }
+	public static void setModeSettings(Player player, ModeSettings modeSettings) {
+		if (player == null) {
+			EffortlessBuilding.log("Cannot set buildmode settings, player is null");
+			return;
+		}
+		LazyOptional<ModeCapabilityManager.IModeCapability> modeCapability =
+			player.getCapability(ModeCapabilityManager.MODE_CAPABILITY, null);
 
-    public static String sanitize(ModeSettings modeSettings, EntityPlayer player) {
-        int maxReach = ReachHelper.getMaxReach(player);
-        String error = "";
+		modeCapability.ifPresent((capability) -> {
+			capability.setModeData(modeSettings);
 
-        //TODO sanitize
+			BuildModes.initializeMode(player);
+		});
 
-        return error;
-    }
+		if (!modeCapability.isPresent()) {
+			EffortlessBuilding.log(player, "Saving buildmode settings failed.");
+		}
+	}
 
-    public static class ModeSettings {
-        private BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.NORMAL;
+	public static String sanitize(ModeSettings modeSettings, Player player) {
+		int maxReach = ReachHelper.getMaxReach(player);
+		String error = "";
 
-        public ModeSettings() {
-        }
+		//TODO sanitize
 
-        public ModeSettings(BuildModes.BuildModeEnum buildMode) {
-            this.buildMode = buildMode;
-        }
+		return error;
+	}
 
-        public BuildModes.BuildModeEnum getBuildMode() {
-            return this.buildMode;
-        }
+	public static void handleNewPlayer(Player player) {
+		//Makes sure player has mode settings (if it doesnt it will create it)
+		getModeSettings(player);
 
-        public void setBuildMode(BuildModes.BuildModeEnum buildMode) {
-            this.buildMode = buildMode;
-        }
-    }
+		//Only on server
+		if (!player.level.isClientSide) {
+			//Send to client
+			ModeSettingsMessage msg = new ModeSettingsMessage(getModeSettings(player));
+			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), msg);
+		}
+	}
 
-    public static void handleNewPlayer(EntityPlayer player){
-        if (getModeSettings(player) == null) {
-            setModeSettings(player, new ModeSettings());
-        }
+	public static class ModeSettings {
+		private BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.NORMAL;
 
-        //Only on server
-        if (!player.world.isRemote) {
-            //Send to client
-            ModeSettingsMessage msg = new ModeSettingsMessage(getModeSettings(player));
-            EffortlessBuilding.packetHandler.sendTo(msg, (EntityPlayerMP) player);
-        }
-    }
+		public ModeSettings() {
+		}
+
+		public ModeSettings(BuildModes.BuildModeEnum buildMode) {
+			this.buildMode = buildMode;
+		}
+
+		public BuildModes.BuildModeEnum getBuildMode() {
+			return this.buildMode;
+		}
+
+		public void setBuildMode(BuildModes.BuildModeEnum buildMode) {
+			this.buildMode = buildMode;
+		}
+	}
 }

@@ -1,0 +1,32 @@
+modLoader="javafml"
+# Forge for 1.17.1 is version 37
+loaderVersion="[39,)"
+license="GNU LESSER GENERAL PUBLIC LICENSE"
+issueTrackerURL="https://bitbucket.org/Requios/effortless-building/issues?status=new&status=open"
+showAsResourcePack=false
+
+[[mods]]
+    modId="effortlessbuilding"
+    version="${file.jarVersion}"
+    displayName="Effortless Building"
+    displayURL="https://minecraft.curseforge.com/projects/effortless-building"
+    logoFile="logo.png"
+    credits=""
+    authors="Requios"
+    description='''
+Makes building easier by providing tools like mirrors, arrays, build modes and a block randomizer. For survival and creative mode.
+    '''
+
+[[dependencies.effortlessbuilding]]
+    modId="forge"
+    mandatory=true
+    versionRange="[39,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.effortlessbuilding]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18.1,1.19)"
+    ordering="NONE"
+    side="BOTH"

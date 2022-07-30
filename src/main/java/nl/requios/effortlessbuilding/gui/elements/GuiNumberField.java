@@ -1,138 +1,161 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.io.IOException;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class GuiNumberField extends Gui {
+@OnlyIn(Dist.CLIENT)
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class GuiNumberField extends GuiComponent {
 
-    public int x, y, width, height;
-    public int buttonWidth = 10;
+	public int x, y, width, height;
+	public int buttonWidth = 10;
 
-    protected GuiTextField textField;
-    protected GuiButton minusButton, plusButton;
+	protected EditBox textField;
+	protected Button minusButton, plusButton;
 
-    List<String> tooltip = new ArrayList<>();
+	List<Component> tooltip = new ArrayList<>();
 
-    public GuiNumberField(int id1, int id2, int id3, FontRenderer fontRenderer,
-                          List<GuiButton> buttonList, int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+	public GuiNumberField(Font font, List<Widget> renderables, int x, int y, int width, int height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
 
-        textField = new GuiTextField(id1, fontRenderer, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2);
-        minusButton = new GuiButton(id2, x, y - 1, buttonWidth, height + 2, "-");
-        plusButton  = new GuiButton(id3, x + width - buttonWidth, y - 1, buttonWidth, height + 2, "+");
+		textField = new EditBox(font, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2, TextComponent.EMPTY);
+		minusButton = new Button(x, y - 1, buttonWidth, height + 2, new TextComponent("-"), button -> {
+			float valueChanged = 1f;
+			if (Screen.hasControlDown()) valueChanged = 5f;
+			if (Screen.hasShiftDown()) valueChanged = 10f;
 
-        buttonList.add(minusButton);
-        buttonList.add(plusButton);
-    }
+			setNumber(getNumber() - valueChanged);
+		});
+		plusButton = new Button(x + width - buttonWidth, y - 1, buttonWidth, height + 2, new TextComponent("+"), button -> {
+			float valueChanged = 1f;
+			if (Screen.hasControlDown()) valueChanged = 5f;
+			if (Screen.hasShiftDown()) valueChanged = 10f;
 
-    public void setNumber(double number) {
-        DecimalFormat format = new DecimalFormat("0.#");
-        textField.setText(format.format(number));
-    }
+			setNumber(getNumber() + valueChanged);
+		});
 
-    public double getNumber() {
-        if (textField.getText().isEmpty()) return 0;
-        return Double.parseDouble(textField.getText());
-    }
+		renderables.add(minusButton);
+		renderables.add(plusButton);
+	}
 
-    public void setTooltip(String tooltip) {
-        setTooltip(Arrays.asList(tooltip));
-    }
+	public double getNumber() {
+		if (textField.getValue().isEmpty()) return 0;
+		try {
+			return DecimalFormat.getInstance().parse(textField.getValue()).doubleValue();
+		} catch (ParseException e) {
+			return 0;
+		}
+	}
 
-    public void setTooltip(List<String> tooltip) {
-        this.tooltip = tooltip;
-    }
+	public void setNumber(double number) {
+		textField.setValue(DecimalFormat.getInstance().format(number));
+	}
 
-    public boolean mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        boolean result = textField.mouseClicked(mouseX, mouseY, mouseButton);
+	public void setTooltip(Component tooltip) {
+		setTooltip(Collections.singletonList(tooltip));
+	}
 
-        //Check if clicked inside textfield
-        boolean flag = mouseX >= x + buttonWidth && mouseX < x + width - buttonWidth && mouseY >= y && mouseY < y + height;
+	public void setTooltip(List<Component> tooltip) {
+		this.tooltip = tooltip;
+	}
 
-        //Rightclicked inside textfield
-        if (flag && mouseButton == 1) {
-            textField.setText("");
-            textField.setFocused(true);
-            result = true;
-        }
+	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+		boolean result = textField.mouseClicked(mouseX, mouseY, mouseButton);
 
-        return result;
-    }
+		//Check if clicked inside textfield
+		boolean flag = mouseX >= x + buttonWidth && mouseX < x + width - buttonWidth && mouseY >= y && mouseY < y + height;
 
-    public void drawNumberField(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-        textField.y = y + 1;
-        minusButton.y = y - 1;
-        plusButton.y = y - 1;
+		//Rightclicked inside textfield
+		if (flag && mouseButton == 1) {
+			textField.setValue("");
+			textField.setFocus(true);
+			result = true;
+		}
 
-        textField.drawTextBox();
-        minusButton.drawButton(mc, mouseX, mouseY, partialTicks);
-        plusButton.drawButton(mc, mouseX, mouseY, partialTicks);
-    }
+		return result;
+	}
 
-    public void drawTooltip(GuiScreen guiScreen, int mouseX, int mouseY) {
-        boolean insideTextField = mouseX >= x + buttonWidth && mouseX < x + width - buttonWidth && mouseY >= y && mouseY < y + height;
-        boolean insideMinusButton = mouseX >= x && mouseX < x + buttonWidth && mouseY >= y && mouseY < y + height;
-        boolean insidePlusButton = mouseX >= x + width - buttonWidth && mouseX < x + width && mouseY >= y && mouseY < y + height;
+	public void drawNumberField(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+		textField.y = y + 1;
+		minusButton.y = y - 1;
+		plusButton.y = y - 1;
 
-        List<String> textLines = new ArrayList<>();
+		textField.render(ms, mouseX, mouseY, partialTicks);
+		minusButton.render(ms, mouseX, mouseY, partialTicks);
+		plusButton.render(ms, mouseX, mouseY, partialTicks);
+	}
 
-        if (insideTextField) {
-            if (!tooltip.isEmpty())
-                textLines.addAll(tooltip);
+	public void drawTooltip(PoseStack ms, Screen screen, int mouseX, int mouseY) {
+		boolean insideTextField = mouseX >= x + buttonWidth && mouseX < x + width - buttonWidth && mouseY >= y && mouseY < y + height;
+		boolean insideMinusButton = mouseX >= x && mouseX < x + buttonWidth && mouseY >= y && mouseY < y + height;
+		boolean insidePlusButton = mouseX >= x + width - buttonWidth && mouseX < x + width && mouseY >= y && mouseY < y + height;
+
+		// List<String> textLines = new ArrayList<>();
+
+		List<Component> textLines = new ArrayList<>();
+
+
+		if (insideTextField) {
+			textLines.addAll(tooltip);
 //            textLines.add(TextFormatting.GRAY + "Tip: try scrolling.");
-        }
+		}
 
-        if (insideMinusButton) {
-            textLines.add("Hold " + TextFormatting.AQUA + "shift " + TextFormatting.RESET + "for " + TextFormatting.RED + "10");
-            textLines.add("Hold " + TextFormatting.AQUA + "ctrl " + TextFormatting.RESET + "for " + TextFormatting.RED + "5");
-        }
+		if (insideMinusButton) {
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("shift ").withStyle(ChatFormatting.AQUA)).append("for ")
+				.append(new TextComponent("10").withStyle(ChatFormatting.RED)));
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("ctrl ").withStyle(ChatFormatting.AQUA)).append("for ")
+				.append(new TextComponent("5").withStyle(ChatFormatting.RED)));
+		}
 
-        if (insidePlusButton) {
-            textLines.add("Hold " + TextFormatting.AQUA + "shift " + TextFormatting.RESET + "for " + TextFormatting.DARK_GREEN + "10");
-            textLines.add("Hold " + TextFormatting.AQUA + "ctrl " + TextFormatting.RESET + "for " + TextFormatting.DARK_GREEN + "5");
-        }
+		if (insidePlusButton) {
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("shift ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
+				.append(new TextComponent("10").withStyle(ChatFormatting.RED)));
+			textLines.add(new TextComponent("Hold ").append(new TextComponent("ctrl ").withStyle(ChatFormatting.DARK_GREEN)).append("for ")
+				.append(new TextComponent("5").withStyle(ChatFormatting.RED)));
+		}
 
-        guiScreen.drawHoveringText(textLines, mouseX - 10, mouseY + 25);
+		screen.renderComponentTooltip(ms, textLines, mouseX - 10, mouseY + 25);
 
-    }
+	}
 
-    public void actionPerformed(GuiButton button) {
-        float valueChanged = 1f;
-        if (GuiScreen.isCtrlKeyDown()) valueChanged = 5f;
-        if (GuiScreen.isShiftKeyDown()) valueChanged = 10f;
+	public void update() {
+		textField.tick();
+	}
 
-        if (button == minusButton) {
-            setNumber(getNumber() - valueChanged);
-        }
-        if (button == plusButton) {
-            setNumber(getNumber() + valueChanged);
-        }
-    }
-
-    public void update() {
-        textField.updateCursorCounter();
-    }
-
-    public void keyTyped(char typedChar, int keyCode) throws IOException {
-        if (!textField.isFocused()) return;
+	public boolean charTyped(char typedChar, int keyCode) {
+		if (!textField.isFocused()) return false;
 //        if (Character.isDigit(typedChar) || typedChar == '.' || typedChar == '-' || keyCode == Keyboard.KEY_BACK
 //            || keyCode == Keyboard.KEY_DELETE || keyCode == Keyboard.KEY_LEFT || keyCode == Keyboard.KEY_RIGHT
 //            || keyCode == Keyboard.KEY_UP || keyCode == Keyboard.KEY_DOWN) {
-            textField.textboxKeyTyped(typedChar, keyCode);
+		return textField.charTyped(typedChar, keyCode);
 //        }
-    }
+	}
 
-    //Scroll inside textfield to change number
+	//Scroll inside textfield to change number
+	//Disabled because entire screen can be scrolled
 //    public void handleMouseInput(int mouseX, int mouseY) {
 //        boolean insideTextField = mouseX >= x + buttonWidth && mouseX < x + width - buttonWidth && mouseY >= y && mouseY < y + height;
 //

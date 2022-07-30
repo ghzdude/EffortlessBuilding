@@ -1,334 +1,158 @@
 package nl.requios.effortlessbuilding.render;
 
-import net.minecraft.block.state.IBlockState;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IWorldEventListener;
-import net.minecraft.world.World;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
-import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
-import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
-import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
-import nl.requios.effortlessbuilding.network.ModeActionMessage;
-import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /***
  * Main render class for Effortless Building
  */
-@Mod.EventBusSubscriber(Side.CLIENT)
-public class RenderHandler implements IWorldEventListener {
-
-    @SubscribeEvent
-    public static void onRender(RenderWorldLastEvent event) {
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-        ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-
-        begin(event.getPartialTicks());
-
-        //Mirror and radial mirror lines and areas
-        ModifierRenderer.render(modifierSettings);
-
-        //Render block previews
-        BlockPreviewRenderer.render(player, modifierSettings, modeSettings);
-
-        end();
-    }
-
-    @SubscribeEvent
-    //Display Radial Menu
-    public static void onRenderGameOverlay(final RenderGameOverlayEvent.Post event ) {
-        Minecraft mc = Minecraft.getMinecraft();
-        EntityPlayerSP player = mc.player;
-
-        //check if chisel and bits tool in hand (and has menu)
-        final boolean hasChiselInHand = CompatHelper.chiselsAndBitsProxy.isHoldingChiselTool(EnumHand.MAIN_HAND);
-
-        final RenderGameOverlayEvent.ElementType type = event.getType();
-        if (type == RenderGameOverlayEvent.ElementType.ALL && !hasChiselInHand) {
-            final boolean wasVisible = RadialMenu.instance.isVisible();
-
-            if (ClientProxy.keyBindings[3].isKeyDown()) {
-                if (ReachHelper.getMaxReach(player) > 0) {
-                    RadialMenu.instance.actionUsed = false;
-                    RadialMenu.instance.raiseVisibility();
-                } else if (ClientProxy.keyBindings[3].isPressed()) {
-                    EffortlessBuilding.log(player, "Build modes are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
-                }
-            } else {
-                if (!RadialMenu.instance.actionUsed) {
-                    ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-
-                    if (RadialMenu.instance.switchTo != null) {
-                        playRadialMenuSound();
-                        modeSettings.setBuildMode(RadialMenu.instance.switchTo);
-                        ModeSettingsManager.setModeSettings(player, modeSettings);
-                        EffortlessBuilding.packetHandler.sendToServer(new ModeSettingsMessage(modeSettings));
-
-                        EffortlessBuilding.log(player, I18n.format(modeSettings.getBuildMode().name), true);
-                    }
-
-                    //Perform button action
-                    ModeOptions.ActionEnum action = RadialMenu.instance.doAction;
-                    if (action != null) {
-                        ModeOptions.performAction(player, action);
-                        EffortlessBuilding.packetHandler.sendToServer(new ModeActionMessage(action));
-                    }
-
-                    playRadialMenuSound();
-                }
-
-                RadialMenu.instance.actionUsed = true;
-                RadialMenu.instance.decreaseVisibility();
-            }
-
-            if (RadialMenu.instance.isVisible()) {
-
-                final ScaledResolution res = event.getResolution();
-                RadialMenu.instance.configure(res.getScaledWidth(), res.getScaledHeight());
-
-                if (!wasVisible) {
-                    mc.inGameHasFocus = false;
-                    mc.mouseHelper.ungrabMouseCursor();
-                }
-
-                if (mc.inGameHasFocus) {
-                    KeyBinding.unPressAllKeys();
-                }
-
-                final int mouseX = Mouse.getX() * res.getScaledWidth() / mc.displayWidth;
-                final int mouseY = res.getScaledHeight() - Mouse.getY() * res.getScaledHeight() / mc.displayHeight - 1;
-
-                net.minecraftforge.client.ForgeHooksClient.drawScreen(RadialMenu.instance, mouseX, mouseY, event.getPartialTicks());
-            } else {
-                if (wasVisible && RadialMenu.instance.doAction != ModeOptions.ActionEnum.OPEN_MODIFIER_SETTINGS) {
-                    mc.setIngameFocus();
-                }
-            }
-        }
-    }
-
-    public static void playRadialMenuSound() {
-        final float volume = 0.1f;
-        if (volume >= 0.0001f) {
-            final PositionedSoundRecord psr = new PositionedSoundRecord(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER,
-                    volume, 1.0f, Minecraft.getMinecraft().player.getPosition());
-            Minecraft.getMinecraft().getSoundHandler().playSound(psr);
-        }
-    }
-
-    private static void begin(float partialTicks) {
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        double playerX = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
-        double playerY = player.prevPosY + (player.posY - player.prevPosY) * partialTicks;
-        double playerZ = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
-        Vec3d playerPos = new Vec3d(playerX, playerY, playerZ);
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
-
-        GL11.glDepthMask(false);
-    }
-
-    protected static void beginLines() {
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
-        GL11.glDisable(GL11.GL_CULL_FACE);
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-        GL11.glLineWidth(2);
-    }
-
-    protected static void endLines() {
-        GL11.glPopAttrib();
-    }
-
-    protected static void beginBlockPreviews() {
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
-        GL11.glEnable(GL11.GL_CULL_FACE);
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-//        Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        Minecraft.getMinecraft().renderEngine.bindTexture(ShaderHandler.shaderMaskTextureLocation);
-
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL14.glBlendColor(1F, 1F, 1F, 0.8f);
-    }
-
-    protected static void endBlockPreviews() {
-        ShaderHandler.releaseShader();
-        GlStateManager.disableBlend();
-
-        GL11.glPopAttrib();
-    }
-
-    private static void end() {
-        GL11.glDepthMask(true);
-        GL11.glPopMatrix();
-    }
-
-    protected static void renderBlockPreview(BlockRendererDispatcher dispatcher, BlockPos blockPos, IBlockState blockState) {
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-        GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-        GlStateManager.translate(-0.01f, -0.01f, 0.01f);
-        GlStateManager.scale(1.02f, 1.02f, 1.02f);
-
-        try {
-            dispatcher.renderBlockBrightness(blockState, 0.85f);
-        } catch (NullPointerException e) {
-            EffortlessBuilding.logger.warn("RenderHandler::renderBlockPreview cannot render " + blockState.getBlock().toString());
-
-            //Render outline as backup
-            GlStateManager.popMatrix();
-//            ShaderHandler.releaseShader();
-            GL11.glDisable(GL11.GL_LIGHTING);
-            renderBlockOutline(blockPos, new Vec3d(1f, 1f, 1f));
-            GL11.glEnable(GL11.GL_LIGHTING);
-            GlStateManager.pushMatrix();
-        }
-
-        GlStateManager.popMatrix();
-    }
-
-    protected static void renderBlockOutline(BlockPos pos, Vec3d color) {
-        renderBlockOutline(pos, pos, color);
-    }
-
-    //Renders outline. Pos1 has to be minimal x,y,z and pos2 maximal x,y,z
-    protected static void renderBlockOutline(BlockPos pos1, BlockPos pos2, Vec3d color) {
-        GL11.glLineWidth(2);
-
-        AxisAlignedBB aabb = new AxisAlignedBB(pos1, pos2.add(1, 1, 1)).grow(0.0020000000949949026);
-
-        RenderGlobal.drawSelectionBoundingBox(aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
-    }
-
-    //Renders outline with given bounding box
-    protected static void renderBlockOutline(BlockPos pos, AxisAlignedBB boundingBox, Vec3d color) {
-        GL11.glLineWidth(2);
-
-        AxisAlignedBB aabb = boundingBox.offset(pos).grow(0.0020000000949949026);
-
-        RenderGlobal.drawSelectionBoundingBox(aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
-    }
-
-
-
-    //IWORLDEVENTLISTENER IMPLEMENTATION
-    @Override
-    public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {
-
-    }
-
-    @Override
-    public void notifyLightSet(BlockPos pos) {
-
-    }
-
-    @Override
-    public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
-
-    }
-
-    @Override
-    public void playSoundToAllNearExcept(@Nullable EntityPlayer player, SoundEvent soundIn, SoundCategory category,
-                                         double x, double y, double z, float volume, float pitch) {
-
-    }
-
-    @Override
-    public void playRecord(SoundEvent soundIn, BlockPos pos) {
-
-    }
-
-    @Override
-    public void spawnParticle(int particleID, boolean ignoreRange, double xCoord, double yCoord, double zCoord,
-                              double xSpeed, double ySpeed, double zSpeed, int... parameters) {
-
-    }
-
-    @Override
-    public void spawnParticle(int id, boolean ignoreRange, boolean p_190570_3_, double x, double y, double z,
-                              double xSpeed, double ySpeed, double zSpeed, int... parameters) {
-
-    }
-
-    @Override
-    public void onEntityAdded(Entity entityIn) {
-
-    }
-
-    @Override
-    public void onEntityRemoved(Entity entityIn) {
-
-    }
-
-    @Override
-    public void broadcastSound(int soundID, BlockPos pos, int data) {
-
-    }
-
-    @Override
-    public void playEvent(EntityPlayer player, int type, BlockPos blockPosIn, int data) {
-
-    }
-
-    //Sends breaking progress for all coordinates to renderglobal, so all blocks get visually broken
-    @Override
-    public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {
-        Minecraft mc = Minecraft.getMinecraft();
-
-        ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(mc.player);
-        if (!BuildModifiers.isEnabled(modifierSettings, pos)) return;
-
-        List<BlockPos> coordinates = BuildModifiers.findCoordinates(mc.player, pos);
-        for (int i = 1; i < coordinates.size(); i++) {
-            BlockPos coordinate = coordinates.get(i);
-            if (SurvivalHelper.canBreak(mc.world, mc.player, coordinate)) {
-                //Send i as entity id because only one block can be broken per id
-                //Unless i happens to be the player id, then take something else
-                int fakeId = mc.player.getEntityId() != i ? i : coordinates.size();
-                mc.renderGlobal.sendBlockBreakProgress(fakeId, coordinate, progress);
-            }
-        }
-    }
+@Mod.EventBusSubscriber(value = Dist.CLIENT)
+public class RenderHandler {
+
+	@SubscribeEvent
+	public static void onRender(RenderLevelLastEvent event) {
+		if (event.getPhase() != EventPriority.NORMAL)
+			return;
+
+		PoseStack matrixStack = event.getPoseStack();
+		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(bufferBuilder);
+
+		Player player = Minecraft.getInstance().player;
+		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
+		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
+
+		Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+
+		matrixStack.pushPose();
+		matrixStack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
+
+		//Mirror and radial mirror lines and areas
+		ModifierRenderer.render(matrixStack, renderTypeBuffer, modifierSettings);
+
+		//Render block previews
+		BlockPreviewRenderer.render(matrixStack, renderTypeBuffer, player, modifierSettings, modeSettings);
+
+		matrixStack.popPose();
+	}
+
+	protected static VertexConsumer beginLines(MultiBufferSource.BufferSource renderTypeBuffer) {
+		return renderTypeBuffer.getBuffer(BuildRenderTypes.LINES);
+	}
+
+	protected static void endLines(MultiBufferSource.BufferSource renderTypeBuffer) {
+		renderTypeBuffer.endBatch();
+	}
+
+	protected static VertexConsumer beginPlanes(MultiBufferSource.BufferSource renderTypeBuffer) {
+		return renderTypeBuffer.getBuffer(BuildRenderTypes.PLANES);
+	}
+
+	protected static void endPlanes(MultiBufferSource.BufferSource renderTypeBuffer) {
+		renderTypeBuffer.endBatch();
+	}
+
+	protected static void renderBlockPreview(PoseStack matrixStack, MultiBufferSource.BufferSource renderTypeBuffer, BlockRenderDispatcher dispatcher,
+											 BlockPos blockPos, BlockState blockState, float dissolve, BlockPos firstPos, BlockPos secondPos, boolean red) {
+		if (blockState == null) return;
+
+		matrixStack.pushPose();
+		matrixStack.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+//        matrixStack.rotate(Vector3f.YP.rotationDegrees(-90f));
+		matrixStack.translate(-0.01f, -0.01f, -0.01f);
+		matrixStack.scale(1.02f, 1.02f, 1.02f);
+
+		//Begin block preview rendering
+		RenderType blockPreviewRenderType = BuildRenderTypes.getBlockPreviewRenderType(dissolve, blockPos, firstPos, secondPos, red);
+		VertexConsumer buffer = renderTypeBuffer.getBuffer(blockPreviewRenderType);
+
+//        MinecraftServer server = Minecraft.getInstance().getIntegratedServer();
+//        World world = DimensionManager.getWorld(server, DimensionType.OVERWORLD, false, true);
+
+		try {
+			BakedModel model = dispatcher.getBlockModel(blockState);
+			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer, blockState, model,
+					1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
+//        blockRendererDispatcher.getBlockModelRenderer().renderModel(world, blockRendererDispatcher.getModelForState(blockState),
+//                blockState, logicPos, matrixStack, renderTypeBuffer.getBuffer(renderType), true, new Random(), blockState.getPositionRandom(logicPos), i);
+		} catch (NullPointerException e) {
+			EffortlessBuilding.logger.warn("RenderHandler::renderBlockPreview cannot render " + blockState.getBlock().toString());
+
+			//Render outline as backup, escape out of the current renderstack
+			matrixStack.popPose();
+			renderTypeBuffer.endBatch();
+			VertexConsumer lineBuffer = beginLines(renderTypeBuffer);
+			renderBlockOutline(matrixStack, lineBuffer, blockPos, new Vec3(1f, 1f, 1f));
+			endLines(renderTypeBuffer);
+			buffer = renderTypeBuffer.getBuffer(Sheets.translucentCullBlockSheet()); //any type will do, as long as we have something on the stack
+			matrixStack.pushPose();
+		}
+
+		renderTypeBuffer.endBatch();
+		matrixStack.popPose();
+	}
+
+	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos, Vec3 color) {
+		renderBlockOutline(matrixStack, buffer, pos, pos, color);
+	}
+
+	//Renders outline. Pos1 has to be minimal x,y,z and pos2 maximal x,y,z
+	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos1, BlockPos pos2, Vec3 color) {
+		AABB aabb = new AABB(pos1, pos2.offset(1, 1, 1)).inflate(0.0020000000949949026);
+
+		LevelRenderer.renderLineBox(matrixStack, buffer, aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
+//        WorldRenderer.drawSelectionBoundingBox(aabb, (float) color.x, (float) color.y, (float) color.z, 0.4f);
+	}
+
+	//Renders outline with given bounding box
+	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos, VoxelShape collisionShape, Vec3 color) {
+//        WorldRenderer.drawShape(collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
+		LevelRenderer.renderVoxelShape(matrixStack, buffer, collisionShape, pos.getX(), pos.getY(), pos.getZ(), (float) color.x, (float) color.y, (float) color.z, 0.4f);
+	}
+
+	//TODO
+	//Sends breaking progress for all coordinates to renderglobal, so all blocks get visually broken
+//    @Override
+//    public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {
+//        Minecraft mc = Minecraft.getInstance();
+//
+//        ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(mc.player);
+//        if (!BuildModifiers.isEnabled(modifierSettings, pos)) return;
+//
+//        List<BlockPos> coordinates = BuildModifiers.findCoordinates(mc.player, pos);
+//        for (int i = 1; i < coordinates.size(); i++) {
+//            BlockPos coordinate = coordinates.get(i);
+//            if (SurvivalHelper.canBreak(mc.world, mc.player, coordinate)) {
+//                //Send i as entity id because only one block can be broken per id
+//                //Unless i happens to be the player id, then take something else
+//                int fakeId = mc.player.getEntityId() != i ? i : coordinates.size();
+//                mc.renderGlobal.sendBlockBreakProgress(fakeId, coordinate, progress);
+//            }
+//        }
+//    }
 }

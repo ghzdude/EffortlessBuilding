@@ -1,57 +1,53 @@
 package nl.requios.effortlessbuilding.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.buildmodifier.BlockSet;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
+import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
-import java.util.ArrayList;
+import java.util.function.Supplier;
 
 /***
  * Sends a message to the client asking to clear the undo and redo stacks.
  */
-public class ClearUndoMessage implements IMessage {
+public class ClearUndoMessage {
 
-    public ClearUndoMessage() {
-    }
+	public ClearUndoMessage() {
+	}
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-    }
+	public static void encode(ClearUndoMessage message, FriendlyByteBuf buf) {
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-    }
+	}
 
-    // The params of the IMessageHandler are <REQ, REPLY>
-    public static class MessageHandler implements IMessageHandler<ClearUndoMessage, IMessage> {
-        // Do note that the default constructor is required, but implicitly defined in this case
+	public static ClearUndoMessage decode(FriendlyByteBuf buf) {
+		return new ClearUndoMessage();
+	}
 
-        @Override
-        public IMessage onMessage(ClearUndoMessage message, MessageContext ctx) {
-            //EffortlessBuilding.log("message received on " + ctx.side + " side");
+	public static class Handler {
+		public static void handle(ClearUndoMessage message, Supplier<NetworkEvent.Context> ctx) {
+			ctx.get().enqueueWork(() -> {
+				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
+					//Received clientside
+					DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHandler.handle(message, ctx));
+				}
+			});
+			ctx.get().setPacketHandled(true);
+		}
+	}
 
-            if (ctx.side == Side.CLIENT){
-                //Received clientside
+	@OnlyIn(Dist.CLIENT)
+	public static class ClientHandler {
+		public static void handle(ClearUndoMessage message, Supplier<NetworkEvent.Context> ctx) {
+			Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
-                EffortlessBuilding.proxy.getThreadListenerFromContext(ctx).addScheduledTask(() -> {
-                    EntityPlayer player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
-
-                    //Add to undo stack clientside
-                    UndoRedo.clear(player);
-                });
-            }
-            return null;
-        }
-    }
+			//Add to undo stack clientside
+			UndoRedo.clear(player);
+		}
+	}
 }

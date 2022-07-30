@@ -1,117 +1,63 @@
 package nl.requios.effortlessbuilding.compatibility;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
+import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 
 public class CompatHelper {
-    // Get a handle to the dank null item instance. This will remain null if the mod doesn't load
-    // and all checks will fail, so it works.
-    @GameRegistry.ObjectHolder("danknull:dank_null")
-    public static final Item dankNullItem = null;
 
-    public static IChiselsAndBitsProxy chiselsAndBitsProxy;
+	public static void setup() {
 
-    public static void postInit() {
-        if (Loader.isModLoaded("chiselsandbits")) {
-            // reflection to avoid hard dependency
-            try {
-                chiselsAndBitsProxy = Class.forName("nl.requios.effortlessbuilding.compatibility.ActiveChiselsAndBitsProxy").asSubclass(ActiveChiselsAndBitsProxy.class).newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        } else {
-            chiselsAndBitsProxy = new DummyChiselsAndBitsProxy();
-        }
-    }
+	}
 
-    // Check if the item given is a proxy for blocks. For now, we check for the randomizer bag,
-    // /dank/null, or plain old blocks.
-    public static boolean isItemBlockProxy(ItemStack stack) {
-        Item item = stack.getItem();
-        if (item instanceof ItemBlock)
-            return true;
-        if ((item instanceof ItemRandomizerBag))
-            return true;
-        if (item == dankNullItem)
-            return true;
-        return false;
-    }
+	// Check if the item given is a proxy for blocks. For now, we check for the randomizer bag,
+	// /dank/null, or plain old blocks.
+	public static boolean isItemBlockProxy(ItemStack stack) {
+		Item item = stack.getItem();
+		if (item instanceof BlockItem)
+			return true;
+		return item instanceof AbstractRandomizerBagItem;
+	}
 
-    // Get the block to be placed by this proxy. For the /dank/null, it's the slot stack
-    // pointed to by nbt integer selectedIndex.
-    public static ItemStack getItemBlockFromStack(ItemStack proxy) {
-        Item proxyItem = proxy.getItem();
+	// Get the block to be placed by this proxy. For the /dank/null, it's the slot stack
+	// pointed to by nbt integer selectedIndex.
+	public static ItemStack getItemBlockFromStack(ItemStack proxy) {
+		Item proxyItem = proxy.getItem();
 
-        if (proxyItem instanceof ItemBlock)
-            return proxy;
+		if (proxyItem instanceof BlockItem)
+			return proxy;
 
-        //Randomizer Bag
-        if (proxyItem instanceof ItemRandomizerBag) {
-            ItemStack itemStack = proxy;
-            while (!(itemStack.getItem() instanceof ItemBlock || itemStack.isEmpty())) {
-                if (itemStack.getItem() instanceof ItemRandomizerBag)
-                    itemStack = ItemRandomizerBag.pickRandomStack(ItemRandomizerBag.getBagInventory(itemStack));
-            }
-            return itemStack;
-        }
+		//Randomizer Bag
+		if (proxyItem instanceof AbstractRandomizerBagItem) {
+			ItemStack itemStack = proxy;
+			while (!(itemStack.getItem() instanceof BlockItem || itemStack.isEmpty())) {
+				if (itemStack.getItem() instanceof AbstractRandomizerBagItem) {
+					AbstractRandomizerBagItem randomizerBagItem = (AbstractRandomizerBagItem) itemStack.getItem();
+					itemStack = randomizerBagItem.pickRandomStack(randomizerBagItem.getBagInventory(itemStack));
+				}
+			}
+			return itemStack;
+		}
 
-        //Dank Null
-        if (proxyItem == dankNullItem) {
-            int index = 0;
-            if (proxy.hasTagCompound() && proxy.getTagCompound().hasKey("selectedIndex"))
-                index = proxy.getTagCompound().getInteger("selectedIndex");
-            return proxy.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).getStackInSlot(index);
-        }
+		return ItemStack.EMPTY;
+	}
 
-        return ItemStack.EMPTY;
-    }
+	public static ItemStack getItemBlockByState(ItemStack stack, BlockState state) {
+		if (state == null) return ItemStack.EMPTY;
 
-    public static ItemStack getItemBlockByState(ItemStack stack, IBlockState state) {
-        Item blockItem = Item.getItemFromBlock(state.getBlock());
-        if (stack.getItem() instanceof ItemBlock)
-            return stack;
-        else if (stack.getItem() instanceof ItemRandomizerBag) {
-            IItemHandler bagInventory = ItemRandomizerBag.getBagInventory(stack);
-            return ItemRandomizerBag.findStack(bagInventory, blockItem);
-        } else if (stack.getItem() == dankNullItem) {
-            int index = itemHandlerSlotForItem(stack, blockItem);
-            if (index >= 0)
-                return stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).getStackInSlot(index);
-        }
-        return ItemStack.EMPTY;
-    }
+		Item blockItem = Item.byBlock(state.getBlock());
+		if (stack.getItem() instanceof BlockItem)
+			return stack;
+		else if (stack.getItem() instanceof AbstractRandomizerBagItem) {
+			AbstractRandomizerBagItem randomizerBagItem = (AbstractRandomizerBagItem) stack.getItem();
+			IItemHandler bagInventory = randomizerBagItem.getBagInventory(stack);
+			return randomizerBagItem.findStack(bagInventory, blockItem);
+		}
 
-    // Handle IItemHandler slot stacks not being modifiable. We must call IItemHandler#extractItem,
-    // because the ItemStack returned by IItemHandler#getStackInSlot isn't modifiable.
-    public static void shrinkStack(ItemStack origStack, ItemStack curStack, EntityPlayer player) {
-        //Hacky way to get the origstack, because given origStack is itemblock stack and never a proxy
-        origStack = player.getHeldItem(EnumHand.MAIN_HAND);
-
-        if (origStack.getItem() == dankNullItem) {
-            int index = itemHandlerSlotForItem(origStack, curStack.getItem());
-            origStack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).extractItem(index, 1, false);
-        } else
-            curStack.shrink(1);
-    }
-
-    private static int itemHandlerSlotForItem(ItemStack stack, Item blockItem) {
-        IItemHandler handler = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-        for (int i = 0; i < handler.getSlots(); i++) {
-            ItemStack ref = handler.getStackInSlot(i);
-            if (ref.getItem() instanceof ItemBlock)
-                if (ref.getItem() == blockItem)
-                    return i;
-        }
-        return -1;
-    }
+		return ItemStack.EMPTY;
+	}
 
 }

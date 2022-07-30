@@ -1,7 +1,14 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
@@ -9,129 +16,145 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
 import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
 import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;
+import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ModifierSettingsGui extends GuiScreen {
+@OnlyIn(Dist.CLIENT)
+public class ModifierSettingsGui extends Screen {
 
-    private GuiScrollPane scrollPane;
-    private GuiButton buttonClose;
+	private GuiScrollPane scrollPane;
+	private Button buttonClose;
 
-    private MirrorSettingsGui mirrorSettingsGui;
-    private ArraySettingsGui arraySettingsGui;
-    private RadialMirrorSettingsGui radialMirrorSettingsGui;
+	private MirrorSettingsGui mirrorSettingsGui;
+	private ArraySettingsGui arraySettingsGui;
+	private RadialMirrorSettingsGui radialMirrorSettingsGui;
 
-    @Override
-    //Create buttons and labels and add them to buttonList/labelList
-    public void initGui() {
-        int id = 0;
+	public ModifierSettingsGui() {
+		super(new TranslatableComponent("effortlessbuilding.screen.modifier_settings"));
+	}
 
-        scrollPane = new GuiScrollPane(this, fontRenderer, 8, height - 30);
+	@Override
+	//Create buttons and labels and add them to buttonList/labelList
+	protected void init() {
 
-        mirrorSettingsGui = new MirrorSettingsGui(scrollPane);
-        scrollPane.listEntries.add(mirrorSettingsGui);
+		scrollPane = new GuiScrollPane(this, font, 8, height - 30);
 
-        arraySettingsGui = new ArraySettingsGui(scrollPane);
-        scrollPane.listEntries.add(arraySettingsGui);
+		mirrorSettingsGui = new MirrorSettingsGui(scrollPane);
+		scrollPane.AddListEntry(mirrorSettingsGui);
 
-        radialMirrorSettingsGui = new RadialMirrorSettingsGui(scrollPane);
-        scrollPane.listEntries.add(radialMirrorSettingsGui);
+		arraySettingsGui = new ArraySettingsGui(scrollPane);
+		scrollPane.AddListEntry(arraySettingsGui);
 
-        id = scrollPane.initGui(id, buttonList);
+		radialMirrorSettingsGui = new RadialMirrorSettingsGui(scrollPane);
+		scrollPane.AddListEntry(radialMirrorSettingsGui);
 
-        //Close button
-        int y = height - 26;
-        buttonClose = new GuiButton(id++, width / 2 - 100, y, "Close");
-        buttonList.add(buttonClose);
+		scrollPane.init(renderables);
 
-    }
+		//Close button
+		int y = height - 26;
+		buttonClose = new Button(width / 2 - 100, y, 200, 20, new TextComponent("Close"), (button) -> {
+			Minecraft.getInstance().player.closeContainer();
+		});
+		addRenderableOnly(buttonClose);
+	}
 
-    @Override
-    //Process general logic, i.e. hide buttons
-    public void updateScreen() {
-        scrollPane.updateScreen();
-    }
+	@Override
+	//Process general logic, i.e. hide buttons
+	public void tick() {
+		scrollPane.updateScreen();
 
-    @Override
-    //Set colors using GL11, use the fontRendererObj field to display text
-    //Use drawTexturedModalRect() to transfers areas of a texture resource to the screen
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.drawDefaultBackground();
+		handleMouseInput();
+	}
 
-        scrollPane.drawScreen(mouseX, mouseY, partialTicks);
+	@Override
+	//Set colors using GL11, use the fontObj field to display text
+	//Use drawTexturedModalRect() to transfers areas of a texture resource to the screen
+	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(ms);
 
-        buttonClose.drawButton(this.mc, mouseX, mouseY, partialTicks);
+		scrollPane.render(ms, mouseX, mouseY, partialTicks);
 
-        scrollPane.drawTooltip(this, mouseX, mouseY);
-    }
+		buttonClose.render(ms, mouseX, mouseY, partialTicks);
 
-    @Override
-    protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        super.keyTyped(typedChar, keyCode);
-        scrollPane.keyTyped(typedChar, keyCode);
-        if (keyCode == ClientProxy.keyBindings[0].getKeyCode()) {
-            mc.player.closeScreen();
-        }
-    }
+		scrollPane.drawTooltip(ms, this, mouseX, mouseY);
+	}
 
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-        scrollPane.mouseClicked(mouseX, mouseY, mouseButton);
-    }
 
-    @Override
-    protected void mouseReleased(int mouseX, int mouseY, int state) {
-        if (state != 0 || !scrollPane.mouseReleased(mouseX, mouseY, state))
-        {
-            super.mouseReleased(mouseX, mouseY, state);
-        }
-    }
+	@Override
+	public boolean charTyped(char typedChar, int keyCode) {
+		super.charTyped(typedChar, keyCode);
+		scrollPane.charTyped(typedChar, keyCode);
+		return false;
+	}
 
-    @Override
-    public void handleMouseInput() throws IOException {
-        super.handleMouseInput();
-        scrollPane.handleMouseInput();
+	@Override
+	public boolean keyPressed(int keyCode, int p_96553_, int p_96554_) {
+		if (keyCode == ClientProxy.keyBindings[0].getKey().getValue()) {
+			minecraft.player.closeContainer();
+			return true;
+		}
 
-        //Scrolling numbers
+		return super.keyPressed(keyCode, p_96553_, p_96554_);
+	}
+
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+		super.mouseClicked(mouseX, mouseY, mouseButton);
+		renderables.forEach(renderable -> {
+			if (renderable instanceof Button) {
+				Button button = (Button) renderable;
+				button.mouseClicked(mouseX, mouseY, mouseButton);
+			}
+		});
+		return scrollPane.mouseClicked(mouseX, mouseY, mouseButton);
+	}
+
+	@Override
+	public boolean mouseReleased(double mouseX, double mouseY, int state) {
+		if (state != 0 || !scrollPane.mouseReleased(mouseX, mouseY, state)) {
+			return super.mouseReleased(mouseX, mouseY, state);
+		}
+		return false;
+	}
+
+	public void handleMouseInput() {
+		//super.handleMouseInput();
+		scrollPane.handleMouseInput();
+
+		//Scrolling numbers
 //        int mouseX = Mouse.getEventX() * this.width / this.mc.displayWidth;
 //        int mouseY = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
 //        numberFieldList.forEach(numberField -> numberField.handleMouseInput(mouseX, mouseY));
-    }
+	}
 
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        //check what button and action type (left/right click)
-        if (button == buttonClose) {
-            mc.player.closeScreen();
-        }
-        scrollPane.actionPerformed(button);
-    }
+	@Override
+	public void removed() {
+		scrollPane.onGuiClosed();
 
-    @Override
-    public void onGuiClosed() {
-        scrollPane.onGuiClosed();
+		//save everything
+		Mirror.MirrorSettings m = mirrorSettingsGui.getMirrorSettings();
+		Array.ArraySettings a = arraySettingsGui.getArraySettings();
+		RadialMirror.RadialMirrorSettings r = radialMirrorSettingsGui.getRadialMirrorSettings();
 
-        //save everything
-        Mirror.MirrorSettings m = mirrorSettingsGui.getMirrorSettings();
-        Array.ArraySettings a = arraySettingsGui.getArraySettings();
-        RadialMirror.RadialMirrorSettings r = radialMirrorSettingsGui.getRadialMirrorSettings();
+		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(minecraft.player);
+		if (modifierSettings == null) modifierSettings = new ModifierSettingsManager.ModifierSettings();
+		modifierSettings.setMirrorSettings(m);
+		modifierSettings.setArraySettings(a);
+		modifierSettings.setRadialMirrorSettings(r);
 
-        ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(mc.player);
-        if (modifierSettings == null) modifierSettings = new ModifierSettingsManager.ModifierSettings();
-        modifierSettings.setMirrorSettings(m);
-        modifierSettings.setArraySettings(a);
-        modifierSettings.setRadialMirrorSettings(r);
+		//Sanitize
+		String error = ModifierSettingsManager.sanitize(modifierSettings, minecraft.player);
+		if (!error.isEmpty()) EffortlessBuilding.log(minecraft.player, error);
 
-        //Sanitize
-        String error = ModifierSettingsManager.sanitize(modifierSettings, mc.player);
-        if (!error.isEmpty()) EffortlessBuilding.log(mc.player, error);
+		ModifierSettingsManager.setModifierSettings(minecraft.player, modifierSettings);
 
-        ModifierSettingsManager.setModifierSettings(mc.player, modifierSettings);
+		//Send to server
+		PacketHandler.INSTANCE.sendToServer(new ModifierSettingsMessage(modifierSettings));
 
-        //Send to server
-        EffortlessBuilding.packetHandler.sendToServer(new ModifierSettingsMessage(modifierSettings));
-    }
+		Minecraft.getInstance().mouseHandler.grabMouse();
+	}
 
 }

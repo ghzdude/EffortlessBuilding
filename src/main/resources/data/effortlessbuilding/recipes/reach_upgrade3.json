@@ -1,0 +1,22 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "x#x",
+        "#O#",
+        "x#x"
+    ],
+    "key": {
+        "O": {
+            "item": "minecraft:nether_star"
+        },
+		"#": {
+            "item": "minecraft:diamond"
+        },
+		"x": {
+			"item": "minecraft:amethyst_shard"
+		}
+    },
+    "result": {
+        "item": "effortlessbuilding:reach_upgrade3"
+    }
+}

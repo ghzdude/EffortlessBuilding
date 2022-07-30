@@ -1,73 +1,73 @@
 package nl.requios.effortlessbuilding.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.buildmodifier.BlockSet;
-import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
+import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
-import java.util.ArrayList;
+import java.util.function.Supplier;
 
 /***
  * Sends a message to the client asking for its lookat (objectmouseover) data.
  * This is then sent back with a BlockPlacedMessage.
  */
-public class RequestLookAtMessage implements IMessage {
-    private boolean placeStartPos;
+public class RequestLookAtMessage {
+	private final boolean placeStartPos;
 
-    public RequestLookAtMessage() {
-        placeStartPos = false;
-    }
+	public RequestLookAtMessage() {
+		placeStartPos = false;
+	}
 
-    public RequestLookAtMessage(boolean placeStartPos) {
-        this.placeStartPos = placeStartPos;
-    }
+	public RequestLookAtMessage(boolean placeStartPos) {
+		this.placeStartPos = placeStartPos;
+	}
 
-    public boolean getPlaceStartPos() {
-        return placeStartPos;
-    }
+	public static void encode(RequestLookAtMessage message, FriendlyByteBuf buf) {
+		buf.writeBoolean(message.placeStartPos);
+	}
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(this.placeStartPos);
-    }
+	public static RequestLookAtMessage decode(FriendlyByteBuf buf) {
+		boolean placeStartPos = buf.readBoolean();
+		return new RequestLookAtMessage(placeStartPos);
+	}
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        placeStartPos = buf.readBoolean();
-    }
+	public boolean getPlaceStartPos() {
+		return placeStartPos;
+	}
 
-    // The params of the IMessageHandler are <REQ, REPLY>
-    public static class MessageHandler implements IMessageHandler<RequestLookAtMessage, IMessage> {
-        // Do note that the default constructor is required, but implicitly defined in this case
+	public static class Handler {
+		public static void handle(RequestLookAtMessage message, Supplier<NetworkEvent.Context> ctx) {
+			ctx.get().enqueueWork(() -> {
+				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
+					//Received clientside
+					DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHandler.handle(message, ctx));
+				}
+			});
+			ctx.get().setPacketHandled(true);
+		}
+	}
 
-        @Override
-        public IMessage onMessage(RequestLookAtMessage message, MessageContext ctx) {
-            //EffortlessBuilding.log("message received on " + ctx.side + " side");
+	@OnlyIn(Dist.CLIENT)
+	public static class ClientHandler {
+		public static void handle(RequestLookAtMessage message, Supplier<NetworkEvent.Context> ctx) {
+			//Send back your info
+			Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 
-            if (ctx.side == Side.CLIENT){
-                //Received clientside
-                //Send back your info
-
-//                EffortlessBuilding.proxy.getThreadListenerFromContext(ctx).addScheduledTask(() -> {
-//                    EntityPlayer player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
-//
-//                });
-
-                //Prevent double placing in normal mode with placeStartPos false.
-                //Unless QuickReplace is on, then we do need to place start pos.
-                return new BlockPlacedMessage(ClientProxy.previousLookAt, message.getPlaceStartPos());
-            }
-            return null;
-        }
-    }
+			//Prevent double placing in normal mode with placeStartPos false
+			//Unless QuickReplace is on, then we do need to place start pos.
+			if (ClientProxy.previousLookAt.getType() == HitResult.Type.BLOCK) {
+				PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage((BlockHitResult) ClientProxy.previousLookAt, message.getPlaceStartPos()));
+			} else {
+				PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage());
+			}
+		}
+	}
 }

@@ -1,150 +1,113 @@
 package nl.requios.effortlessbuilding;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.relauncher.Side;
-import nl.requios.effortlessbuilding.buildmode.BuildModes;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.IContainerFactory;
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
-import nl.requios.effortlessbuilding.command.CommandReach;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.gui.RandomizerBagGuiHandler;
-import nl.requios.effortlessbuilding.item.ItemRandomizerBag;
-import nl.requios.effortlessbuilding.item.ItemReachUpgrade1;
-import nl.requios.effortlessbuilding.item.ItemReachUpgrade2;
-import nl.requios.effortlessbuilding.item.ItemReachUpgrade3;
-import nl.requios.effortlessbuilding.network.*;
+import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagContainer;
+import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagContainer;
+import nl.requios.effortlessbuilding.gui.RandomizerBagContainer;
+import nl.requios.effortlessbuilding.item.*;
+import nl.requios.effortlessbuilding.network.PacketHandler;
+import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import nl.requios.effortlessbuilding.proxy.IProxy;
+import nl.requios.effortlessbuilding.proxy.ServerProxy;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = EffortlessBuilding.MODID, name = EffortlessBuilding.NAME, version = EffortlessBuilding.VERSION)
-@Mod.EventBusSubscriber
-public class EffortlessBuilding
-{
-    public static final String MODID = "effortlessbuilding";
-    public static final String NAME = "Effortless Building";
-    public static final String VERSION = "1.12.2-2.13";
+@Mod(EffortlessBuilding.MODID)
+public class EffortlessBuilding {
 
-    @Mod.Instance(EffortlessBuilding.MODID)
-    public static EffortlessBuilding instance;
+	public static final String MODID = "effortlessbuilding";
+	public static final Logger logger = LogManager.getLogger();
 
-    public static Logger logger;
+	public static EffortlessBuilding instance;
+	public static IProxy proxy = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
-    @SidedProxy(
-        clientSide="nl.requios.effortlessbuilding.proxy.ClientProxy",
-        serverSide="nl.requios.effortlessbuilding.proxy.ServerProxy"
-    )
-    public static IProxy proxy;
+	//Registration
+	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+	private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, EffortlessBuilding.MODID);
 
-    public static final SimpleNetworkWrapper packetHandler = NetworkRegistry.INSTANCE.newSimpleChannel(EffortlessBuilding.MODID);
+	public static final RegistryObject<Item> RANDOMIZER_BAG_ITEM = ITEMS.register("randomizer_bag", RandomizerBagItem::new);
+	public static final RegistryObject<Item> GOLDEN_RANDOMIZER_BAG_ITEM = ITEMS.register("golden_randomizer_bag", GoldenRandomizerBagItem::new);
+	public static final RegistryObject<Item> DIAMOND_RANDOMIZER_BAG_ITEM = ITEMS.register("diamond_randomizer_bag", DiamondRandomizerBagItem::new);
+	public static final RegistryObject<Item> REACH_UPGRADE_1_ITEM = ITEMS.register("reach_upgrade1", ReachUpgrade1Item::new);
+	public static final RegistryObject<Item> REACH_UPGRADE_2_ITEM = ITEMS.register("reach_upgrade2", ReachUpgrade2Item::new);
+	public static final RegistryObject<Item> REACH_UPGRADE_3_ITEM = ITEMS.register("reach_upgrade3", ReachUpgrade3Item::new);
 
-    public static final ItemRandomizerBag ITEM_RANDOMIZER_BAG = new ItemRandomizerBag();
-    public static final ItemReachUpgrade1 ITEM_REACH_UPGRADE_1 = new ItemReachUpgrade1();
-    public static final ItemReachUpgrade2 ITEM_REACH_UPGRADE_2 = new ItemReachUpgrade2();
-    public static final ItemReachUpgrade3 ITEM_REACH_UPGRADE_3 = new ItemReachUpgrade3();
+	public static final RegistryObject<MenuType<RandomizerBagContainer>> RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("randomizer_bag", () -> registerContainer(RandomizerBagContainer::new));
+	public static final RegistryObject<MenuType<GoldenRandomizerBagContainer>> GOLDEN_RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("golden_randomizer_bag", () -> registerContainer(GoldenRandomizerBagContainer::new));
+	public static final RegistryObject<MenuType<DiamondRandomizerBagContainer>> DIAMOND_RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("diamond_randomizer_bag", () -> registerContainer(DiamondRandomizerBagContainer::new));
 
-    public static final Block[] BLOCKS = {
-    };
+	public EffortlessBuilding() {
+		instance = this;
 
-    public static final Item[] ITEMS = {
-            ITEM_RANDOMIZER_BAG,
-            ITEM_REACH_UPGRADE_1,
-            ITEM_REACH_UPGRADE_2,
-            ITEM_REACH_UPGRADE_3
-    };
+		// Register ourselves for server and other game events we are interested in
+		FMLJavaModLoadingContext.get().getModEventBus().register(this);
 
-    public static final int RANDOMIZER_BAG_GUI = 0;
+		ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
-    @EventHandler
-    // preInit "Run before anything else. Read your config, create blocks, items, etc, and register them with the GameRegistry."
-    public void preInit(FMLPreInitializationEvent event)
-    {
-        logger = event.getModLog();
+		//Register config
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BuildConfig.spec);
+	}
 
-        CapabilityManager.INSTANCE.register(ModifierCapabilityManager.IModifierCapability.class, new ModifierCapabilityManager.Storage(), ModifierCapabilityManager.ModifierCapability.class);
-        CapabilityManager.INSTANCE.register(ModeCapabilityManager.IModeCapability.class, new ModeCapabilityManager.Storage(), ModeCapabilityManager.ModeCapability.class);
+	public static <T extends AbstractContainerMenu> MenuType<T> registerContainer(IContainerFactory<T> fact){
+		MenuType<T> type = new MenuType<T>(fact);
+		return type;
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(ModifierSettingsMessage.MessageHandler.class, ModifierSettingsMessage.class, 0, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(ModifierSettingsMessage.MessageHandler.class, ModifierSettingsMessage.class, 0, Side.CLIENT);
+	@SubscribeEvent
+	public void setup(final FMLCommonSetupEvent event) {
+		PacketHandler.register();
 
-        EffortlessBuilding.packetHandler.registerMessage(ModeSettingsMessage.MessageHandler.class, ModeSettingsMessage.class, 1, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(ModeSettingsMessage.MessageHandler.class, ModeSettingsMessage.class, 1, Side.CLIENT);
+		proxy.setup(event);
 
-        EffortlessBuilding.packetHandler.registerMessage(ModeActionMessage.MessageHandler.class, ModeActionMessage.class, 2, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(ModeActionMessage.MessageHandler.class, ModeActionMessage.class, 2, Side.CLIENT);
+		CompatHelper.setup();
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(BlockPlacedMessage.MessageHandler.class, BlockPlacedMessage.class, 3, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(BlockPlacedMessage.MessageHandler.class, BlockPlacedMessage.class, 3, Side.CLIENT);
+	@SubscribeEvent
+	public void clientSetup(final FMLClientSetupEvent event) {
+		proxy.clientSetup(event);
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(BlockBrokenMessage.MessageHandler.class, BlockBrokenMessage.class, 4, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(BlockBrokenMessage.MessageHandler.class, BlockBrokenMessage.class, 4, Side.CLIENT);
+	@SubscribeEvent
+	public void registerCapabilities(RegisterCapabilitiesEvent event){
+		event.register(ModifierCapabilityManager.IModifierCapability.class);
+		event.register(ModeCapabilityManager.IModeCapability.class);
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(CancelModeMessage.MessageHandler.class, CancelModeMessage.class, 5, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(CancelModeMessage.MessageHandler.class, CancelModeMessage.class, 5, Side.CLIENT);
+	public static void log(String msg) {
+		logger.info(msg);
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(RequestLookAtMessage.MessageHandler.class, RequestLookAtMessage.class, 6, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(RequestLookAtMessage.MessageHandler.class, RequestLookAtMessage.class, 6, Side.CLIENT);
+	public static void log(Player player, String msg) {
+		log(player, msg, false);
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(AddUndoMessage.MessageHandler.class, AddUndoMessage.class, 7, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(AddUndoMessage.MessageHandler.class, AddUndoMessage.class, 7, Side.CLIENT);
+	public static void log(Player player, String msg, boolean actionBar) {
+		player.displayClientMessage(new TextComponent(msg), actionBar);
+	}
 
-        EffortlessBuilding.packetHandler.registerMessage(ClearUndoMessage.MessageHandler.class, ClearUndoMessage.class, 8, Side.SERVER);
-        EffortlessBuilding.packetHandler.registerMessage(ClearUndoMessage.MessageHandler.class, ClearUndoMessage.class, 8, Side.CLIENT);
-
-        proxy.preInit(event);
-    }
-
-    @EventHandler
-    // Do your mod setup. Build whatever data structures you care about.
-    // Register network handlers
-    public void init(FMLInitializationEvent event)
-    {
-        ConfigManager.sync(MODID, Config.Type.INSTANCE);
-        NetworkRegistry.INSTANCE.registerGuiHandler(EffortlessBuilding.instance, new RandomizerBagGuiHandler());
-
-        proxy.init(event);
-    }
-
-    @EventHandler
-    // postInit "Handle interaction with other mods, complete your setup based on this."
-    public void postInit(FMLPostInitializationEvent event)
-    {
-        proxy.postInit(event);
-        CompatHelper.postInit();
-    }
-
-    @EventHandler
-    public void serverStarting(FMLServerStartingEvent event)
-    {
-        event.registerServerCommand(new CommandReach());
-        proxy.serverStarting(event);
-    }
-
-    public static void log(String msg){
-        logger.info(msg);
-    }
-
-    public static void log(EntityPlayer player, String msg){
-        log(player, msg, false);
-    }
-
-    public static void log(EntityPlayer player, String msg, boolean actionBar){
-        player.sendStatusMessage(new TextComponentString(msg), actionBar);
-    }
+	//Log with translation supported, call either on client or server (which then sends a message)
+	public static void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar) {
+		proxy.logTranslate(player, prefix, translationKey, suffix, actionBar);
+	}
 }

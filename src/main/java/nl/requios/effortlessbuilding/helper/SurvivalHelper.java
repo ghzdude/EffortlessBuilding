@@ -1,26 +1,26 @@
 package nl.requios.effortlessbuilding.helper;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.BlockSlab;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemSlab;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.data.ForgeBlockTagsProvider;
+import net.minecraftforge.event.ForgeEventFactory;
 import nl.requios.effortlessbuilding.BuildConfig;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
@@ -28,57 +28,70 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+
 public class SurvivalHelper {
 
-    //Used for all placing of blocks in this mod.
-    //Checks if area is loaded, if player has the right permissions, if existing block can be replaced (drops it if so) and consumes an item from the stack.
-    //Based on ItemBlock#onItemUse
-    public static boolean placeBlock(World world, EntityPlayer player, BlockPos pos, IBlockState blockState,
-                                     ItemStack origstack, EnumFacing facing, Vec3d hitVec, boolean skipPlaceCheck,
-                                     boolean skipCollisionCheck, boolean playSound) {
-        if (!world.isBlockLoaded(pos, true)) return false;
-        ItemStack itemstack = origstack;
+	//Used for all placing of blocks in this mod.
+	//Checks if area is loaded, if player has the right permissions, if existing block can be replaced (drops it if so) and consumes an item from the stack.
+	//Based on ItemBlock#onItemUse
+	public static boolean placeBlock(Level world, Player player, BlockPos pos, BlockState blockState,
+									 ItemStack origstack, Direction facing, Vec3 hitVec, boolean skipPlaceCheck,
+									 boolean skipCollisionCheck, boolean playSound) {
+		if (!world.isLoaded(pos)) return false;
+		ItemStack itemstack = origstack;
 
-        if (blockState.getBlock().isAir(blockState, world, pos) || itemstack.isEmpty()) {
-            dropBlock(world, player, pos);
-            world.setBlockToAir(pos);
-            return true;
-        }
+		if (blockState.isAir() || itemstack.isEmpty()) {
+			dropBlock(world, player, pos);
+			world.removeBlock(pos, false);
+			return true;
+		}
 
-        //Randomizer bag, other proxy item synergy
-        //Preliminary compatibility code for other items that hold blocks
-        if (CompatHelper.isItemBlockProxy(itemstack))
-            itemstack = CompatHelper.getItemBlockByState(itemstack, blockState);
+		//Randomizer bag, other proxy item synergy
+		//Preliminary compatibility code for other items that hold blocks
+		if (CompatHelper.isItemBlockProxy(itemstack))
+			itemstack = CompatHelper.getItemBlockByState(itemstack, blockState);
 
-        if (!(itemstack.getItem() instanceof ItemBlock))
-            return false;
-        Block block = ((ItemBlock) itemstack.getItem()).getBlock();
+		if (!(itemstack.getItem() instanceof BlockItem))
+			return false;
+		Block block = ((BlockItem) itemstack.getItem()).getBlock();
 
 
-        //More manual with ItemBlock#placeBlockAt
-        if (skipPlaceCheck || canPlace(world, player, pos, blockState, itemstack, skipCollisionCheck, facing.getOpposite())) {
-            //Drop existing block
-            dropBlock(world, player, pos);
+		//More manual with ItemBlock#placeBlockAt
+		if (skipPlaceCheck || canPlace(world, player, pos, blockState, itemstack, skipCollisionCheck, facing.getOpposite())) {
+			//Drop existing block
+			dropBlock(world, player, pos);
 
-            boolean placed = ((ItemBlock) itemstack.getItem()).placeBlockAt(itemstack, player, world, pos, facing, (float) hitVec.x, (float) hitVec.y, (float) hitVec.z, blockState);
-            if (!placed) return false;
+			//TryPlace sets block with offset and reduces itemstack count in creative, so we copy only parts of it
+//            BlockItemUseContext blockItemUseContext = new BlockItemUseContext(world, player, itemstack, pos, facing, (float) hitVec.x, (float) hitVec.y, (float) hitVec.z);
+//            EnumActionResult result = ((ItemBlock) itemstack.getItem()).tryPlace(blockItemUseContext);
+			if (!world.setBlock(pos, blockState, 3)) return false;
+			BlockItem.updateCustomBlockEntityTag(world, player, pos, itemstack); //Actually BlockItem::onBlockPlaced but that is protected
+			block.setPlacedBy(world, pos, blockState, player, itemstack);
+			if (player instanceof ServerPlayer) {
+				CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer) player, pos, itemstack);
+			}
 
-            IBlockState afterState = world.getBlockState(pos);
+			BlockState afterState = world.getBlockState(pos);
 
-            if (playSound) {
-                SoundType soundtype = afterState.getBlock().getSoundType(afterState, world, pos, player);
-                world.playSound(null, pos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-            }
+			if (playSound) {
+				SoundType soundtype = afterState.getBlock().getSoundType(afterState, world, pos, player);
+				world.playSound(null, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+			}
 
-            if (!player.isCreative() && Block.getBlockFromItem(itemstack.getItem()) == block) {
-                CompatHelper.shrinkStack(origstack, itemstack, player);
-            }
+			if (!player.isCreative() && Block.byItem(itemstack.getItem()) == block) {
+				itemstack.shrink(1);
+			}
 
-            return true;
-        }
-        return false;
+			return true;
+		}
+		return false;
 
-        //Using ItemBlock#onItemUse
+		//Using ItemBlock#onItemUse
 //        EnumActionResult result;
 //        PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(player, EnumHand.MAIN_HAND, pos, facing, net.minecraftforge.common.ForgeHooks.rayTraceEyeHitVec(player, ReachHelper.getPlacementReach(player)));
 //        if (player.isCreative())
@@ -101,40 +114,40 @@ public class SurvivalHelper {
 //            return false;
 //        }
 
-    }
+	}
 
-    //Used for all breaking of blocks in this mod.
-    //Checks if area is loaded, if appropriate tool is used in survival mode, and drops the block directly into the players inventory
-    public static boolean breakBlock(World world, EntityPlayer player, BlockPos pos, boolean skipChecks) {
-        if (!world.isBlockLoaded(pos, false)) return false;
+	//Used for all breaking of blocks in this mod.
+	//Checks if area is loaded, if appropriate tool is used in survival mode, and drops the block directly into the players inventory
+	public static boolean breakBlock(Level world, Player player, BlockPos pos, boolean skipChecks) {
+		if (!world.isLoaded(pos) && !world.isEmptyBlock(pos)) return false;
 
-        //Check if can break
-        if (skipChecks || canBreak(world, player, pos)) {
+		//Check if can break
+		if (skipChecks || canBreak(world, player, pos)) {
 //            player.addStat(StatList.getBlockStats(world.getNewBlockState(pos).getBlock()));
 //            player.addExhaustion(0.005F);
 
-            //Drop existing block
-            dropBlock(world, player, pos);
+			//Drop existing block
+			dropBlock(world, player, pos);
 
-            //Damage tool
-            player.getHeldItemMainhand().onBlockDestroyed(world, world.getBlockState(pos), pos, player);
+			//Damage tool
+			player.getMainHandItem().mineBlock(world, world.getBlockState(pos), pos, player);
 
-            world.setBlockToAir(pos);
-            return true;
-        }
-        return false;
-    }
+			world.removeBlock(pos, false);
+			return true;
+		}
+		return false;
+	}
 
-    //Gives items directly to player
-    public static void dropBlock(World world, EntityPlayer player, BlockPos pos){
-        if (player.isCreative()) return;
+	//Gives items directly to player
+	public static void dropBlock(Level world, Player player, BlockPos pos) {
+		if (player.isCreative()) return;
 
-        IBlockState blockState = world.getBlockState(pos);
-        Block block = blockState.getBlock();
+		BlockState blockState = world.getBlockState(pos);
+		Block block = blockState.getBlock();
 
-        block.harvestBlock(world, player, pos, blockState, world.getTileEntity(pos), player.getHeldItemMainhand());
+		block.playerDestroy(world, player, pos, blockState, world.getBlockEntity(pos), player.getMainHandItem());
 
-        //TODO drop items in inventory instead of world
+		//TODO drop items in inventory instead of world
 
 //        List<ItemStack> drops = new ArrayList<>();
 //
@@ -162,174 +175,148 @@ public class SurvivalHelper {
 //        {
 //            ItemHandlerHelper.giveItemToPlayer(player, drop);
 //        }
-    }
+	}
 
-    /**
-     * Check if player can place a block.
-     * Turn randomizer bag into itemstack inside before.
-     * @param world
-     * @param player
-     * @param pos
-     * @param newBlockState the blockstate that is going to be placed
-     * @param itemStack the itemstack used for placing
-     * @param skipCollisionCheck skips collision check with entities
-     * @param sidePlacedOn
-     * @return Whether the player may place the block at pos with itemstack
-     */
-    public static boolean canPlace(World world, EntityPlayer player, BlockPos pos, IBlockState newBlockState, ItemStack itemStack, boolean skipCollisionCheck, EnumFacing sidePlacedOn) {
+	/**
+	 * Check if player can place a block.
+	 * Turn randomizer bag into itemstack inside before.
+	 *
+	 * @param world
+	 * @param player
+	 * @param pos
+	 * @param newBlockState      the blockstate that is going to be placed
+	 * @param itemStack          the itemstack used for placing
+	 * @param skipCollisionCheck skips collision check with entities
+	 * @param sidePlacedOn
+	 * @return Whether the player may place the block at pos with itemstack
+	 */
+	public static boolean canPlace(Level world, Player player, BlockPos pos, BlockState newBlockState, ItemStack itemStack, boolean skipCollisionCheck, Direction sidePlacedOn) {
 
-        //Check if itemstack is correct
-        if (!(itemStack.getItem() instanceof ItemBlock) || Block.getBlockFromItem(itemStack.getItem()) != newBlockState.getBlock()) {
+		//Check if itemstack is correct
+		if (!(itemStack.getItem() instanceof BlockItem) || Block.byItem(itemStack.getItem()) != newBlockState.getBlock()) {
 //            EffortlessBuilding.log(player, "Cannot (re)place block", true);
 //            EffortlessBuilding.log("SurvivalHelper#canPlace: itemstack " + itemStack.toString() + " does not match blockstate " + newBlockState.toString());
-            //Happens when breaking blocks, no need to notify in that case
-            return false;
-        }
+			//Happens when breaking blocks, no need to notify in that case
+			return false;
+		}
 
-        Block block = ((ItemBlock) itemStack.getItem()).getBlock();
+		Block block = ((BlockItem) itemStack.getItem()).getBlock();
 
-        return !itemStack.isEmpty() && canPlayerEdit(player, world, pos, itemStack) &&
-               mayPlace(world, block, newBlockState, pos, skipCollisionCheck, sidePlacedOn, player) &&
-               canReplace(world, player, pos);
-    }
+		return !itemStack.isEmpty() && canPlayerEdit(player, world, pos, itemStack) &&
+			mayPlace(world, block, newBlockState, pos, skipCollisionCheck, sidePlacedOn, player) &&
+			canReplace(world, player, pos);
+	}
 
-    //Can be harvested with hand? (or in creative)
-    private static boolean canReplace(World world, EntityPlayer player, BlockPos pos){
-        if (player.isCreative()) return true;
+	//Can be harvested with hand? (or in creative)
+	private static boolean canReplace(Level world, Player player, BlockPos pos) {
+		if (player.isCreative()) return true;
 
-        IBlockState state = world.getBlockState(pos);
-        state = state.getBlock().getActualState(state, world, pos);
+		BlockState state = world.getBlockState(pos);
 
-        switch (BuildConfig.survivalBalancers.quickReplaceMiningLevel) {
-            case -1: return state.getMaterial().isToolNotRequired();
-            case 0: return state.getBlock().getHarvestLevel(state) <= 0;
-            case 1: return state.getBlock().getHarvestLevel(state) <= 1;
-            case 2: return state.getBlock().getHarvestLevel(state) <= 2;
-            case 3: return state.getBlock().getHarvestLevel(state) <= 3;
-        }
+		int miningLevel = BuildConfig.survivalBalancers.quickReplaceMiningLevel.get();
+		switch (miningLevel) {
+			case -1:
+				return !state.requiresCorrectToolForDrops();
+			case 0:
+				return !state.is(BlockTags.NEEDS_STONE_TOOL) &&
+					   !state.is(BlockTags.NEEDS_IRON_TOOL) &&
+					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL);
+			case 1:
+				return !state.is(BlockTags.NEEDS_IRON_TOOL) &&
+					   !state.is(BlockTags.NEEDS_DIAMOND_TOOL);
+			case 2:
+				return !state.is(BlockTags.NEEDS_DIAMOND_TOOL);
+			case 3:
+			case 4:
+				return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    //From EntityPlayer#canPlayerEdit
-    private static boolean canPlayerEdit(EntityPlayer player, World world, BlockPos pos, ItemStack stack)
-    {
-        if (player.capabilities.allowEdit)
-        {
-            //True in creative and survival mode
-            return true;
-        }
-        else
-        {
-            //Adventure mode
-            Block block = world.getBlockState(pos).getBlock();
-            return stack.canPlaceOn(block) || stack.canEditBlocks();
-        }
-    }
+	//From Player#mayUseItemAt
+	private static boolean canPlayerEdit(Player player, Level world, BlockPos pos, ItemStack stack) {
+		if (!world.mayInteract(player, pos)) return false;
 
-    //From World#mayPlace
-    private static boolean mayPlace(World world, Block blockIn, IBlockState newBlockState, BlockPos pos, boolean skipCollisionCheck, EnumFacing sidePlacedOn, @Nullable Entity placer)
-    {
-        IBlockState iblockstate1 = world.getBlockState(pos);
-        AxisAlignedBB axisalignedbb = skipCollisionCheck ? Block.NULL_AABB : blockIn.getDefaultState().getCollisionBoundingBox(world, pos);
+		if (player.getAbilities().mayBuild) {
+			//True in creative and survival mode
+			return true;
+		} else {
+			//Adventure mode
+			BlockInWorld blockinworld = new BlockInWorld(world, pos, false);
+			return stack.hasAdventureModePlaceTagForBlock(world.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), blockinworld);
+		}
+	}
 
-        if (axisalignedbb != Block.NULL_AABB && !world.checkNoEntityCollision(axisalignedbb.offset(pos)))
-        {
-            return false;
-        }
+	//From World#mayPlace
+	private static boolean mayPlace(Level world, Block blockIn, BlockState newBlockState, BlockPos pos, boolean skipCollisionCheck, Direction sidePlacedOn, @Nullable Entity placer) {
+		BlockState iblockstate1 = world.getBlockState(pos);
+		VoxelShape voxelShape = skipCollisionCheck ? null : blockIn.defaultBlockState().getCollisionShape(world, pos);
 
-        //Check if double slab
-        if (placer != null && doesBecomeDoubleSlab(((EntityPlayer) placer), pos, sidePlacedOn)) {
-            return true;
-        }
+		if (voxelShape != null && !world.isUnobstructed(placer, voxelShape)) {
+			return false;
+		}
 
-        //Check if same block
-        //Necessary otherwise extra items will be dropped
-        if (iblockstate1 == newBlockState) {
-            return false;
-        }
+		//Check if double slab
+		if (placer != null && doesBecomeDoubleSlab(((Player) placer), pos, sidePlacedOn)) {
+			return true;
+		}
 
-        if (iblockstate1.getMaterial() == Material.CIRCUITS && blockIn == Blocks.ANVIL)
-        {
-            return true;
-        }
+		//Check if same block
+		//Necessary otherwise extra items will be dropped
+		if (iblockstate1 == newBlockState) {
+			return false;
+		}
 
-        //Check quickreplace
-        if (placer instanceof EntityPlayer && ModifierSettingsManager.getModifierSettings(((EntityPlayer) placer)).doQuickReplace()) {
-            return true;
-        }
+		//TODO 1.14 check what Material.CIRCUITS has become
+		if (iblockstate1.getMaterial() == Material.BUILDABLE_GLASS && blockIn == Blocks.ANVIL) {
+			return true;
+		}
 
-        return iblockstate1.getBlock().isReplaceable(world, pos) && blockIn.canPlaceBlockOnSide(world, pos, sidePlacedOn);
-    }
+		//Check quickreplace
+		if (placer instanceof Player && ModifierSettingsManager.getModifierSettings(((Player) placer)).doQuickReplace()) {
+			return true;
+		}
+
+		//TODO 1.13 replaceable
+		return iblockstate1.getMaterial().isReplaceable() /*&& canPlaceBlockOnSide(world, pos, sidePlacedOn)*/;
+	}
 
 
+	//Can break using held tool? (or in creative)
+	public static boolean canBreak(Level world, Player player, BlockPos pos) {
+		BlockState blockState = world.getBlockState(pos);
+		if (!world.getFluidState(pos).isEmpty()) return false;
 
-    //Can break using held tool? (or in creative)
-    public static boolean canBreak(World world, EntityPlayer player, BlockPos pos) {
-        IBlockState blockState = world.getBlockState(pos);
-        if (blockState.getBlock() instanceof BlockLiquid) return false;
+		if (player.isCreative()) return true;
 
-        if (player.isCreative()) return true;
+		return ForgeEventFactory.doPlayerHarvestCheck(player, blockState, true);
+	}
 
-        return canHarvestBlock(blockState.getBlock(), player, world, pos);
-    }
+	public static boolean doesBecomeDoubleSlab(Player player, BlockPos pos, Direction facing) {
+		BlockState placedBlockState = player.level.getBlockState(pos);
 
-    //From ForgeHooks#canHarvestBlock
-    public static boolean canHarvestBlock(@Nonnull Block block, @Nonnull EntityPlayer player, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
-    {
-        IBlockState state = world.getBlockState(pos);
-        state = state.getBlock().getActualState(state, world, pos);
+		ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
+		if (CompatHelper.isItemBlockProxy(itemstack))
+			itemstack = CompatHelper.getItemBlockFromStack(itemstack);
 
-        //Dont break bedrock
-        if (state.getBlockHardness((World) world, pos) < 0) {
-            return false;
-        }
+		if (itemstack.isEmpty() || !(itemstack.getItem() instanceof BlockItem) || !(((BlockItem) itemstack.getItem()).getBlock() instanceof SlabBlock))
+			return false;
+		SlabBlock heldSlab = (SlabBlock) ((BlockItem) itemstack.getItem()).getBlock();
 
-        if (state.getMaterial().isToolNotRequired())
-        {
-            return true;
-        }
-
-        ItemStack stack = player.getHeldItemMainhand();
-        String tool = block.getHarvestTool(state);
-        if (stack.isEmpty() || tool == null)
-        {
-            return player.canHarvestBlock(state);
-        }
-
-        if (stack.getItemDamage() >= stack.getMaxDamage()) return false;
-
-        int toolLevel = stack.getItem().getHarvestLevel(stack, tool, player, state);
-        if (toolLevel < 0)
-        {
-            return player.canHarvestBlock(state);
-        }
-
-        return toolLevel >= block.getHarvestLevel(state);
-    }
-
-    public static boolean doesBecomeDoubleSlab(EntityPlayer player, BlockPos pos, EnumFacing facing) {
-        IBlockState placedBlockState = player.world.getBlockState(pos);
-
-        ItemStack itemstack = player.getHeldItem(EnumHand.MAIN_HAND);
-        if (CompatHelper.isItemBlockProxy(itemstack))
-            itemstack = CompatHelper.getItemBlockFromStack(itemstack);
-
-        if (itemstack.isEmpty() || !(itemstack.getItem() instanceof ItemSlab)) return false;
-        BlockSlab heldSlab = (BlockSlab) ((ItemSlab) itemstack.getItem()).getBlock();
-
-        if (placedBlockState.getBlock() == heldSlab) {
-            IProperty<?> variantProperty = heldSlab.getVariantProperty();
-            Comparable<?> placedVariant = placedBlockState.getValue(variantProperty);
-            BlockSlab.EnumBlockHalf placedHalf = placedBlockState.getValue(BlockSlab.HALF);
-
-            Comparable<?> heldVariant = heldSlab.getTypeForItem(itemstack);
-
-            if ((facing == EnumFacing.UP && placedHalf == BlockSlab.EnumBlockHalf.BOTTOM || facing == EnumFacing.DOWN && placedHalf == BlockSlab.EnumBlockHalf.TOP) && placedVariant == heldVariant)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+		if (placedBlockState.getBlock() == heldSlab) {
+			//TODO 1.13
+//            IProperty<?> variantProperty = heldSlab.getVariantProperty();
+//            Comparable<?> placedVariant = placedBlockState.getValue(variantProperty);
+//            BlockSlab.EnumBlockHalf placedHalf = placedBlockState.getValue(BlockSlab.HALF);
+//
+//            Comparable<?> heldVariant = heldSlab.getTypeForItem(itemstack);
+//
+//            if ((facing == EnumFacing.UP && placedHalf == BlockSlab.EnumBlockHalf.BOTTOM || facing == EnumFacing.DOWN && placedHalf == BlockSlab.EnumBlockHalf.TOP) && placedVariant == heldVariant)
+//            {
+//                return true;
+//            }
+		}
+		return false;
+	}
 }
