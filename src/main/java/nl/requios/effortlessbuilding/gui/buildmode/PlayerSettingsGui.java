@@ -187,7 +187,7 @@ public class PlayerSettingsGui extends Screen {
 			return right - 6;
 		}
 
-		//From AbstractList, disabled parts
+		//From AbstractSelectionList, disabled parts
 		@Override
 		public void render(PoseStack ms, int p_render_1_, int p_render_2_, float p_render_3_) {
 			this.renderBackground(ms);
@@ -212,7 +212,7 @@ public class PlayerSettingsGui extends Screen {
 				this.renderHeader(ms, k, l, tessellator);
 			}
 
-			this.renderList(ms, k, l, p_render_1_, p_render_2_, p_render_3_);
+			this.renderList(ms, p_render_1_, p_render_2_, p_render_3_);
 			RenderSystem.disableDepthTest();
 //            this.renderHoleBackground(0, this.y0, 255, 255);
 //            this.renderHoleBackground(this.y1, this.height, 255, 255);

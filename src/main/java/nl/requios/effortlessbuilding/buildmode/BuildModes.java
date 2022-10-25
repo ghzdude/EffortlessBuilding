@@ -53,7 +53,6 @@ public class BuildModes {
 			startPos = message.getBlockPos();
 
 			//Offset in direction of sidehit if not quickreplace and not replaceable
-			//TODO 1.13 replaceable
 			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
 			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, message.getSideHit());
 			if (!modifierSettings.doQuickReplace() && !replaceable && !becomesDoubleSlab) {
@@ -99,7 +98,6 @@ public class BuildModes {
 		//Only works when finishing a buildmode is equal to placing some blocks
 		//No intermediate blocks allowed
 		currentlyBreaking.remove(player);
-
 	}
 
 	//Use a network message to break blocks in the distance using clientside mouse input
