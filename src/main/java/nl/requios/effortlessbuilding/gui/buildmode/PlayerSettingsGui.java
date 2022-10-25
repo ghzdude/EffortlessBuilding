@@ -191,7 +191,7 @@ public class PlayerSettingsGui extends Screen {
 			return right - 6;
 		}
 
-		//From AbstractList, disabled parts
+		//From AbstractSelectionList, disabled parts
 		@Override
 		public void render(PoseStack ms, int p_render_1_, int p_render_2_, float p_render_3_) {
 			this.renderBackground(ms);

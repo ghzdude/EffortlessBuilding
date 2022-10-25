@@ -76,7 +76,7 @@ public class BlockPreviewRenderer {
 			lookingAt = Minecraft.getInstance().hitResult;
 
 		ItemStack mainhand = player.getMainHandItem();
-		boolean toolInHand = !(!mainhand.isEmpty() && CompatHelper.isItemBlockProxy(mainhand));
+		boolean noBlockInHand = !(!mainhand.isEmpty() && CompatHelper.isItemBlockProxy(mainhand));
 
 		BlockPos startPos = null;
 		Direction sideHit = null;
@@ -91,12 +91,12 @@ public class BlockPreviewRenderer {
 			//TODO 1.13 replaceable
 			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
 			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, blockLookingAt.getDirection());
-			if (!modifierSettings.doQuickReplace() && !toolInHand && !replaceable && !becomesDoubleSlab) {
+			if (!modifierSettings.doQuickReplace() && !noBlockInHand && !replaceable && !becomesDoubleSlab) {
 				startPos = startPos.relative(blockLookingAt.getDirection());
 			}
 
 			//Get under tall grass and other replaceable blocks
-			if (modifierSettings.doQuickReplace() && !toolInHand && replaceable) {
+			if (modifierSettings.doQuickReplace() && !noBlockInHand && replaceable) {
 				startPos = startPos.below();
 			}
 
@@ -236,12 +236,12 @@ public class BlockPreviewRenderer {
 
 			}
 
-			VertexConsumer buffer = RenderHandler.beginLines(renderTypeBuffer);
-			//Draw outlines if tool in hand
+			//Draw outlines if no block in hand
 			//Find proper raytrace: either normal range or increased range depending on canBreakFar
+			VertexConsumer buffer = RenderHandler.beginLines(renderTypeBuffer);
 			HitResult objectMouseOver = Minecraft.getInstance().hitResult;
 			HitResult breakingRaytrace = ReachHelper.canBreakFar(player) ? lookingAt : objectMouseOver;
-			if (toolInHand && breakingRaytrace != null && breakingRaytrace.getType() == HitResult.Type.BLOCK) {
+			if (player.isCreative() && noBlockInHand && breakingRaytrace != null && breakingRaytrace.getType() == HitResult.Type.BLOCK) {
 				BlockHitResult blockBreakingRaytrace = (BlockHitResult) breakingRaytrace;
 				List<BlockPos> breakCoordinates = BuildModifiers.findCoordinates(player, blockBreakingRaytrace.getBlockPos());
 

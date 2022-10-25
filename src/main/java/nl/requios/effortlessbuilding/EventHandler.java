@@ -1,5 +1,8 @@
 package nl.requios.effortlessbuilding;
 
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +22,7 @@ import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
+import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
 import nl.requios.effortlessbuilding.network.ClearUndoMessage;
@@ -51,7 +55,15 @@ public class EventHandler {
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
 		if (buildMode != BuildModes.BuildModeEnum.NORMAL) {
-			event.setCanceled(true);
+
+			//Only cancel if itemblock in hand
+			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
+			ItemStack currentItemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+			if (currentItemStack.getItem() instanceof BlockItem ||
+				(CompatHelper.isItemBlockProxy(currentItemStack) && !player.isShiftKeyDown())) {
+				event.setCanceled(true);
+			}
+
 		} else if (modifierSettings.doQuickReplace()) {
 			//Cancel event and send message if QuickReplace
 			event.setCanceled(true);

@@ -135,7 +135,7 @@ public class ClientProxy implements IProxy {
 		if (player == null) return;
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 
-		if (Minecraft.getInstance().screen != null ||
+		if (mc.screen != null ||
 			buildMode == BuildModes.BuildModeEnum.NORMAL ||
 			RadialMenu.instance.isVisible()) {
 			return;
