@@ -7,13 +7,13 @@
     ],
     "key": {
         "O": {
-            "item": "minecraft:nether_star"
+            "item": "minecraft:end_crystal"
         },
 		"#": {
-            "item": "minecraft:diamond"
+            "item": "minecraft:chorus_fruit"
         },
 		"x": {
-			"item": "minecraft:amethyst_shard"
+			"item": "minecraft:ghast_tear"
 		}
     },
     "result": {

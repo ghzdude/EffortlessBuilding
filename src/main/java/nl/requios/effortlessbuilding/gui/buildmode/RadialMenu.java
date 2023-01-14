@@ -46,6 +46,8 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 @MethodsReturnNonnullByDefault
 public class RadialMenu extends Screen {
 
+	public static final RadialMenu instance = new RadialMenu();
+
 	private final Vector4f radialButtonColor = new Vector4f(0f, 0f, 0f, .5f);
 	private final Vector4f sideButtonColor = new Vector4f(.5f, .5f, .5f, .5f);
 	private final Vector4f highlightColor = new Vector4f(.6f, .8f, 1f, .6f);
@@ -57,15 +59,14 @@ public class RadialMenu extends Screen {
 	private final int descriptionTextColor = 0xdd888888;
 	private final int optionTextColor = 0xeeeeeeff;
 
-	private final double ringInnerEdge = 40;
-	private final double ringOuterEdge = 80;
-	private final double categoryLineOuterEdge = 42;
-	private final double textDistance = 90;
-	private final double buttonDistance = 120;
+	private final double ringInnerEdge = 30;
+	private final double ringOuterEdge = 65;
+	private final double categoryLineWidth = 1;
+	private final double textDistance = 75;
+	private final double buttonDistance = 105;
 	private final float fadeSpeed = 0.3f;
 	private final int descriptionHeight = 100;
 
-	public static final RadialMenu instance = new RadialMenu();
 	public BuildModeEnum switchTo = null;
 	public ActionEnum doAction = null;
 	public boolean performedActionUsingMouse;
@@ -165,7 +166,8 @@ public class RadialMenu extends Screen {
 		doAction = null;
 
 		//Draw buildmode backgrounds
-		drawRadialButtonBackgrounds(currentBuildMode, buffer, middleX, middleY, mouseXCenter, mouseYCenter, mouseRadians, ringInnerEdge, ringOuterEdge, quarterCircle, modes);
+		drawRadialButtonBackgrounds(currentBuildMode, buffer, middleX, middleY, mouseXCenter, mouseYCenter, mouseRadians,
+				quarterCircle, modes);
 
 		//Draw action backgrounds
 		drawSideButtonBackgrounds(buffer, middleX, middleY, mouseXCenter, mouseYCenter, buttons);
@@ -174,14 +176,15 @@ public class RadialMenu extends Screen {
 		RenderSystem.disableBlend();
 		RenderSystem.enableTexture();
 
-		drawIcons(ms, tessellator, buffer, middleX, middleY, ringInnerEdge, ringOuterEdge, modes, buttons);
+		drawIcons(ms, middleX, middleY, modes, buttons);
 
-		drawTexts(ms, currentBuildMode, middleX, middleY, textDistance, buttonDistance, modes, buttons, options);
+		drawTexts(ms, currentBuildMode, middleX, middleY, modes, buttons, options);
 
 		ms.popPose();
 	}
 
-	private void drawRadialButtonBackgrounds(BuildModeEnum currentBuildMode, BufferBuilder buffer, double middleX, double middleY, double mouseXCenter, double mouseYCenter, double mouseRadians, double ringInnerEdge, double ringOuterEdge, double quarterCircle, ArrayList<MenuRegion> modes) {
+	private void drawRadialButtonBackgrounds(BuildModeEnum currentBuildMode, BufferBuilder buffer, double middleX, double middleY,
+											 double mouseXCenter, double mouseYCenter, double mouseRadians, double quarterCircle, ArrayList<MenuRegion> modes) {
 		if (!modes.isEmpty()) {
 			final int totalModes = Math.max(3, modes.size());
 			final double fragment = Math.PI * 0.005; //gap between buttons in radians at inner edge
@@ -230,6 +233,7 @@ public class RadialMenu extends Screen {
 
 				//Category line
 				color = menuRegion.mode.category.color;
+				final double categoryLineOuterEdge = ringInnerEdge + categoryLineWidth;
 
 				final double x1m3 = Math.cos(beginRadians + fragment) * categoryLineOuterEdge;
 				final double x2m3 = Math.cos(endRadians - fragment) * categoryLineOuterEdge;
@@ -274,7 +278,8 @@ public class RadialMenu extends Screen {
 		}
 	}
 
-	private void drawIcons(PoseStack ms, Tesselator tessellator, BufferBuilder buffer, double middleX, double middleY, double ringInnerEdge, double ringOuterEdge, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
+	private void drawIcons(PoseStack ms, double middleX, double middleY,
+						   ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
 		ms.pushPose();
 		RenderSystem.enableTexture();
 		RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
@@ -303,7 +308,7 @@ public class RadialMenu extends Screen {
 		ms.popPose();
 	}
 
-	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, double textDistance, double buttonDistance, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options) {
+	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options) {
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
 
 		//Draw option strings
@@ -474,7 +479,8 @@ public class RadialMenu extends Screen {
 	public static void playRadialMenuSound() {
 		final float volume = 0.1f;
 		if (volume >= 0.0001f) {
-			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, volume, 1.0f, RandomSource.create(), Minecraft.getInstance().player.blockPosition());
+			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, volume,
+					1.0f, RandomSource.create(), Minecraft.getInstance().player.blockPosition());
 			Minecraft.getInstance().getSoundManager().play(sound);
 		}
 	}
