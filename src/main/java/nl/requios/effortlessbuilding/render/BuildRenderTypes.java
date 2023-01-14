@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.RenderState;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -14,22 +15,7 @@ import org.lwjgl.opengl.*;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
 
-public class BuildRenderTypes {
-	public static final RenderState.TransparencyState TRANSLUCENT_TRANSPARENCY;
-	public static final RenderState.TransparencyState NO_TRANSPARENCY;
-
-	public static final RenderState.DiffuseLightingState DIFFUSE_LIGHTING_ENABLED;
-	public static final RenderState.DiffuseLightingState DIFFUSE_LIGHTING_DISABLED;
-
-	public static final RenderState.LayerState PROJECTION_LAYERING;
-
-	public static final RenderState.CullState CULL_DISABLED;
-
-	public static final RenderState.AlphaState DEFAULT_ALPHA;
-
-	public static final RenderState.WriteMaskState WRITE_TO_DEPTH_AND_COLOR;
-	public static final RenderState.WriteMaskState COLOR_WRITE;
-
+public class BuildRenderTypes extends RenderType {
 	public static final RenderType LINES;
 	public static final RenderType PLANES;
 
@@ -37,57 +23,42 @@ public class BuildRenderTypes {
 	private static final int secondaryTextureUnit = 2;
 
 	static {
-		TRANSLUCENT_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "TRANSLUCENT_TRANSPARENCY");
-		NO_TRANSPARENCY = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "NO_TRANSPARENCY");
-
-		DIFFUSE_LIGHTING_ENABLED = new RenderState.DiffuseLightingState(true);
-		DIFFUSE_LIGHTING_DISABLED = new RenderState.DiffuseLightingState(false);
-
-		PROJECTION_LAYERING = ObfuscationReflectionHelper.getPrivateValue(RenderState.class, null, "VIEW_OFFSET_Z_LAYERING");
-
-		CULL_DISABLED = new RenderState.CullState(false);
-
-		DEFAULT_ALPHA = new RenderState.AlphaState(0.003921569F);
-
-		final boolean ENABLE_DEPTH_WRITING = true;
-		final boolean ENABLE_COLOUR_COMPONENTS_WRITING = true;
-		WRITE_TO_DEPTH_AND_COLOR = new RenderState.WriteMaskState(ENABLE_COLOUR_COMPONENTS_WRITING, ENABLE_DEPTH_WRITING);
-		COLOR_WRITE = new RenderState.WriteMaskState(true, false);
-
+		final LineState LINE = new LineState(OptionalDouble.of(2.0));
 		final int INITIAL_BUFFER_SIZE = 128;
 		RenderType.State renderState;
 
 		//LINES
-//        RenderSystem.pushLightingAttributes();
-//        RenderSystem.pushTextureAttributes();
-//        RenderSystem.disableCull();
-//        RenderSystem.disableLighting();
-//        RenderSystem.disableTexture();
-//
-//        RenderSystem.enableBlend();
-//        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-//
-//        RenderSystem.lineWidth(2);
-		renderState = RenderType.State.builder()
-			.setLineState(new RenderState.LineState(OptionalDouble.of(2)))
-			.setLayeringState(PROJECTION_LAYERING)
-			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-			.setWriteMaskState(WRITE_TO_DEPTH_AND_COLOR)
-			.setCullState(CULL_DISABLED)
-			.createCompositeState(false);
+		renderState = State.builder()
+				.setLineState(LINE)
+				.setLayeringState(VIEW_OFFSET_Z_LAYERING)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setTextureState(NO_TEXTURE)
+				.setDepthTestState(NO_DEPTH_TEST)
+				.setLightmapState(NO_LIGHTMAP)
+				.setWriteMaskState(COLOR_DEPTH_WRITE)
+				.setCullState(NO_CULL)
+				.createCompositeState(false);
 		LINES = RenderType.create("eb_lines",
-			DefaultVertexFormats.POSITION_COLOR, GL11.GL_LINES, INITIAL_BUFFER_SIZE, renderState);
+				DefaultVertexFormats.POSITION_COLOR, GL11.GL_LINES, INITIAL_BUFFER_SIZE, false, false, renderState);
 
-		renderState = RenderType.State.builder()
-			.setLineState(new RenderState.LineState(OptionalDouble.of(2)))
-			.setLayeringState(PROJECTION_LAYERING)
-			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-			.setWriteMaskState(COLOR_WRITE)
-			.setCullState(CULL_DISABLED)
-			.createCompositeState(false);
+		//PLANES
+		renderState = State.builder()
+				.setLineState(LINE)
+				.setLayeringState(VIEW_OFFSET_Z_LAYERING)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setTextureState(NO_TEXTURE)
+				.setDepthTestState(NO_DEPTH_TEST)
+				.setLightmapState(NO_LIGHTMAP)
+				.setWriteMaskState(COLOR_WRITE)
+				.setCullState(NO_CULL)
+				.createCompositeState(false);
 		PLANES = RenderType.create("eb_planes",
-			DefaultVertexFormats.POSITION_COLOR, GL11.GL_TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, renderState);
+				DefaultVertexFormats.POSITION_COLOR, GL11.GL_TRIANGLE_STRIP, INITIAL_BUFFER_SIZE, false, false, renderState);
+	}
 
+	// Dummy constructor needed to make java happy
+	public BuildRenderTypes(String p_i225992_1_, VertexFormat p_i225992_2_, int p_i225992_3_, int p_i225992_4_, boolean p_i225992_5_, boolean p_i225992_6_, Runnable p_i225992_7_, Runnable p_i225992_8_) {
+		super(p_i225992_1_, p_i225992_2_, p_i225992_3_, p_i225992_4_, p_i225992_5_, p_i225992_6_, p_i225992_7_, p_i225992_8_);
 	}
 
 	public static RenderType getBlockPreviewRenderType(float dissolve, BlockPos blockPos, BlockPos firstPos,
@@ -107,7 +78,7 @@ public class BuildRenderTypes {
 		//highjacking texturing state (which does nothing by default) to do my own things
 
 		String stateName = "eb_texturing_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
-		RenderState.TexturingState MY_TEXTURING = new RenderState.TexturingState(stateName, () -> {
+		TexturingState MY_TEXTURING = new TexturingState(stateName, () -> {
 //            RenderSystem.pushLightingAttributes();
 //            RenderSystem.pushTextureAttributes();
 
@@ -116,14 +87,14 @@ public class BuildRenderTypes {
 		}, ShaderHandler::releaseShader);
 
 		RenderType.State renderState = RenderType.State.builder()
-			.setTextureState(new RenderState.TextureState(ShaderHandler.shaderMaskTextureLocation, false, false))
+			.setTextureState(new TextureState(ShaderHandler.shaderMaskTextureLocation, false, false))
 			.setTexturingState(MY_TEXTURING)
 			.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-			.setDiffuseLightingState(DIFFUSE_LIGHTING_DISABLED)
+			.setDiffuseLightingState(NO_DIFFUSE_LIGHTING)
 			.setAlphaState(DEFAULT_ALPHA)
-			.setCullState(new RenderState.CullState(true))
-			.setLightmapState(new RenderState.LightmapState(false))
-			.setOverlayState(new RenderState.OverlayState(false))
+			.setCullState(new CullState(true))
+			.setLightmapState(new LightmapState(false))
+			.setOverlayState(new OverlayState(false))
 			.createCompositeState(true);
 		//Unique name for every combination, otherwise it will reuse the previous one
 		String name = "eb_block_previews_" + dissolve + "_" + blockPos + "_" + firstPos + "_" + secondPos + "_" + red;
@@ -198,43 +169,4 @@ public class BuildRenderTypes {
 			this.red = red;
 		}
 	}
-
-//    public static class MyTexturingState extends RenderState.TexturingState {
-//
-//        public float dissolve;
-//        public Vector3d blockPos;
-//        public Vector3d firstPos;
-//        public Vector3d secondPos;
-//        public boolean highlight;
-//        public boolean red;
-//
-//        public MyTexturingState(String p_i225989_1_, float dissolve, Vector3d blockPos, Vector3d firstPos,
-//                                Vector3d secondPos, boolean highlight, boolean red, Runnable p_i225989_2_, Runnable p_i225989_3_) {
-//            super(p_i225989_1_, p_i225989_2_, p_i225989_3_);
-//            this.dissolve = dissolve;
-//            this.blockPos = blockPos;
-//            this.firstPos = firstPos;
-//            this.secondPos = secondPos;
-//            this.highlight = highlight;
-//            this.red = red;
-//        }
-//
-//        @Override
-//        public boolean equals(Object p_equals_1_) {
-//            if (this == p_equals_1_) {
-//                return true;
-//            } else if (p_equals_1_ != null && this.getClass() == p_equals_1_.getClass()) {
-//                MyTexturingState other = (MyTexturingState)p_equals_1_;
-//                return this.dissolve == other.dissolve && this.blockPos == other.blockPos && this.firstPos == other.firstPos
-//                       && this.secondPos == other.secondPos && this.highlight == other.highlight && this.red == other.red;
-//            } else {
-//                return false;
-//            }
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//
-//        }
-//    }
 }

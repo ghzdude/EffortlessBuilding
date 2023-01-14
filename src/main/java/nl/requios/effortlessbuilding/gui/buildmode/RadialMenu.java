@@ -12,10 +12,12 @@ import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.vector.Vector4f;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
@@ -40,7 +42,7 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 
 /**
  * Initially from Chisels and Bits by AlgorithmX2
- * https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java
+ * <a href="https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java">Link</a>
  */
 
 @ParametersAreNonnullByDefault
@@ -48,9 +50,30 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 public class RadialMenu extends Screen {
 
 	public static final RadialMenu instance = new RadialMenu();
+
+	private final Vector4f radialButtonColor = new Vector4f(0f, 0f, 0f, .5f);
+	private final Vector4f sideButtonColor = new Vector4f(.5f, .5f, .5f, .5f);
+	private final Vector4f highlightColor = new Vector4f(.6f, .8f, 1f, .6f);
+	private final Vector4f selectedColor = new Vector4f(0f, .5f, 1f, .5f);
+	private final Vector4f highlightSelectedColor = new Vector4f(0.2f, .7f, 1f, .7f);
+
+	private final int whiteTextColor = 0xffffffff;
+	private final int watermarkTextColor = 0x88888888;
+	private final int descriptionTextColor = 0xdd888888;
+	private final int optionTextColor = 0xeeeeeeff;
+
+	private final double ringInnerEdge = 30;
+	private final double ringOuterEdge = 65;
+	private final double categoryLineWidth = 1;
+	private final double textDistance = 75;
+	private final double buttonDistance = 105;
+	private final float fadeSpeed = 0.3f;
+	private final int descriptionHeight = 100;
+
 	public BuildModeEnum switchTo = null;
 	public ActionEnum doAction = null;
 	public boolean performedActionUsingMouse;
+
 	private float visibility;
 
 	public RadialMenu() {
@@ -84,7 +107,7 @@ public class RadialMenu extends Screen {
 		RenderSystem.pushMatrix();
 		RenderSystem.translatef(0.0F, 0.0F, 200.0F);
 
-		visibility += 0.3f * partialTicks;
+		visibility += fadeSpeed * partialTicks;
 		if (visibility > 1f) visibility = 1f;
 
 		final int startColor = (int) (visibility * 98) << 24;
@@ -115,10 +138,6 @@ public class RadialMenu extends Screen {
 		final double mouseYCenter = mouseYY - middleY;
 		double mouseRadians = Math.atan2(mouseYCenter, mouseXCenter);
 
-		final double ringInnerEdge = 30;
-		final double ringOuterEdge = 65;
-		final double textDistance = 75;
-		final double buttonDistance = 105;
 		final double quarterCircle = Math.PI / 2.0;
 
 		if (mouseRadians < -quarterCircle) {
@@ -153,17 +172,35 @@ public class RadialMenu extends Screen {
 		doAction = null;
 
 		//Draw buildmode backgrounds
+		drawRadialButtonBackgrounds(currentBuildMode, buffer, middleX, middleY, mouseXCenter, mouseYCenter, mouseRadians,
+				quarterCircle, modes);
+
+		//Draw action backgrounds
+		drawSideButtonBackgrounds(buffer, middleX, middleY, mouseXCenter, mouseYCenter, buttons);
+
+		tessellator.end();
+
+		drawIcons(buffer, middleX, middleY, mc, modes, buttons);
+
+		tessellator.end();
+
+		drawTexts(ms, currentBuildMode, middleX, middleY, modes, buttons, options);
+
+		RenderSystem.popMatrix();
+	}
+
+	private void drawRadialButtonBackgrounds(BuildModeEnum currentBuildMode, BufferBuilder buffer, double middleX, double middleY,
+											 double mouseXCenter, double mouseYCenter, double mouseRadians, double quarterCircle, ArrayList<MenuRegion> modes) {
 		if (!modes.isEmpty()) {
 			final int totalModes = Math.max(3, modes.size());
-			int currentMode = 0;
 			final double fragment = Math.PI * 0.005;
 			final double fragment2 = Math.PI * 0.0025;
 			final double perObject = 2.0 * Math.PI / totalModes;
 
 			for (int i = 0; i < modes.size(); i++) {
 				MenuRegion menuRegion = modes.get(i);
-				final double beginRadians = currentMode * perObject - quarterCircle;
-				final double endRadians = (currentMode + 1) * perObject - quarterCircle;
+				final double beginRadians = i * perObject - quarterCircle;
+				final double endRadians = (i + 1) * perObject - quarterCircle;
 
 				menuRegion.x1 = Math.cos(beginRadians);
 				menuRegion.x2 = Math.cos(endRadians);
@@ -180,81 +217,74 @@ public class RadialMenu extends Screen {
 				final double y1m2 = Math.sin(beginRadians + fragment2) * ringOuterEdge;
 				final double y2m2 = Math.sin(endRadians - fragment2) * ringOuterEdge;
 
-				float r = 0.0f;
-				float g = 0.0f;
-				float b = 0.0f;
-				float a = 0.5f;
-
-				//check if current mode
-				int buildMode = currentBuildMode.ordinal();
-				if (buildMode == i) {
-					r = 0f;
-					g = 0.5f;
-					b = 1f;
-					a = 0.5f;
-					//menuRegion.highlighted = true; //draw text
-				}
-
-				//check if mouse is over this region
+				final boolean isSelected = currentBuildMode.ordinal() == i;
 				final boolean isMouseInQuad = inTriangle(x1m1, y1m1, x2m2, y2m2, x2m1, y2m1, mouseXCenter, mouseYCenter)
-					|| inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mouseXCenter, mouseYCenter);
+											  || inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mouseXCenter, mouseYCenter);
+				final boolean isHighlighted = beginRadians <= mouseRadians && mouseRadians <= endRadians && isMouseInQuad;
 
-				if (beginRadians <= mouseRadians && mouseRadians <= endRadians && isMouseInQuad) {
-					r = 0.6f;
-					g = 0.8f;
-					b = 1f;
-					a = 0.6f;
+				Vector4f color = radialButtonColor;
+				if (isSelected) color = selectedColor;
+				if (isHighlighted) color = highlightColor;
+				if (isSelected && isHighlighted) color = highlightSelectedColor;
+
+				if (isHighlighted) {
 					menuRegion.highlighted = true;
 					switchTo = menuRegion.mode;
 				}
 
-				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(r, g, b, a).endVertex();
-				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(r, g, b, a).endVertex();
-				buffer.vertex(middleX + x2m2, middleY + y2m2, getBlitOffset()).color(r, g, b, a).endVertex();
-				buffer.vertex(middleX + x1m2, middleY + y1m2, getBlitOffset()).color(r, g, b, a).endVertex();
+				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x2m2, middleY + y2m2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x1m2, middleY + y1m2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
 
-				currentMode++;
+				//Category line
+				color = menuRegion.mode.category.color;
+				final double categoryLineOuterEdge = ringInnerEdge + categoryLineWidth;
+
+				final double x1m3 = Math.cos(beginRadians + fragment) * categoryLineOuterEdge;
+				final double y1m3 = Math.sin(beginRadians + fragment) * categoryLineOuterEdge;
+				final double x2m3 = Math.cos(endRadians - fragment) * categoryLineOuterEdge;
+				final double y2m3 = Math.sin(endRadians - fragment) * categoryLineOuterEdge;
+
+				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x2m3, middleY + y2m3, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x1m3, middleY + y1m3, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
 			}
 		}
+	}
 
-		//Draw action backgrounds
+	private void drawSideButtonBackgrounds(BufferBuilder buffer, double middleX, double middleY, double mouseXCenter, double mouseYCenter, ArrayList<MenuButton> buttons) {
 		for (final MenuButton btn : buttons) {
-			float r = 0.5f;
-			float g = 0.5f;
-			float b = 0.5f;
-			float a = 0.5f;
 
-			//highlight when active option
-			if (btn.action == getBuildSpeed() ||
-				btn.action == getFill() ||
-				btn.action == getCubeFill() ||
-				btn.action == getRaisedEdge() ||
-				btn.action == getLineThickness() ||
-				btn.action == getCircleStart()) {
-				r = 0.0f;
-				g = 0.5f;
-				b = 1f;
-				a = 0.6f;
-			}
+			final boolean isSelected =
+					btn.action == getBuildSpeed() ||
+					btn.action == getFill() ||
+					btn.action == getCubeFill() ||
+					btn.action == getRaisedEdge() ||
+					btn.action == getLineThickness() ||
+					btn.action == getCircleStart();
 
-			//highlight when mouse over
-			if (btn.x1 <= mouseXCenter && btn.x2 >= mouseXCenter && btn.y1 <= mouseYCenter && btn.y2 >= mouseYCenter) {
-				r = 0.6f;
-				g = 0.8f;
-				b = 1f;
-				a = 0.6f;
+			final boolean isHighlighted = btn.x1 <= mouseXCenter && btn.x2 >= mouseXCenter && btn.y1 <= mouseYCenter && btn.y2 >= mouseYCenter;
+
+			Vector4f color = sideButtonColor;
+			if (isSelected) color = selectedColor;
+			if (isHighlighted) color = highlightColor;
+			if (isSelected && isHighlighted) color = highlightSelectedColor;
+
+			if (isHighlighted) {
 				btn.highlighted = true;
 				doAction = btn.action;
 			}
 
-			buffer.vertex(middleX + btn.x1, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
-			buffer.vertex(middleX + btn.x1, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
-			buffer.vertex(middleX + btn.x2, middleY + btn.y2, getBlitOffset()).color(r, g, b, a).endVertex();
-			buffer.vertex(middleX + btn.x2, middleY + btn.y1, getBlitOffset()).color(r, g, b, a).endVertex();
+			buffer.vertex(middleX + btn.x1, middleY + btn.y1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+			buffer.vertex(middleX + btn.x1, middleY + btn.y2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+			buffer.vertex(middleX + btn.x2, middleY + btn.y2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+			buffer.vertex(middleX + btn.x2, middleY + btn.y1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
 		}
+	}
 
-		tessellator.end();
-
+	private void drawIcons(BufferBuilder buffer, double middleX, double middleY, Minecraft mc, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
 		RenderSystem.shadeModel(GL11.GL_FLAT);
 
 		RenderSystem.translatef(0f, 0f, 5f);
@@ -269,8 +299,8 @@ public class RadialMenu extends Screen {
 		//Draw buildmode icons
 		for (final MenuRegion menuRegion : modes) {
 
-			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.6 + 0.4 * ringInnerEdge);
-			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.6 + 0.4 * ringInnerEdge);
+			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
+			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 
 			final TextureAtlasSprite sprite = ModClientEventHandler.getBuildModeIcon(menuRegion.mode);
 
@@ -318,20 +348,19 @@ public class RadialMenu extends Screen {
 			buffer.vertex(middleX + btnx2, middleY + btny2, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v2)).color(f, f, f, a).endVertex();
 			buffer.vertex(middleX + btnx2, middleY + btny1, getBlitOffset()).uv(sprite.getU(u2), sprite.getV(v1)).color(f, f, f, a).endVertex();
 		}
+	}
 
-		tessellator.end();
-
-		//Draw strings
+	private void drawTexts(MatrixStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options) {
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
 
 		//Draw option strings
 		for (int i = 0; i < currentBuildMode.options.length; i++) {
 			OptionEnum option = options[i];
-			font.drawShadow(ms, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, 0xeeeeeeff);
+			font.drawShadow(ms, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, optionTextColor);
 		}
 
 		String credits = "Effortless Building";
-		font.drawShadow(ms, credits, width - font.width(credits) - 4, height - 10, 0x88888888);
+		font.drawShadow(ms, credits, width - font.width(credits) - 4, height - 10, watermarkTextColor);
 
 		//Draw buildmode text
 		for (final MenuRegion menuRegion : modes) {
@@ -342,7 +371,7 @@ public class RadialMenu extends Screen {
 
 				int fixed_x = (int) (x * textDistance);
 				final int fixed_y = (int) (y * textDistance) - font.lineHeight / 2;
-				final String text = I18n.get(menuRegion.mode.name);
+				String text = I18n.get(menuRegion.mode.getNameKey());
 
 				if (x <= -0.2) {
 					fixed_x -= font.width(text);
@@ -350,7 +379,11 @@ public class RadialMenu extends Screen {
 					fixed_x -= font.width(text) / 2;
 				}
 
-				font.drawShadow(ms, text, (int) middleX + fixed_x, (int) middleY + fixed_y, 0xffffffff);
+				font.drawShadow(ms, text, (int) middleX + fixed_x, (int) middleY + fixed_y, whiteTextColor);
+
+				//Draw description
+				text = I18n.get(menuRegion.mode.getDescriptionKey());
+				font.drawShadow(ms, text, (int) middleX - font.width(text) / 2f, (int) middleY + descriptionHeight, descriptionTextColor);
 			}
 		}
 
@@ -358,66 +391,71 @@ public class RadialMenu extends Screen {
 		for (final MenuButton button : buttons) {
 			if (button.highlighted) {
 				String text = TextFormatting.AQUA + button.name;
-				int wrap = 120;
-				String keybind = ""; // FIXME
-				String keybindFormatted = "";
 
 				//Add keybind in brackets
-				if (button.action == ActionEnum.UNDO) {
-					keybind = I18n.get(ClientProxy.keyBindings[3].saveString());
-				}
-				if (button.action == ActionEnum.REDO) {
-					keybind = I18n.get(ClientProxy.keyBindings[4].saveString());
-				}
-				if (button.action == ActionEnum.REPLACE) {
-					keybind = I18n.get(ClientProxy.keyBindings[1].saveString());
-				}
-				if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) {
-					keybind = I18n.get(ClientProxy.keyBindings[0].saveString());
-				}
-				if (currentBuildMode.options.length > 0) {
-					//Add (ctrl) to first two actions of first option
-					if (button.action == currentBuildMode.options[0].actions[0]
-						|| button.action == currentBuildMode.options[0].actions[1]) {
-						keybind = I18n.get(ClientProxy.keyBindings[5].saveString());
-						if (keybind.equals("Left Control")) keybind = "Ctrl";
-					}
-				}
+				String keybind = findKeybind(button, currentBuildMode);
+				String keybindFormatted = "";
 				if (!keybind.isEmpty())
 					keybindFormatted = TextFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
 
 				if (button.textSide == Direction.WEST) {
 
 					font.draw(ms, text, (int) (middleX + button.x1 - 8) - font.width(text),
-						(int) (middleY + button.y1 + 6), 0xffffffff);
+							(int) (middleY + button.y1 + 6), whiteTextColor);
 
 				} else if (button.textSide == Direction.EAST) {
 
 					font.draw(ms, text, (int) (middleX + button.x2 + 8),
-						(int) (middleY + button.y1 + 6), 0xffffffff);
+							(int) (middleY + button.y1 + 6), whiteTextColor);
 
 				} else if (button.textSide == Direction.UP || button.textSide == Direction.NORTH) {
 
 					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
-						(int) (middleY + button.y1 - 26), 0xffffffff);
+							(int) (middleY + button.y1 - 26), whiteTextColor);
 
 					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
-						(int) (middleY + button.y1 - 14), 0xffffffff);
+							(int) (middleY + button.y1 - 14), whiteTextColor);
 
 				} else if (button.textSide == Direction.DOWN || button.textSide == Direction.SOUTH) {
 
 					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
-						(int) (middleY + button.y1 + 26), 0xffffffff);
+							(int) (middleY + button.y1 + 26), whiteTextColor);
 
 					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
-						(int) (middleY + button.y1 + 38), 0xffffffff);
+							(int) (middleY + button.y1 + 38), whiteTextColor);
 
 				}
 
 			}
 		}
+	}
 
-		RenderSystem.popMatrix();
+	private String findKeybind(MenuButton button, BuildModeEnum currentBuildMode){
+		String result = "";
+		int keybindingIndex = -1;
+		if (button.action == ActionEnum.UNDO) keybindingIndex = 3;
+		if (button.action == ActionEnum.REDO) keybindingIndex = 4;
+		if (button.action == ActionEnum.REPLACE) keybindingIndex = 1;
+		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 0;
+
+		if (keybindingIndex != -1) {
+			KeyBinding keyMap = ClientProxy.keyBindings[keybindingIndex];
+
+			if (!keyMap.getKeyModifier().name().equals("none")) {
+				result = keyMap.getKeyModifier().name() + " ";
+			}
+			result += I18n.get(keyMap.getKey().getName());
+		}
+
+		if (currentBuildMode.options.length > 0) {
+			//Add (ctrl) to first two actions of first option
+			if (button.action == currentBuildMode.options[0].actions[0]
+				|| button.action == currentBuildMode.options[0].actions[1]) {
+				result = I18n.get(ClientProxy.keyBindings[5].getKey().getName());
+				if (result.equals("Left Control")) result = "Ctrl";
+			}
+		}
+		return result;
 	}
 
 	private boolean inTriangle(final double x1, final double y1, final double x2, final double y2,
@@ -463,7 +501,7 @@ public class RadialMenu extends Screen {
 			ModeSettingsManager.setModeSettings(player, modeSettings);
 			PacketHandler.INSTANCE.sendToServer(new ModeSettingsMessage(modeSettings));
 
-			EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().name), true);
+			EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().getNameKey()), true);
 
 			if (fromMouseClick) performedActionUsingMouse = true;
 		}
