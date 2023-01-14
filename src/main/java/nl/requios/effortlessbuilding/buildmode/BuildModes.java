@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import com.mojang.math.Vector4f;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
@@ -15,6 +14,7 @@ import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
 import nl.requios.effortlessbuilding.network.BlockBrokenMessage;
 import nl.requios.effortlessbuilding.network.BlockPlacedMessage;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Dictionary;

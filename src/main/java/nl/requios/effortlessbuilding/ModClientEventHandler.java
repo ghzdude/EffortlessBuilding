@@ -43,7 +43,7 @@ public class ModClientEventHandler {
 
 	@SubscribeEvent
 	public static void registerShaders(RegisterShadersEvent event) throws IOException {
-		event.registerShader(new ShaderInstance(event.getResourceManager(),
+		event.registerShader(new ShaderInstance(event.getResourceProvider(),
 				new ResourceLocation(EffortlessBuilding.MODID, "dissolve"),
 				DefaultVertexFormat.BLOCK),
 				shaderInstance -> BuildRenderTypes.dissolveShaderInstance = shaderInstance);

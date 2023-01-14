@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Button;
@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.awt.*;
@@ -34,21 +35,21 @@ public class GuiNumberField extends GuiComponent {
 
 	List<Component> tooltip = new ArrayList<>();
 
-	public GuiNumberField(Font font, List<Widget> renderables, int x, int y, int width, int height) {
+	public GuiNumberField(Font font, List<Renderable> renderables, int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 
 		textField = new EditBox(font, x + buttonWidth + 1, y + 1, width - 2 * buttonWidth - 2, height - 2, Component.empty());
-		minusButton = new Button(x, y - 1, buttonWidth, height + 2, Component.literal("-"), button -> {
+		minusButton = new ExtendedButton(x, y - 1, buttonWidth, height + 2, Component.literal("-"), button -> {
 			float valueChanged = 1f;
 			if (Screen.hasControlDown()) valueChanged = 5f;
 			if (Screen.hasShiftDown()) valueChanged = 10f;
 
 			setNumber(getNumber() - valueChanged);
 		});
-		plusButton = new Button(x + width - buttonWidth, y - 1, buttonWidth, height + 2, Component.literal("+"), button -> {
+		plusButton = new ExtendedButton(x + width - buttonWidth, y - 1, buttonWidth, height + 2, Component.literal("+"), button -> {
 			float valueChanged = 1f;
 			if (Screen.hasControlDown()) valueChanged = 5f;
 			if (Screen.hasShiftDown()) valueChanged = 10f;
@@ -98,9 +99,9 @@ public class GuiNumberField extends GuiComponent {
 	}
 
 	public void drawNumberField(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		textField.y = y + 1;
-		minusButton.y = y - 1;
-		plusButton.y = y - 1;
+		textField.setY(y + 1);
+		minusButton.setY(y - 1);
+		plusButton.setY(y - 1);
 
 		textField.render(ms, mouseX, mouseY, partialTicks);
 		minusButton.render(ms, mouseX, mouseY, partialTicks);

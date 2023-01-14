@@ -6,7 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -398,7 +398,7 @@ public class GuiScrollPane extends SlotGui {
 	}
 
 	//PASSTHROUGHS
-	public void init(List<Widget> renderables) {
+	public void init(List<Renderable> renderables) {
 		for (IScrollEntry entry : this.listEntries) {
 			entry.init(renderables);
 		}
@@ -436,7 +436,7 @@ public class GuiScrollPane extends SlotGui {
 	}
 
 	public interface IScrollEntry {
-		void init(List<Widget> renderables);
+		void init(List<Renderable> renderables);
 
 		void updateScreen();
 

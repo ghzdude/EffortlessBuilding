@@ -4,8 +4,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -89,9 +91,23 @@ public class EffortlessBuilding {
 	}
 
 	@SubscribeEvent
-	public void registerCapabilities(RegisterCapabilitiesEvent event){
+	public void registerCapabilities(RegisterCapabilitiesEvent event) {
 		event.register(ModifierCapabilityManager.IModifierCapability.class);
 		event.register(ModeCapabilityManager.IModeCapability.class);
+	}
+
+	@SubscribeEvent
+	public void registerCreativeModeTabs(CreativeModeTabEvent.BuildContents event) {
+		if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES){
+			event.accept(RANDOMIZER_BAG_ITEM);
+			event.accept(GOLDEN_RANDOMIZER_BAG_ITEM);
+			event.accept(DIAMOND_RANDOMIZER_BAG_ITEM);
+			event.accept(REACH_UPGRADE_1_ITEM);
+			event.accept(REACH_UPGRADE_2_ITEM);
+			event.accept(REACH_UPGRADE_3_ITEM);
+		}
+
+		//To create custom tab see https://gist.github.com/ChampionAsh5357/c21724bafbc630da2ed8899fe0c1d226
 	}
 
 	public static void log(String msg) {

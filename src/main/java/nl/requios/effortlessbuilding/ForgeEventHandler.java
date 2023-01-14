@@ -10,7 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,7 +29,7 @@ import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
 
 @Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class EventHandler {
+public class ForgeEventHandler {
 
 	@SubscribeEvent
 	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {

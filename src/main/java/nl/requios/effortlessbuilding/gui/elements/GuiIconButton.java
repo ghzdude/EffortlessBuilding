@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
-public class GuiIconButton extends Button {
+public class GuiIconButton extends ExtendedButton {
 
 	private final ResourceLocation resourceLocation;
 	private final int iconX, iconY, iconWidth, iconHeight, iconAltX, iconAltY;
@@ -28,7 +29,7 @@ public class GuiIconButton extends Button {
 	}
 
 	public GuiIconButton(int x, int y, int width, int height, int iconX, int iconY, int iconWidth, int iconHeight, int iconAltX, int iconAltY, ResourceLocation resourceLocation, Button.OnPress onPress) {
-		super(x, y, width, height, Component.empty(), onPress);
+		super(x, y, width, height, Component.empty(), onPress, DEFAULT_NARRATION);
 		this.iconX = iconX;
 		this.iconY = iconY;
 		this.iconWidth = iconWidth;
@@ -54,7 +55,7 @@ public class GuiIconButton extends Button {
 	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
 		super.render(ms, mouseX, mouseY, partialTicks);
 		if (this.visible) {
-			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+			this.isHovered = mouseX >= this.getX() && mouseY >= this.getY() && mouseX < this.getX() + this.width && mouseY < this.getY() + this.height;
 			RenderSystem.setShaderTexture(0, this.resourceLocation);
 			int currentIconX = this.iconX;
 			int currentIconY = this.iconY;
@@ -65,12 +66,12 @@ public class GuiIconButton extends Button {
 			}
 
 			//Draws a textured rectangle at the current z-value. Used to be drawTexturedModalRect in Gui.
-			this.blit(ms, this.x, this.y, currentIconX, currentIconY, this.iconWidth, this.iconHeight);
+			this.blit(ms, this.getX(), this.getY(), currentIconX, currentIconY, this.iconWidth, this.iconHeight);
 		}
 	}
 
 	public void drawTooltip(PoseStack ms, Screen screen, int mouseX, int mouseY) {
-		boolean flag = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+		boolean flag = mouseX >= this.getX() && mouseX < this.getX() + width && mouseY >= this.getY() && mouseY < this.getY() + height;
 
 		if (flag) {
 			screen.renderComponentTooltip(ms, tooltip, mouseX - 10, mouseY + 25);

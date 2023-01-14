@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding.gui.buildmode;
 
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Vector4f;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,6 +25,7 @@ import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import org.apache.commons.lang3.text.WordUtils;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -47,7 +47,7 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 public class RadialMenu extends Screen {
 
 	public static final RadialMenu instance = new RadialMenu();
-
+	
 	private final Vector4f radialButtonColor = new Vector4f(0f, 0f, 0f, .5f);
 	private final Vector4f sideButtonColor = new Vector4f(.5f, .5f, .5f, .5f);
 	private final Vector4f highlightColor = new Vector4f(.6f, .8f, 1f, .6f);
@@ -479,7 +479,7 @@ public class RadialMenu extends Screen {
 	public static void playRadialMenuSound() {
 		final float volume = 0.1f;
 		if (volume >= 0.0001f) {
-			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, volume,
+			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK.get(), SoundSource.MASTER, volume,
 					1.0f, RandomSource.create(), Minecraft.getInstance().player.blockPosition());
 			Minecraft.getInstance().getSoundManager().play(sound);
 		}

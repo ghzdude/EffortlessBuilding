@@ -4,6 +4,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -239,7 +240,8 @@ public class SurvivalHelper {
 		} else {
 			//Adventure mode
 			BlockInWorld blockinworld = new BlockInWorld(world, pos, false);
-			return stack.hasAdventureModePlaceTagForBlock(world.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), blockinworld);
+			Registry<Block> registry = world.registryAccess().registryOrThrow(Registries.BLOCK);
+			return stack.hasAdventureModePlaceTagForBlock(registry, blockinworld);
 		}
 	}
 

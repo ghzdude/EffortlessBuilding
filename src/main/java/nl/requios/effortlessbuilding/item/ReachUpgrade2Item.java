@@ -30,7 +30,7 @@ import net.minecraft.world.InteractionResultHolder;
 public class ReachUpgrade2Item extends Item {
 
 	public ReachUpgrade2Item() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
+		super(new Item.Properties().stacksTo(1));
 	}
 
 	@Override
@@ -48,19 +48,19 @@ public class ReachUpgrade2Item extends Item {
 			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);
 
-			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
+			SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("entity.player.levelup"));
 			player.playSound(soundEvent, 1f, 1f);
 		} else if (currentLevel < 1) {
 			if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 1 first.");
 
-			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
+			SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
 		} else if (currentLevel > 1) {
 			if (world.isClientSide)
 				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + ReachHelper
 					.getMaxReach(player) + ".");
 
-			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
+			SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
 		}
 		return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));

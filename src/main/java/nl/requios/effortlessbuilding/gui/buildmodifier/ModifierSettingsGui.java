@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
@@ -50,7 +51,7 @@ public class ModifierSettingsGui extends Screen {
 
 		//Close button
 		int y = height - 26;
-		buttonClose = new Button(width / 2 - 100, y, 200, 20, Component.literal("Close"), (button) -> {
+		buttonClose = new ExtendedButton(width / 2 - 100, y, 200, 20, Component.literal("Close"), (button) -> {
 			Minecraft.getInstance().player.closeContainer();
 		});
 		addRenderableOnly(buttonClose);

@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
@@ -40,7 +40,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	}
 
 	@Override
-	public void init(List<Widget> renderables) {
+	public void init(List<Renderable> renderables) {
 		super.init(renderables);
 
 		int y = top - 2;
@@ -181,7 +181,7 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 
 		buttonMirrorEnabled.render(ms, mouseX, mouseY, partialTicks);
 		if (buttonMirrorEnabled.isChecked()) {
-			buttonMirrorEnabled.y = yy;
+			buttonMirrorEnabled.setY(yy);
 			font.draw(ms, "Mirror enabled", left + offset, yy + 2, 0xFFFFFF);
 
 			yy = y + 18;
@@ -195,23 +195,23 @@ public class MirrorSettingsGui extends GuiCollapsibleScrollEntry {
 
 			yy = y + 50;
 			font.draw(ms, "Direction", left + offset, yy + 2, 0xFFFFFF);
-			buttonMirrorX.y = yy;
-			buttonMirrorY.y = yy;
-			buttonMirrorZ.y = yy;
+			buttonMirrorX.setY(yy);
+			buttonMirrorY.setY(yy);
+			buttonMirrorZ.setY(yy);
 			font.draw(ms, "Radius", left + 176 + offset, yy + 2, 0xFFFFFF);
 			textMirrorRadius.y = yy - 3;
 
 			yy = y + 72;
-			buttonCurrentPosition.y = yy;
-			buttonToggleOdd.y = yy;
-			buttonDrawLines.y = yy;
-			buttonDrawPlanes.y = yy;
+			buttonCurrentPosition.setY(yy);
+			buttonToggleOdd.setY(yy);
+			buttonDrawLines.setY(yy);
+			buttonDrawPlanes.setY(yy);
 
 			mirrorButtonList.forEach(button -> button.render(ms, mouseX, mouseY, partialTicks));
 			mirrorIconButtonList.forEach(button -> button.render(ms, mouseX, mouseY, partialTicks));
 			mirrorNumberFieldList.forEach(numberField -> numberField.drawNumberField(ms, mouseX, mouseY, partialTicks));
 		} else {
-			buttonMirrorEnabled.y = yy;
+			buttonMirrorEnabled.setY(yy);
 			font.draw(ms, "Mirror disabled", left + offset, yy + 2, 0x999999);
 		}
 
