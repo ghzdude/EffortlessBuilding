@@ -109,6 +109,12 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+
+    //Flywheel
+    maven {
+        name "tterrag maven"
+        url "https://maven.tterrag.com/"
+    }
 }
 
 dependencies {
@@ -128,6 +134,10 @@ dependencies {
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    //Flywheel
+    //Versions: https://maven.tterrag.com/com/jozufozu/flywheel/flywheel-forge-1.19.2/
+    implementation fg.deobf("com.jozufozu.flywheel:flywheel-forge-1.19.2:0.6.8-13")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

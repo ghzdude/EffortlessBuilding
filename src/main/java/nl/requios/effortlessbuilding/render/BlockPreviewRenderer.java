@@ -21,7 +21,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.BuildConfig;
+import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.IBuildMode;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
@@ -59,7 +61,7 @@ public class BlockPreviewRenderer {
 				if (placed.coordinates != null && !placed.coordinates.isEmpty()) {
 
 					double totalTime = Mth.clampedLerp(30, 60, placed.firstPos.distSqr(placed.secondPos) / 100.0) * BuildConfig.visuals.dissolveTimeMultiplier.get();
-					float dissolve = (ClientProxy.ticksInGame - placed.time) / (float) totalTime;
+					float dissolve = (ClientEvents.ticksInGame - placed.time) / (float) totalTime;
 					renderBlockPreviews(matrixStack, renderTypeBuffer, placed.coordinates, placed.blockStates, placed.itemStacks, dissolve, placed.firstPos, placed.secondPos, false, placed.breaking);
 				}
 			}
@@ -67,11 +69,11 @@ public class BlockPreviewRenderer {
 		//Expire
 		placedDataList.removeIf(placed -> {
 			double totalTime = Mth.clampedLerp(30, 60, placed.firstPos.distSqr(placed.secondPos) / 100.0) * BuildConfig.visuals.dissolveTimeMultiplier.get();
-			return placed.time + totalTime < ClientProxy.ticksInGame;
+			return placed.time + totalTime < ClientEvents.ticksInGame;
 		});
 
 		//Render block previews
-		HitResult lookingAt = ClientProxy.getLookingAt(player);
+		HitResult lookingAt = ClientEvents.getLookingAt(player);
 		if (modeSettings.getBuildMode() == BuildModes.BuildModeEnum.NORMAL)
 			lookingAt = Minecraft.getInstance().hitResult;
 
@@ -170,8 +172,8 @@ public class BlockPreviewRenderer {
 					//if so, renew randomness of randomizer bag
 					AbstractRandomizerBagItem.renewRandomness();
 					//and play sound (max once every tick)
-					if (newCoordinates.size() > 1 && blockStates.size() > 1 && soundTime < ClientProxy.ticksInGame - 0) {
-						soundTime = ClientProxy.ticksInGame;
+					if (newCoordinates.size() > 1 && blockStates.size() > 1 && soundTime < ClientEvents.ticksInGame - 0) {
+						soundTime = ClientEvents.ticksInGame;
 
 						if (blockStates.get(0) != null) {
 							SoundType soundType = blockStates.get(0).getBlock().getSoundType(blockStates.get(0), player.level,
@@ -317,7 +319,7 @@ public class BlockPreviewRenderer {
 			if (!coordinates.isEmpty() && blockStates.size() == coordinates.size() &&
 				coordinates.size() > 1 && coordinates.size() < BuildConfig.visuals.shaderThreshold.get()) {
 
-				placedDataList.add(new PlacedData(ClientProxy.ticksInGame, coordinates, blockStates,
+				placedDataList.add(new PlacedData(ClientEvents.ticksInGame, coordinates, blockStates,
 					itemStacks, firstPos, secondPos, false));
 			}
 		}
@@ -343,7 +345,7 @@ public class BlockPreviewRenderer {
 
 				sortOnDistanceToPlayer(coordinates, player);
 
-				placedDataList.add(new PlacedData(ClientProxy.ticksInGame, coordinates, blockStates,
+				placedDataList.add(new PlacedData(ClientEvents.ticksInGame, coordinates, blockStates,
 					itemStacks, firstPos, secondPos, true));
 			}
 		}

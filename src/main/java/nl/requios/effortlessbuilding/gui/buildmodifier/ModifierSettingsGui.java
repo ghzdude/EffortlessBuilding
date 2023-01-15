@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
@@ -87,7 +88,7 @@ public class ModifierSettingsGui extends Screen {
 
 	@Override
 	public boolean keyPressed(int keyCode, int p_96553_, int p_96554_) {
-		if (keyCode == ClientProxy.keyBindings[0].getKey().getValue()) {
+		if (keyCode == ClientEvents.keyBindings[0].getKey().getValue()) {
 			minecraft.player.closeContainer();
 			return true;
 		}

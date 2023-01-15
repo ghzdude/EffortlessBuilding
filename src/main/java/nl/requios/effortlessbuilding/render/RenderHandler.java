@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -23,44 +24,54 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
+import nl.requios.effortlessbuilding.create.CreateClient;
+import nl.requios.effortlessbuilding.create.foundation.render.SuperRenderTypeBuffer;
+import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
 
 import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 
 /***
  * Main render class for Effortless Building
  */
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(Dist.CLIENT)
 public class RenderHandler {
 
 	@SubscribeEvent
 	public static void onRender(RenderLevelStageEvent event) {
-		if (event.getPhase() != EventPriority.NORMAL || event.getStage() != AFTER_PARTICLES)
-			return;
+		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+//		float pt = AnimationTickHolder.getPartialTicks();
 
-		PoseStack matrixStack = event.getPoseStack();
+		PoseStack ms = event.getPoseStack();
 		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-		MultiBufferSource.BufferSource renderTypeBuffer = MultiBufferSource.immediate(bufferBuilder);
+		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(bufferBuilder);
+
+//		SuperRenderTypeBuffer superBuffer = SuperRenderTypeBuffer.getInstance();
 
 		Player player = Minecraft.getInstance().player;
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-		Vec3 projectedView = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-
-		matrixStack.pushPose();
-		matrixStack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
+		ms.pushPose();
+		ms.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
 		//Mirror and radial mirror lines and areas
-		ModifierRenderer.render(matrixStack, renderTypeBuffer, modifierSettings);
+		ModifierRenderer.render(ms, buffer, modifierSettings);
 
 		//Render block previews
-		BlockPreviewRenderer.render(matrixStack, renderTypeBuffer, player, modifierSettings, modeSettings);
+		BlockPreviewRenderer.render(ms, buffer, player, modifierSettings, modeSettings);
 
-		matrixStack.popPose();
+		//Create
+//		CreateClient.GHOST_BLOCKS.renderAll(ms, superBuffer);
+//		EffortlessBuildingClient.OUTLINER.renderOutlines(ms, superBuffer, pt);
+//		superBuffer.draw();
+//		RenderSystem.enableCull();
+
+		ms.popPose();
 	}
 
 	protected static VertexConsumer beginLines(MultiBufferSource.BufferSource renderTypeBuffer) {

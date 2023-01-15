@@ -8,13 +8,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
@@ -29,8 +29,19 @@ import nl.requios.effortlessbuilding.network.ClearUndoMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
 
-@Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class EventHandler {
+@EventBusSubscriber
+public class CommonEvents {
+
+	//Mod Bus Events
+	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+	public static class ModBusEvents {
+
+		@SubscribeEvent
+		public void registerCapabilities(RegisterCapabilitiesEvent event){
+			event.register(ModifierCapabilityManager.IModifierCapability.class);
+			event.register(ModeCapabilityManager.IModeCapability.class);
+		}
+	}
 
 	@SubscribeEvent
 	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
@@ -172,4 +183,6 @@ public class EventHandler {
 		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
 		ModeSettingsManager.setModeSettings(newPlayer, ModeSettingsManager.getModeSettings(oldPlayer));
 	}
+
+
 }
