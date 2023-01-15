@@ -20,13 +20,20 @@ Makes building easier by providing tools like mirrors, arrays, build modes and a
 [[dependencies.effortlessbuilding]]
     modId="forge"
     mandatory=true
-    versionRange="[41,)"
+    versionRange="[43.0.0,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.effortlessbuilding]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.1,1.20)"
+    versionRange="[1.19.1,1.20)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.effortlessbuilding]]
+    modId="flywheel"
+    mandatory=true
+    versionRange="[0.6.8,0.6.9)"
+    ordering="AFTER"
+    side="CLIENT"

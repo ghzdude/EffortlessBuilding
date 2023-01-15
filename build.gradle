@@ -4,7 +4,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '5.1.+'
 }
 
-version = '1.19-2.38'
+version = '1.19-2.40'
 group = 'nl.requios.effortlessbuilding'
 archivesBaseName = 'effortlessbuilding'
 
@@ -36,7 +36,11 @@ minecraft {
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', 'effortlessbuilding'
-			
+
+            // Flywheel
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
             mods {
                 effortlessbuilding {
                     source sourceSets.main
@@ -52,6 +56,10 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             property 'forge.enabledGameTestNamespaces', 'effortlessbuilding'
+
+            // Flywheel
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 effortlessbuilding {

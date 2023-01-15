@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -20,20 +19,14 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
-import nl.requios.effortlessbuilding.create.CreateClient;
-import nl.requios.effortlessbuilding.create.foundation.render.SuperRenderTypeBuffer;
-import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
-
-import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 
 /***
  * Main render class for Effortless Building
@@ -42,7 +35,7 @@ import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_
 public class RenderHandler {
 
 	@SubscribeEvent
-	public static void onRender(RenderLevelStageEvent event) {
+	public static void onRender(RenderLevelLastEvent event) {
 		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 //		float pt = AnimationTickHolder.getPartialTicks();
 

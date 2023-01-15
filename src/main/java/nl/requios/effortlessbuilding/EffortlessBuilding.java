@@ -63,7 +63,7 @@ public class EffortlessBuilding {
 
 		modEventBus.addListener(EffortlessBuilding::setup);
 
-		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> EffortlessBuildingClient.onConstructorClient(modEventBus, forgeEventBus));
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> EffortlessBuildingClient.onConstructorClient(modEventBus, forgeEventBus));
 
 		ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
 		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
