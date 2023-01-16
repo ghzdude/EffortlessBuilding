@@ -35,8 +35,8 @@ public class ClientEvents {
 		Level world = Minecraft.getInstance().level;
 		AnimationTickHolder.tick();
 
-		CreateClient.OUTLINER.tickOutlines();
 		CreateClient.GHOST_BLOCKS.tickGhosts();
+		CreateClient.OUTLINER.tickOutlines();
 		CameraAngleAnimationService.tick();
 	}
 
@@ -89,7 +89,7 @@ public class ClientEvents {
 			event.setPitch(CameraAngleAnimationService.getPitch(partialTicks));
 	}
 
-	protected static boolean isGameActive() {
+	public static boolean isGameActive() {
 		return !(Minecraft.getInstance().level == null || Minecraft.getInstance().player == null);
 	}
 

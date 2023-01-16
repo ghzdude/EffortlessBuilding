@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -22,17 +23,31 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
+import nl.requios.effortlessbuilding.create.CreateClient;
+import nl.requios.effortlessbuilding.create.events.ClientEvents;
 
 /***
  * Main render class for Effortless Building
  */
 @EventBusSubscriber(Dist.CLIENT)
 public class RenderHandler {
+
+	@SubscribeEvent
+	public static void onTick(TickEvent.ClientTickEvent event) {
+		if (!ClientEvents.isGameActive()) return;
+
+		Player player = Minecraft.getInstance().player;
+		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
+		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
+
+		BlockPreviewRenderer.render(null, null, player, modifierSettings, modeSettings);
+	}
 
 	@SubscribeEvent
 	public static void onRender(RenderLevelLastEvent event) {
@@ -83,39 +98,44 @@ public class RenderHandler {
 		renderTypeBuffer.endBatch();
 	}
 
-	protected static void renderBlockPreview(PoseStack matrixStack, MultiBufferSource.BufferSource renderTypeBuffer, BlockRenderDispatcher dispatcher,
+	protected static void renderBlockPreview(PoseStack ms, MultiBufferSource.BufferSource buffer, BlockRenderDispatcher dispatcher,
 											 BlockPos blockPos, BlockState blockState, float dissolve, BlockPos firstPos, BlockPos secondPos, boolean red) {
 		if (blockState == null) return;
 
-		matrixStack.pushPose();
-		matrixStack.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-//        matrixStack.rotate(Vector3f.YP.rotationDegrees(-90f));
-		matrixStack.translate(-0.01f, -0.01f, -0.01f);
-		matrixStack.scale(1.02f, 1.02f, 1.02f);
+		CreateClient.GHOST_BLOCKS.showGhostState(blockPos.toShortString(), blockState)
+//				.breathingAlpha()
+				.alpha(0.7f)
+				.at(blockPos);
 
-		//Begin block preview rendering
-		RenderType blockPreviewRenderType = BuildRenderTypes.getBlockPreviewRenderType(dissolve, blockPos, firstPos, secondPos, red);
-		VertexConsumer buffer = renderTypeBuffer.getBuffer(blockPreviewRenderType);
-
-		try {
-			BakedModel model = dispatcher.getBlockModel(blockState);
-			dispatcher.getModelRenderer().renderModel(matrixStack.last(), buffer, blockState, model,
-					1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, blockPreviewRenderType);
-		} catch (NullPointerException e) {
-			EffortlessBuilding.logger.warn("RenderHandler::renderBlockPreview cannot render " + blockState.getBlock().toString());
-
-			//Render outline as backup, escape out of the current renderstack
-			matrixStack.popPose();
-			renderTypeBuffer.endBatch();
-			VertexConsumer lineBuffer = beginLines(renderTypeBuffer);
-			renderBlockOutline(matrixStack, lineBuffer, blockPos, new Vec3(1f, 1f, 1f));
-			endLines(renderTypeBuffer);
-			buffer = renderTypeBuffer.getBuffer(Sheets.translucentCullBlockSheet()); //any type will do, as long as we have something on the stack
-			matrixStack.pushPose();
-		}
-
-		renderTypeBuffer.endBatch();
-		matrixStack.popPose();
+//		ms.pushPose();
+//		ms.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+////        ms.rotate(Vector3f.YP.rotationDegrees(-90f));
+//		ms.translate(-0.01f, -0.01f, -0.01f);
+//		ms.scale(1.02f, 1.02f, 1.02f);
+//
+//		//Begin block preview rendering
+//		RenderType blockPreviewRenderType = BuildRenderTypes.getBlockPreviewRenderType(dissolve, blockPos, firstPos, secondPos, red);
+//		VertexConsumer vc = buffer.getBuffer(blockPreviewRenderType);
+//
+//		try {
+//			BakedModel model = dispatcher.getBlockModel(blockState);
+//			dispatcher.getModelRenderer().renderModel(ms.last(), vc, blockState, model,
+//					1f, 1f, 1f, 0, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, blockPreviewRenderType);
+//		} catch (NullPointerException e) {
+//			EffortlessBuilding.logger.warn("RenderHandler::renderBlockPreview cannot render " + blockState.getBlock().toString());
+//
+//			//Render outline as backup, escape out of the current renderstack
+//			ms.popPose();
+//			buffer.endBatch();
+//			VertexConsumer lineBuffer = beginLines(buffer);
+//			renderBlockOutline(ms, lineBuffer, blockPos, new Vec3(1f, 1f, 1f));
+//			endLines(buffer);
+//			vc = buffer.getBuffer(Sheets.translucentCullBlockSheet()); //any type will do, as long as we have something on the stack
+//			ms.pushPose();
+//		}
+//
+//		buffer.endBatch();
+//		ms.popPose();
 	}
 
 	protected static void renderBlockOutline(PoseStack matrixStack, VertexConsumer buffer, BlockPos pos, Vec3 color) {

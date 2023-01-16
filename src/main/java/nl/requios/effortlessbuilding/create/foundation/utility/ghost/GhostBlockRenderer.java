@@ -75,7 +75,7 @@ public abstract class GhostBlockRenderer {
 
 			BlockState state = params.state;
 			BlockPos pos = params.pos;
-			float alpha = params.alphaSupplier.get() * .75f/* * PlacementHelpers.getCurrentAlpha()*/;
+			float alpha = params.alphaSupplier.get()/*  * .75f* PlacementHelpers.getCurrentAlpha()*/;
 
 			BakedModel model = dispatcher.getBlockModel(state);
 			RenderType layer = RenderType.translucent();
@@ -88,7 +88,7 @@ public abstract class GhostBlockRenderer {
 			ms.scale(.85f, .85f, .85f);
 			ms.translate(-.5, -.5, -.5);
 
-			renderModel(ms.last(), vb, state, model, 1f, 1f, 1f, alpha,
+			renderModel(ms.last(), vb, state, model, 0f, 1f, 1f, alpha,
 				LevelRenderer.getLightColor(mc.level, pos), OverlayTexture.NO_OVERLAY,
 				ModelUtil.VIRTUAL_DATA, layer);
 
