@@ -8,13 +8,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
@@ -29,8 +30,19 @@ import nl.requios.effortlessbuilding.network.ClearUndoMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
 
-@Mod.EventBusSubscriber(modid = EffortlessBuilding.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class EventHandler {
+@EventBusSubscriber
+public class CommonEvents {
+
+	//Mod Bus Events
+	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+	public static class ModBusEvents {
+
+		@SubscribeEvent
+		public void registerCapabilities(RegisterCapabilitiesEvent event){
+			event.register(ModifierCapabilityManager.IModifierCapability.class);
+			event.register(ModeCapabilityManager.IModeCapability.class);
+		}
+	}
 
 	@SubscribeEvent
 	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
@@ -39,6 +51,13 @@ public class EventHandler {
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_mode"), new ModeCapabilityManager.Provider());
 		}
+	}
+
+	@SubscribeEvent
+	public static void onTick(TickEvent.LevelTickEvent event) {
+		if (event.phase != TickEvent.Phase.START) return;
+
+		EffortlessBuilding.DELAYED_BLOCK_PLACER.tick();
 	}
 
 	@SubscribeEvent
@@ -54,7 +73,7 @@ public class EventHandler {
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-		if (buildMode != BuildModes.BuildModeEnum.NORMAL) {
+		if (buildMode != BuildModes.BuildModeEnum.DISABLED) {
 
 			//Only cancel if itemblock in hand
 			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
@@ -93,7 +112,7 @@ public class EventHandler {
 		//Cancel event if necessary
 		//If cant break far then dont cancel event ever
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(event.getPlayer()).getBuildMode();
-		if (buildMode != BuildModes.BuildModeEnum.NORMAL && ReachHelper.canBreakFar(event.getPlayer())) {
+		if (buildMode != BuildModes.BuildModeEnum.DISABLED && ReachHelper.canBreakFar(event.getPlayer())) {
 			event.setCanceled(true);
 		} else {
 			//NORMAL mode, let vanilla handle block breaking
@@ -144,7 +163,7 @@ public class EventHandler {
 
 		//Set build mode to normal
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-		modeSettings.setBuildMode(BuildModes.BuildModeEnum.NORMAL);
+		modeSettings.setBuildMode(BuildModes.BuildModeEnum.DISABLED);
 		ModeSettingsManager.setModeSettings(player, modeSettings);
 
 		//Disable modifiers
@@ -172,4 +191,6 @@ public class EventHandler {
 		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
 		ModeSettingsManager.setModeSettings(newPlayer, ModeSettingsManager.getModeSettings(oldPlayer));
 	}
+
+
 }

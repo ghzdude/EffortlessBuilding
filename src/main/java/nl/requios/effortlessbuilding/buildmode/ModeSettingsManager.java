@@ -77,7 +77,7 @@ public class ModeSettingsManager {
 	}
 
 	public static class ModeSettings {
-		private BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.NORMAL;
+		private BuildModes.BuildModeEnum buildMode = BuildModes.BuildModeEnum.DISABLED;
 
 		public ModeSettings() {
 		}

@@ -9,9 +9,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.network.NetworkEvent;
+import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
-import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
 import java.util.function.Supplier;
 
@@ -63,8 +62,8 @@ public class RequestLookAtMessage {
 
 			//Prevent double placing in normal mode with placeStartPos false
 			//Unless QuickReplace is on, then we do need to place start pos.
-			if (ClientProxy.previousLookAt.getType() == HitResult.Type.BLOCK) {
-				PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage((BlockHitResult) ClientProxy.previousLookAt, message.getPlaceStartPos()));
+			if (ClientEvents.previousLookAt.getType() == HitResult.Type.BLOCK) {
+				PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage((BlockHitResult) ClientEvents.previousLookAt, message.getPlaceStartPos()));
 			} else {
 				PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage());
 			}

@@ -23,7 +23,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.ForgeEventFactory;
-import nl.requios.effortlessbuilding.BuildConfig;
+import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 
@@ -187,17 +187,21 @@ public class SurvivalHelper {
 	 */
 	public static boolean canPlace(Level world, Player player, BlockPos pos, BlockState newBlockState, ItemStack itemStack, boolean skipCollisionCheck, Direction sidePlacedOn) {
 
-		//Check if itemstack is correct
-		if (!(itemStack.getItem() instanceof BlockItem) || Block.byItem(itemStack.getItem()) != newBlockState.getBlock()) {
-//            EffortlessBuilding.log(player, "Cannot (re)place block", true);
-//            EffortlessBuilding.log("SurvivalHelper#canPlace: itemstack " + itemStack.toString() + " does not match blockstate " + newBlockState.toString());
-			//Happens when breaking blocks, no need to notify in that case
-			return false;
+		if (!player.isCreative()) {
+			//Check if itemstack is correct
+			if (itemStack.isEmpty() || !(itemStack.getItem() instanceof BlockItem) ||
+				Block.byItem(itemStack.getItem()) != newBlockState.getBlock()) {
+				return false;
+			}
 		}
 
-		Block block = ((BlockItem) itemStack.getItem()).getBlock();
+		Block block = null;
+		if (itemStack != null && !itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem)
+			block = ((BlockItem) itemStack.getItem()).getBlock();
+		else //In creative we might not have an itemstack
+			block = newBlockState.getBlock();
 
-		return !itemStack.isEmpty() && canPlayerEdit(player, world, pos, itemStack) &&
+		return canPlayerEdit(player, world, pos, itemStack) &&
 			mayPlace(world, block, newBlockState, pos, skipCollisionCheck, sidePlacedOn, player) &&
 			canReplace(world, player, pos);
 	}
@@ -208,7 +212,7 @@ public class SurvivalHelper {
 
 		BlockState state = world.getBlockState(pos);
 
-		int miningLevel = BuildConfig.survivalBalancers.quickReplaceMiningLevel.get();
+		int miningLevel = CommonConfig.survivalBalancers.quickReplaceMiningLevel.get();
 		switch (miningLevel) {
 			case -1:
 				return !state.requiresCorrectToolForDrops();
@@ -245,7 +249,7 @@ public class SurvivalHelper {
 
 	//From World#mayPlace
 	private static boolean mayPlace(Level world, Block blockIn, BlockState newBlockState, BlockPos pos, boolean skipCollisionCheck, Direction sidePlacedOn, @Nullable Entity placer) {
-		BlockState iblockstate1 = world.getBlockState(pos);
+		BlockState currentBlockState = world.getBlockState(pos);
 		VoxelShape voxelShape = skipCollisionCheck ? null : blockIn.defaultBlockState().getCollisionShape(world, pos);
 
 		if (voxelShape != null && !world.isUnobstructed(placer, voxelShape)) {
@@ -259,22 +263,20 @@ public class SurvivalHelper {
 
 		//Check if same block
 		//Necessary otherwise extra items will be dropped
-		if (iblockstate1 == newBlockState) {
+		if (currentBlockState == newBlockState) {
 			return false;
 		}
 
-		//TODO 1.14 check what Material.CIRCUITS has become
-		if (iblockstate1.getMaterial() == Material.BUILDABLE_GLASS && blockIn == Blocks.ANVIL) {
+		if (currentBlockState.getMaterial() == Material.BUILDABLE_GLASS && blockIn == Blocks.ANVIL) {
 			return true;
 		}
 
 		//Check quickreplace
-		if (placer instanceof Player && ModifierSettingsManager.getModifierSettings(((Player) placer)).doQuickReplace()) {
+		if (placer != null && ModifierSettingsManager.getModifierSettings(((Player) placer)).doQuickReplace()) {
 			return true;
 		}
 
-		//TODO 1.13 replaceable
-		return iblockstate1.getMaterial().isReplaceable() /*&& canPlaceBlockOnSide(world, pos, sidePlacedOn)*/;
+		return currentBlockState.getMaterial().isReplaceable() /*&& canPlaceBlockOnSide(world, pos, sidePlacedOn)*/;
 	}
 
 

@@ -10,12 +10,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
-import nl.requios.effortlessbuilding.BuildConfig;
+import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.helper.FixedStack;
 import nl.requios.effortlessbuilding.helper.InventoryHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
-import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
+import nl.requios.effortlessbuilding.render.BlockPreviews;
 
 import java.util.*;
 
@@ -50,7 +50,7 @@ public class UndoRedo {
 
 		//If no stack exists, make one
 		if (!undoStacks.containsKey(player.getUUID())) {
-			undoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[BuildConfig.survivalBalancers.undoStackSize.get()]));
+			undoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
 		}
 
 		undoStacks.get(player.getUUID()).push(blockSet);
@@ -63,7 +63,7 @@ public class UndoRedo {
 
 		//If no stack exists, make one
 		if (!redoStacks.containsKey(player.getUUID())) {
-			redoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[BuildConfig.survivalBalancers.undoStackSize.get()]));
+			redoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
 		}
 
 		redoStacks.get(player.getUUID()).push(blockSet);
@@ -88,7 +88,7 @@ public class UndoRedo {
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
 
 		if (player.level.isClientSide) {
-			BlockPreviewRenderer.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
+			BlockPreviews.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
 		} else {
 			//break all those blocks, reset to what they were
 			for (int i = 0; i < coordinates.size(); i++) {
@@ -98,14 +98,14 @@ public class UndoRedo {
 				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
 
 				//get blockstate from itemstack
-				BlockState previousBlockState = Blocks.AIR.defaultBlockState();
+				BlockState previousBlockState = previousBlockStates.get(i);
 				if (itemStack.getItem() instanceof BlockItem) {
 					previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
 				}
 
 				if (player.level.isLoaded(coordinate)) {
 					//check itemstack empty
-					if (itemStack.isEmpty()) {
+					if (itemStack.isEmpty() && !player.isCreative()) {
 						itemStack = findItemStackInInventory(player, previousBlockStates.get(i));
 						//get blockstate from new itemstack
 						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {
@@ -148,7 +148,7 @@ public class UndoRedo {
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
 
 		if (player.level.isClientSide) {
-			BlockPreviewRenderer.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
+			BlockPreviews.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
 		} else {
 			//place blocks
 			for (int i = 0; i < coordinates.size(); i++) {
@@ -158,14 +158,14 @@ public class UndoRedo {
 				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
 
 				//get blockstate from itemstack
-				BlockState newBlockState = Blocks.AIR.defaultBlockState();
+				BlockState newBlockState = newBlockStates.get(i);
 				if (itemStack.getItem() instanceof BlockItem) {
 					newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
 				}
 
 				if (player.level.isLoaded(coordinate)) {
 					//check itemstack empty
-					if (itemStack.isEmpty()) {
+					if (itemStack.isEmpty() && !player.isCreative()) {
 						itemStack = findItemStackInInventory(player, newBlockStates.get(i));
 						//get blockstate from new itemstack
 						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {

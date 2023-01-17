@@ -11,12 +11,12 @@
     "key.effortlessbuilding.redo.desc": "Redo",
     "key.effortlessbuilding.altplacement.desc": "Alternative placement",
 
-    "effortlessbuilding:randomizer_bag": "Leather Randomizer Bag",
-    "effortlessbuilding:golden_randomizer_bag": "Golden Randomizer Bag",
-    "effortlessbuilding:diamond_randomizer_bag": "Diamond Randomizer Bag",
-    "effortlessbuilding:reach_upgrade1": "Reach Upgrade 1",
-    "effortlessbuilding:reach_upgrade2": "Reach Upgrade 2",
-    "effortlessbuilding:reach_upgrade3": "Reach Upgrade 3",
+    "item.effortlessbuilding.randomizer_bag": "Leather Randomizer Bag",
+    "item.effortlessbuilding.golden_randomizer_bag": "Golden Randomizer Bag",
+    "item.effortlessbuilding.diamond_randomizer_bag": "Diamond Randomizer Bag",
+    "item.effortlessbuilding.reach_upgrade1": "Reach Upgrade 1",
+    "item.effortlessbuilding.reach_upgrade2": "Reach Upgrade 2",
+    "item.effortlessbuilding.reach_upgrade3": "Reach Upgrade 3",
 
     "effortlessbuilding.mode.normal": "Disable",
     "effortlessbuilding.mode.normal_plus": "Single",

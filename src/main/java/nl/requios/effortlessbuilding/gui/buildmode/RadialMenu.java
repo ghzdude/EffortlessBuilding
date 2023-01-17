@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
@@ -92,7 +93,7 @@ public class RadialMenu extends Screen {
 	public void tick() {
 		super.tick();
 
-		if (!ClientProxy.isKeybindDown(2)) {
+		if (!ClientEvents.isKeybindDown(2)) {
 			onClose();
 		}
 	}
@@ -397,7 +398,7 @@ public class RadialMenu extends Screen {
 		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 0;
 
 		if (keybindingIndex != -1) {
-			KeyMapping keyMap = ClientProxy.keyBindings[keybindingIndex];
+			KeyMapping keyMap = ClientEvents.keyBindings[keybindingIndex];
 
 			if (!keyMap.getKeyModifier().name().equals("none")) {
 				result = keyMap.getKeyModifier().name() + " ";
@@ -409,7 +410,7 @@ public class RadialMenu extends Screen {
 			//Add (ctrl) to first two actions of first option
 			if (button.action == currentBuildMode.options[0].actions[0]
 				|| button.action == currentBuildMode.options[0].actions[1]) {
-				result = I18n.get(ClientProxy.keyBindings[5].getKey().getName());
+				result = I18n.get(ClientEvents.keyBindings[5].getKey().getName());
 				if (result.equals("Left Control")) result = "Ctrl";
 			}
 		}

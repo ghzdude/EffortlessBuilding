@@ -2,28 +2,28 @@ package nl.requios.effortlessbuilding.helper;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
-import nl.requios.effortlessbuilding.BuildConfig;
+import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 
 public class ReachHelper {
 	public static int getMaxReach(Player player) {
-		if (player.isCreative()) return BuildConfig.reach.maxReachCreative.get();
+		if (player.isCreative()) return CommonConfig.reach.maxReachCreative.get();
 
-		if (!BuildConfig.reach.enableReachUpgrades.get()) return BuildConfig.reach.maxReachLevel3.get();
+		if (!CommonConfig.reach.enableReachUpgrades.get()) return CommonConfig.reach.maxReachLevel3.get();
 
 		//Check buildsettings for reachUpgrade
 		int reachUpgrade = ModifierSettingsManager.getModifierSettings(player).getReachUpgrade();
 		switch (reachUpgrade) {
 			case 0:
-				return BuildConfig.reach.maxReachLevel0.get();
+				return CommonConfig.reach.maxReachLevel0.get();
 			case 1:
-				return BuildConfig.reach.maxReachLevel1.get();
+				return CommonConfig.reach.maxReachLevel1.get();
 			case 2:
-				return BuildConfig.reach.maxReachLevel2.get();
+				return CommonConfig.reach.maxReachLevel2.get();
 			case 3:
-				return BuildConfig.reach.maxReachLevel3.get();
+				return CommonConfig.reach.maxReachLevel3.get();
 		}
-		return BuildConfig.reach.maxReachLevel0.get();
+		return CommonConfig.reach.maxReachLevel0.get();
 	}
 
 	public static int getPlacementReach(Player player) {

@@ -100,7 +100,7 @@ public class ModeCapabilityManager {
 
 			//TODO add mode settings
 
-			ModeSettings modeSettings = new ModeSettings(BuildModes.BuildModeEnum.NORMAL);
+			ModeSettings modeSettings = new ModeSettings(BuildModes.BuildModeEnum.DISABLED);
 			instance.setModeData(modeSettings);
 		}
 

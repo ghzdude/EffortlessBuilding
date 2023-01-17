@@ -12,7 +12,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
-import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
+import nl.requios.effortlessbuilding.render.BlockPreviews;
 
 import java.util.function.Supplier;
 
@@ -112,7 +112,7 @@ public class BlockPlacedMessage {
 	public static class ClientHandler {
 		public static void handle(BlockPlacedMessage message, Supplier<NetworkEvent.Context> ctx) {
 			//Nod RenderHandler to do the dissolve shader effect
-			BlockPreviewRenderer.onBlocksPlaced();
+			BlockPreviews.onBlocksPlaced();
 		}
 	}
 }

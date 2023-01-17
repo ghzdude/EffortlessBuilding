@@ -33,7 +33,7 @@ public class DiamondRandomizerBagItem extends AbstractRandomizerBagItem{
 
         @Override
         public Component getDisplayName() {
-            return Component.translatable("effortlessbuilding:diamond_randomizer_bag");
+            return Component.translatable("item.effortlessbuilding.diamond_randomizer_bag");
         }
 
         @Nullable
