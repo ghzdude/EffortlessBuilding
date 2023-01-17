@@ -75,6 +75,12 @@ public class Outliner {
 			outlines.get(slot).ticksTillRemoval = 1;
 	}
 
+	//ADDED
+	public void keep(Object slot, int ticks) {
+		if (outlines.containsKey(slot))
+			outlines.get(slot).ticksTillRemoval = ticks;
+	}
+
 	public void remove(Object slot) {
 		outlines.remove(slot);
 	}

@@ -98,14 +98,14 @@ public class UndoRedo {
 				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
 
 				//get blockstate from itemstack
-				BlockState previousBlockState = Blocks.AIR.defaultBlockState();
+				BlockState previousBlockState = previousBlockStates.get(i);
 				if (itemStack.getItem() instanceof BlockItem) {
 					previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
 				}
 
 				if (player.level.isLoaded(coordinate)) {
 					//check itemstack empty
-					if (itemStack.isEmpty()) {
+					if (itemStack.isEmpty() && !player.isCreative()) {
 						itemStack = findItemStackInInventory(player, previousBlockStates.get(i));
 						//get blockstate from new itemstack
 						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {
@@ -158,14 +158,14 @@ public class UndoRedo {
 				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
 
 				//get blockstate from itemstack
-				BlockState newBlockState = Blocks.AIR.defaultBlockState();
+				BlockState newBlockState = newBlockStates.get(i);
 				if (itemStack.getItem() instanceof BlockItem) {
 					newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
 				}
 
 				if (player.level.isLoaded(coordinate)) {
 					//check itemstack empty
-					if (itemStack.isEmpty()) {
+					if (itemStack.isEmpty() && !player.isCreative()) {
 						itemStack = findItemStackInInventory(player, newBlockStates.get(i));
 						//get blockstate from new itemstack
 						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {

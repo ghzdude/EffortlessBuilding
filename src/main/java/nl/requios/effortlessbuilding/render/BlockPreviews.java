@@ -30,6 +30,7 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.create.AllSpecialTextures;
 import nl.requios.effortlessbuilding.create.CreateClient;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
+import nl.requios.effortlessbuilding.create.foundation.utility.VecHelper;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
@@ -59,8 +60,6 @@ public class BlockPreviews {
 
 					float dissolve = (ClientEvents.ticksInGame - placed.time) / (float) totalTime;
 					renderBlockPreviews(player, modifierSettings, placed.coordinates, placed.blockStates, placed.itemStacks, dissolve, placed.firstPos, placed.secondPos, false, placed.breaking);
-
-					CreateClient.OUTLINER.showCluster(placed.time, placed.coordinates);
 				}
 			}
 		}
@@ -291,7 +290,7 @@ public class BlockPreviews {
 		float scale = 0.5f;
 		float alpha = 0.7f;
 		if (dissolve > 0f) {
-			float animationLength = 0.7f;
+			float animationLength = 0.8f;
 
 			double firstToSecond = secondPos.distSqr(firstPos);
 			double place = 0;
@@ -308,26 +307,41 @@ public class BlockPreviews {
 			t = Mth.clamp(t, 0, 1);
 			//Now we got a usable t value for this block
 
-			float sine = Mth.sin((t + (1/7f) * t) * Mth.TWO_PI - (3/4f) * Mth.PI); // -1 to 1
-			sine = (sine + 1f) / 2f; // 0 to 1
-
-//			scale = 1f + (sine * 0.5f);
-
 			t = (float) Mth.smoothstep(t);
+//			t = (float) bezier(t, .58,-0.08,.23,1.33);
+
 			if (!breaking) {
 				scale = 0.5f + (t * 0.3f);
 				alpha = 0.7f + (t * 0.3f);
 			} else {
 				t = 1f - t;
 				scale = 0.5f + (t * 0.5f);
-				alpha = t;
+				alpha = 0.7f + (t * 0.3f);
 			}
+			alpha = Mth.clamp(alpha, 0, 1);
 		}
 
 		CreateClient.GHOST_BLOCKS.showGhostState(blockPos.toShortString(), blockState)
 				.at(blockPos)
 				.alpha(alpha)
 				.scale(scale);
+	}
+
+	//A bezier easing function where implicit first and last control points are (0,0) and (1,1).
+	public static double bezier(double t, double x1, double y1, double x2, double y2) {
+		double t2 = t * t;
+		double t3 = t2 * t;
+
+		double cx = 3.0 * x1;
+		double bx = 3.0 * (x2 - x1) - cx;
+		double ax = 1.0 - cx -bx;
+
+		double cy = 3.0 * y1;
+		double by = 3.0 * (y2 - y1) - cy;
+		double ay = 1.0 - cy - by;
+
+		// Calculate the curve point at parameter value t
+		return (ay * t3) + (by * t2) + (cy * t) + 0;
 	}
 
 	public static void onBlocksPlaced() {
@@ -350,6 +364,8 @@ public class BlockPreviews {
 				placedDataList.add(new PlacedData(ClientEvents.ticksInGame, coordinates, blockStates,
 					itemStacks, firstPos, secondPos, false));
 			}
+
+			CreateClient.OUTLINER.keep(firstPos, CommonConfig.visuals.appearAnimationLength.get());
 		}
 
 	}
@@ -376,6 +392,8 @@ public class BlockPreviews {
 				placedDataList.add(new PlacedData(ClientEvents.ticksInGame, coordinates, blockStates,
 					itemStacks, firstPos, secondPos, true));
 			}
+
+			CreateClient.OUTLINER.keep(firstPos, CommonConfig.visuals.breakAnimationLength.get());
 		}
 
 	}
