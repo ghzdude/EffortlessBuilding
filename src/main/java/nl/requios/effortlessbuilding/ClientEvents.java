@@ -133,7 +133,7 @@ public class ClientEvents {
         BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 
         if (mc.screen != null ||
-            buildMode == BuildModes.BuildModeEnum.NORMAL ||
+            buildMode == BuildModes.BuildModeEnum.DISABLED ||
             RadialMenu.instance.isVisible()) {
             return;
         }
@@ -175,7 +175,7 @@ public class ClientEvents {
                         PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage());
                     }
                 }
-            } else if (buildMode == BuildModes.BuildModeEnum.NORMAL_PLUS) {
+            } else if (buildMode == BuildModes.BuildModeEnum.SINGLE) {
                 placeCooldown--;
                 if (ModeOptions.getBuildSpeed() == ModeOptions.ActionEnum.FAST_SPEED) placeCooldown = 0;
             }
@@ -210,7 +210,7 @@ public class ClientEvents {
                     BuildModes.onBlockBrokenMessage(player, new BlockBrokenMessage());
                     PacketHandler.INSTANCE.sendToServer(new BlockBrokenMessage());
                 }
-            } else if (buildMode == BuildModes.BuildModeEnum.NORMAL_PLUS) {
+            } else if (buildMode == BuildModes.BuildModeEnum.SINGLE) {
                 breakCooldown--;
                 if (ModeOptions.getBuildSpeed() == ModeOptions.ActionEnum.FAST_SPEED) breakCooldown = 0;
             }

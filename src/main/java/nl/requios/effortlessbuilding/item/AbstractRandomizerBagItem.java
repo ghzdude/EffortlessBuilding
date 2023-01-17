@@ -136,7 +136,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
             //Only place manually if in normal vanilla mode
             BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
             ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-            if (buildMode != BuildModes.BuildModeEnum.NORMAL || modifierSettings.doQuickReplace()) {
+            if (buildMode != BuildModes.BuildModeEnum.DISABLED || modifierSettings.doQuickReplace()) {
                 return InteractionResult.FAIL;
             }
 

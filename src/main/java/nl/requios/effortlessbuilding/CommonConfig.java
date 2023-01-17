@@ -1,8 +1,9 @@
 package nl.requios.effortlessbuilding;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import nl.requios.effortlessbuilding.create.foundation.render.SuperByteBufferCache;
 
-public class BuildConfig {
+public class CommonConfig {
 
 	private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 	public static final Reach reach = new Reach(builder);
@@ -80,33 +81,21 @@ public class BuildConfig {
 	}
 
 	public static class Visuals {
-		public final ForgeConfigSpec.ConfigValue<Boolean> alwaysShowBlockPreview;
-		public final ForgeConfigSpec.ConfigValue<Double> dissolveTimeMultiplier;
-		public final ForgeConfigSpec.ConfigValue<Integer> shaderThreshold;
-		public final ForgeConfigSpec.ConfigValue<Boolean> useShaders;
+		public final ForgeConfigSpec.ConfigValue<Integer> appearAnimationLength;
+		public final ForgeConfigSpec.ConfigValue<Integer> breakAnimationLength;
 
-		public Visuals(ForgeConfigSpec.Builder builder) {
+        public Visuals(ForgeConfigSpec.Builder builder) {
 			builder.push("Visuals");
 
-			alwaysShowBlockPreview = builder
-				.comment("Show a block preview if you have a block in hand even in the 'Normal' build mode")
-				.define("alwaysShowBlockPreview", false);
+			appearAnimationLength = builder
+				.comment("How long it takes for a block to appear when placed in ticks.",
+					"Set to 0 to disable animation.")
+				.define("appearAnimationLength", 5);
 
-			dissolveTimeMultiplier = builder
-				.comment("How long the dissolve effect takes when placing blocks.",
-					"Default between 30 and 60 ticks, you can multiply that here.",
-					"Recommended values:",
-					"Snappy: 0.7",
-					"Relaxing: 1.5")
-				.define("dissolveTimeMultiplier", 1.0);
-
-			shaderThreshold = builder
-				.comment("Switch to using the simple performance shader when placing more than this many blocks.")
-				.define("shaderTreshold", 1500);
-
-			useShaders = builder
-				.comment("Use fancy shaders while placing blocks")
-				.define("useShaders", true);
+			breakAnimationLength = builder
+				.comment("How long the break animation is in ticks.",
+					"Set to 0 to disable animation.")
+				.define("breakAnimationLength", 10);
 
 			builder.pop();
 		}

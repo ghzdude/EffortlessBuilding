@@ -9,7 +9,7 @@ import nl.requios.effortlessbuilding.buildmode.IBuildMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Normal implements IBuildMode {
+public class Single implements IBuildMode {
 	@Override
 	public void initialize(Player player) {
 

@@ -17,6 +17,13 @@ public class GhostBlocks {
 		return 0.55d - 0.2d * offset;
 	}
 
+	public static double getBreathingColor() {
+		double period = 2500;
+		double timer = System.currentTimeMillis() % period;
+		double offset = Mth.cos((float) ((2d/period) * Math.PI * timer));
+		return 0.35d + 0.35d * offset;
+	}
+
 	final Map<Object, Entry> ghosts;
 
 	public GhostBlockParams showGhostState(Object slot, BlockState state) {

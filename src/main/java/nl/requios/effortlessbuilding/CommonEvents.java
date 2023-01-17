@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -53,6 +54,13 @@ public class CommonEvents {
 	}
 
 	@SubscribeEvent
+	public static void onTick(TickEvent.LevelTickEvent event) {
+		if (event.phase != TickEvent.Phase.START) return;
+
+		EffortlessBuilding.DELAYED_BLOCK_PLACER.tick();
+	}
+
+	@SubscribeEvent
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
 		if (event.getLevel().isClientSide()) return;
 
@@ -65,7 +73,7 @@ public class CommonEvents {
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-		if (buildMode != BuildModes.BuildModeEnum.NORMAL) {
+		if (buildMode != BuildModes.BuildModeEnum.DISABLED) {
 
 			//Only cancel if itemblock in hand
 			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
@@ -104,7 +112,7 @@ public class CommonEvents {
 		//Cancel event if necessary
 		//If cant break far then dont cancel event ever
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(event.getPlayer()).getBuildMode();
-		if (buildMode != BuildModes.BuildModeEnum.NORMAL && ReachHelper.canBreakFar(event.getPlayer())) {
+		if (buildMode != BuildModes.BuildModeEnum.DISABLED && ReachHelper.canBreakFar(event.getPlayer())) {
 			event.setCanceled(true);
 		} else {
 			//NORMAL mode, let vanilla handle block breaking
@@ -155,7 +163,7 @@ public class CommonEvents {
 
 		//Set build mode to normal
 		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-		modeSettings.setBuildMode(BuildModes.BuildModeEnum.NORMAL);
+		modeSettings.setBuildMode(BuildModes.BuildModeEnum.DISABLED);
 		ModeSettingsManager.setModeSettings(player, modeSettings);
 
 		//Disable modifiers

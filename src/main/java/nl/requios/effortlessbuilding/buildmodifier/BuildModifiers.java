@@ -14,11 +14,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
+import nl.requios.effortlessbuilding.CommonConfig;
+import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.helper.InventoryHelper;
+import nl.requios.effortlessbuilding.helper.DelayedBlockPlacer;
 import nl.requios.effortlessbuilding.helper.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
-import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
+import nl.requios.effortlessbuilding.render.BlockPreviews;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,55 +44,17 @@ public class BuildModifiers {
 		//check if valid blockstates
 		if (blockStates.size() == 0 || coordinates.size() != blockStates.size()) return;
 
-		//remember previous blockstates for undo
-		List<BlockState> previousBlockStates = new ArrayList<>(coordinates.size());
-		List<BlockState> newBlockStates = new ArrayList<>(coordinates.size());
-		for (BlockPos coordinate : coordinates) {
-			previousBlockStates.add(world.getBlockState(coordinate));
-		}
-
 		if (world.isClientSide) {
 
-			BlockPreviewRenderer.onBlocksPlaced();
-
-			newBlockStates = blockStates;
+			BlockPreviews.onBlocksPlaced();
 
 		} else {
 
-			//place blocks
-			for (int i = placeStartPos ? 0 : 1; i < coordinates.size(); i++) {
-				BlockPos blockPos = coordinates.get(i);
-				BlockState blockState = blockStates.get(i);
-				ItemStack itemStack = itemStacks.get(i);
+			int delay = CommonConfig.visuals.appearAnimationLength.get() * 3; //DelayedBlockPlacer is called 3 times per tick?
 
-				if (world.isLoaded(blockPos)) {
-					//check itemstack empty
-					if (itemStack.isEmpty()) {
-						//try to find new stack, otherwise continue
-						itemStack = InventoryHelper.findItemStackInInventory(player, blockState.getBlock());
-						if (itemStack.isEmpty()) continue;
-					}
-					SurvivalHelper.placeBlock(world, player, blockPos, blockState, itemStack, Direction.UP, hitVec, false, false, false);
-				}
-			}
-
-			//find actual new blockstates for undo
-			for (BlockPos coordinate : coordinates) {
-				newBlockStates.add(world.getBlockState(coordinate));
-			}
-		}
-
-		//Set first previousBlockState to empty if in NORMAL mode, to make undo/redo work
-		//(Block is placed by the time it gets here, and unplaced after this)
-		if (!placeStartPos) previousBlockStates.set(0, Blocks.AIR.defaultBlockState());
-
-		//If all new blockstates are air then no use in adding it, no block was actually placed
-		//Can happen when e.g. placing one block in yourself
-		if (Collections.frequency(newBlockStates, Blocks.AIR.defaultBlockState()) != newBlockStates.size()) {
-			//add to undo stack
-			BlockPos firstPos = startCoordinates.get(0);
-			BlockPos secondPos = startCoordinates.get(startCoordinates.size() - 1);
-			UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, hitVec, firstPos, secondPos));
+			//place blocks after delay
+			EffortlessBuilding.DELAYED_BLOCK_PLACER.placeBlocksDelayed(new DelayedBlockPlacer.Entry(world, player, coordinates,
+					blockStates, itemStacks, hitVec, placeStartPos, delay));
 		}
 	}
 
@@ -109,7 +73,7 @@ public class BuildModifiers {
 		}
 
 		if (world.isClientSide) {
-			BlockPreviewRenderer.onBlocksBroken();
+			BlockPreviews.onBlocksBroken();
 
 			//list of air blockstates
 			for (int i = 0; i < coordinates.size(); i++) {
@@ -237,6 +201,7 @@ public class BuildModifiers {
 	}
 
 	public static boolean isEnabled(ModifierSettingsManager.ModifierSettings modifierSettings, BlockPos startPos) {
+		//startPos can be null
 		return Mirror.isEnabled(modifierSettings.getMirrorSettings(), startPos) ||
 			Array.isEnabled(modifierSettings.getArraySettings()) ||
 			RadialMirror.isEnabled(modifierSettings.getRadialMirrorSettings(), startPos) ||

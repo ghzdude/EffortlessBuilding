@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
-import nl.requios.effortlessbuilding.BuildConfig;
+import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 import nl.requios.effortlessbuilding.helper.ReachHelper;
@@ -192,16 +192,16 @@ public class ModifierSettingsManager {
 			int reach = 10;
 			switch (reachUpgrade) {
 				case 0:
-					reach = BuildConfig.reach.maxReachLevel0.get();
+					reach = CommonConfig.reach.maxReachLevel0.get();
 					break;
 				case 1:
-					reach = BuildConfig.reach.maxReachLevel1.get();
+					reach = CommonConfig.reach.maxReachLevel1.get();
 					break;
 				case 2:
-					reach = BuildConfig.reach.maxReachLevel2.get();
+					reach = CommonConfig.reach.maxReachLevel2.get();
 					break;
 				case 3:
-					reach = BuildConfig.reach.maxReachLevel3.get();
+					reach = CommonConfig.reach.maxReachLevel3.get();
 					break;
 			}
 

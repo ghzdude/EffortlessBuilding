@@ -19,6 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
+import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -76,6 +77,8 @@ public abstract class GhostBlockRenderer {
 			BlockState state = params.state;
 			BlockPos pos = params.pos;
 			float alpha = params.alphaSupplier.get()/*  * .75f* PlacementHelpers.getCurrentAlpha()*/;
+			float scale = params.scaleSupplier.get();
+			Color color = params.rgbSupplier.get();
 
 			BakedModel model = dispatcher.getBlockModel(state);
 			RenderType layer = RenderType.translucent();
@@ -85,10 +88,10 @@ public abstract class GhostBlockRenderer {
 			ms.translate(pos.getX(), pos.getY(), pos.getZ());
 
 			ms.translate(.5, .5, .5);
-			ms.scale(.85f, .85f, .85f);
+			ms.scale(scale, scale, scale);
 			ms.translate(-.5, -.5, -.5);
 
-			renderModel(ms.last(), vb, state, model, 0f, 1f, 1f, alpha,
+			renderModel(ms.last(), vb, state, model, color.getRedAsFloat(), color.getGreenAsFloat(), color.getBlueAsFloat(), alpha,
 				LevelRenderer.getLightColor(mc.level, pos), OverlayTexture.NO_OVERLAY,
 				ModelUtil.VIRTUAL_DATA, layer);
 
@@ -120,15 +123,15 @@ public abstract class GhostBlockRenderer {
 				float f;
 				float f1;
 				float f2;
-				if (quad.isTinted()) {
+//				if (quad.isTinted()) {
 					f = Mth.clamp(red, 0.0F, 1.0F);
 					f1 = Mth.clamp(green, 0.0F, 1.0F);
 					f2 = Mth.clamp(blue, 0.0F, 1.0F);
-				} else {
-					f = 1.0F;
-					f1 = 1.0F;
-					f2 = 1.0F;
-				}
+//				} else {
+//					f = 1.0F;
+//					f1 = 1.0F;
+//					f2 = 1.0F;
+//				}
 
 				consumer.putBulkData(pose, quad, f, f1, f2, alpha, packedLight, packedOverlay, true);
 			}

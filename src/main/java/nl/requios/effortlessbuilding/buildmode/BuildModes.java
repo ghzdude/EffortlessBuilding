@@ -66,7 +66,7 @@ public class BuildModes {
 
 			//Check if player reach does not exceed startpos
 			int maxReach = ReachHelper.getMaxReach(player);
-			if (buildMode != BuildModeEnum.NORMAL && player.blockPosition().distSqr(startPos) > maxReach * maxReach) {
+			if (buildMode != BuildModeEnum.DISABLED && player.blockPosition().distSqr(startPos) > maxReach * maxReach) {
 				EffortlessBuilding.log(player, "Placement exceeds your reach.");
 				return;
 			}
@@ -186,9 +186,6 @@ public class BuildModes {
 		return new Vec3(x, y, z);
 	}
 
-
-	//-- Common build mode functionality --//
-
 	public static Vec3 findYBound(double y, Vec3 start, Vec3 look) {
 		//then x and z are
 		double x = (y - start.y) / look.y * look.x + start.x;
@@ -246,8 +243,8 @@ public class BuildModes {
 	}
 
 	public enum BuildModeEnum {
-		NORMAL("normal", new Normal(), BuildModeCategoryEnum.BASIC),
-		NORMAL_PLUS("normal_plus", new NormalPlus(), BuildModeCategoryEnum.BASIC, OptionEnum.BUILD_SPEED),
+		DISABLED("normal", new Disabled(), BuildModeCategoryEnum.BASIC),
+		SINGLE("normal_plus", new Single(), BuildModeCategoryEnum.BASIC, OptionEnum.BUILD_SPEED),
 		LINE("line", new Line(), BuildModeCategoryEnum.BASIC /*, OptionEnum.THICKNESS*/),
 		WALL("wall", new Wall(), BuildModeCategoryEnum.BASIC, OptionEnum.FILL),
 		FLOOR("floor", new Floor(), BuildModeCategoryEnum.BASIC, OptionEnum.FILL),

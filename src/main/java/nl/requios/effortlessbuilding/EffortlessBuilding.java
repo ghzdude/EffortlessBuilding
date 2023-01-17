@@ -22,6 +22,7 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.RandomizerBagContainer;
+import nl.requios.effortlessbuilding.helper.DelayedBlockPlacer;
 import nl.requios.effortlessbuilding.item.*;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
@@ -38,6 +39,8 @@ public class EffortlessBuilding {
 
 	public static EffortlessBuilding instance;
 	public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
+
+	public static final DelayedBlockPlacer DELAYED_BLOCK_PLACER = new DelayedBlockPlacer();
 
 	//Registration
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
@@ -69,7 +72,8 @@ public class EffortlessBuilding {
 		CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
 		//Register config
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BuildConfig.spec);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.spec);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.spec);
 	}
 
 	public static void setup(final FMLCommonSetupEvent event) {

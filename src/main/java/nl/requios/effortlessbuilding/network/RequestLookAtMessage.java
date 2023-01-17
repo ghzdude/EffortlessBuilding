@@ -11,8 +11,6 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
-import nl.requios.effortlessbuilding.render.BlockPreviewRenderer;
 
 import java.util.function.Supplier;
 
