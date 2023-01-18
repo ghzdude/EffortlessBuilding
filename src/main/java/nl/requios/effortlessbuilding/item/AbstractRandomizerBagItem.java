@@ -27,7 +27,7 @@ import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.capability.ItemHandlerCapabilityProvider;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -163,7 +163,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
             BlockPlaceContext blockItemUseContext = new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(hitVec, facing, pos, false)));
             BlockState blockState = Block.byItem(toPlace.getItem()).getStateForPlacement(blockItemUseContext);
 
-            SurvivalHelper.placeBlock(world, player, pos, blockState, toPlace, facing, hitVec, false, false, true);
+            SurvivalHelper.placeBlock(world, player, pos, blockState, toPlace, false, false, true);
 
             //Synergy
             //Works without calling

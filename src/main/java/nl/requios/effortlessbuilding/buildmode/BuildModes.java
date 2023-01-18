@@ -11,8 +11,8 @@ import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.buildmodes.*;
 import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.network.BlockBrokenMessage;
 import nl.requios.effortlessbuilding.network.BlockPlacedMessage;
 
@@ -54,7 +54,7 @@ public class BuildModes {
 
 			//Offset in direction of sidehit if not quickreplace and not replaceable
 			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
-			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, message.getSideHit());
+			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
 			if (!modifierSettings.doQuickReplace() && !replaceable && !becomesDoubleSlab) {
 				startPos = startPos.relative(message.getSideHit());
 			}

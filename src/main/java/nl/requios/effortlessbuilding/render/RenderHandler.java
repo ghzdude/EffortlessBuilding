@@ -23,7 +23,7 @@ import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 /***
  * Main render class for Effortless Building
@@ -61,7 +61,7 @@ public class RenderHandler {
 
 			//Check if tool (or none) in hand
 			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
-			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos, blockLookingAt.getDirection());
+			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
 			if (!modifierSettings.doQuickReplace() && !noBlockInHand && !replaceable && !becomesDoubleSlab) {
 				startPos = startPos.relative(blockLookingAt.getDirection());
 			}

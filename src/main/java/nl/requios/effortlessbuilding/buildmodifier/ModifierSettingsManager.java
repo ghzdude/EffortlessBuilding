@@ -8,7 +8,7 @@ import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 

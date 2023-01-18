@@ -1,4 +1,4 @@
-package nl.requios.effortlessbuilding.helper;
+package nl.requios.effortlessbuilding.utilities;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -35,7 +35,7 @@ public class SurvivalHelper {
 	//Checks if area is loaded, if player has the right permissions, if existing block can be replaced (drops it if so) and consumes an item from the stack.
 	//Based on ItemBlock#onItemUse
 	public static boolean placeBlock(Level world, Player player, BlockPos pos, BlockState blockState,
-									 ItemStack origstack, Direction facing, Vec3 hitVec, boolean skipPlaceCheck,
+									 ItemStack origstack, boolean skipPlaceCheck,
 									 boolean skipCollisionCheck, boolean playSound) {
 		if (!world.isLoaded(pos)) return false;
 		ItemStack itemstack = origstack;
@@ -57,7 +57,7 @@ public class SurvivalHelper {
 
 
 		//More manual with ItemBlock#placeBlockAt
-		if (skipPlaceCheck || canPlace(world, player, pos, blockState, itemstack, skipCollisionCheck, facing.getOpposite())) {
+		if (skipPlaceCheck || canPlace(world, player, pos, blockState, itemstack, skipCollisionCheck)) {
 			//Drop existing block
 			dropBlock(world, player, pos);
 
@@ -182,10 +182,9 @@ public class SurvivalHelper {
 	 * @param newBlockState      the blockstate that is going to be placed
 	 * @param itemStack          the itemstack used for placing
 	 * @param skipCollisionCheck skips collision check with entities
-	 * @param sidePlacedOn
 	 * @return Whether the player may place the block at pos with itemstack
 	 */
-	public static boolean canPlace(Level world, Player player, BlockPos pos, BlockState newBlockState, ItemStack itemStack, boolean skipCollisionCheck, Direction sidePlacedOn) {
+	public static boolean canPlace(Level world, Player player, BlockPos pos, BlockState newBlockState, ItemStack itemStack, boolean skipCollisionCheck) {
 
 		if (!player.isCreative()) {
 			//Check if itemstack is correct
@@ -202,7 +201,7 @@ public class SurvivalHelper {
 			block = newBlockState.getBlock();
 
 		return canPlayerEdit(player, world, pos, itemStack) &&
-			mayPlace(world, block, newBlockState, pos, skipCollisionCheck, sidePlacedOn, player) &&
+			mayPlace(world, block, newBlockState, pos, skipCollisionCheck, player) &&
 			canReplace(world, player, pos);
 	}
 
@@ -248,7 +247,7 @@ public class SurvivalHelper {
 	}
 
 	//From World#mayPlace
-	private static boolean mayPlace(Level world, Block blockIn, BlockState newBlockState, BlockPos pos, boolean skipCollisionCheck, Direction sidePlacedOn, @Nullable Entity placer) {
+	private static boolean mayPlace(Level world, Block blockIn, BlockState newBlockState, BlockPos pos, boolean skipCollisionCheck, @Nullable Entity placer) {
 		BlockState currentBlockState = world.getBlockState(pos);
 		VoxelShape voxelShape = skipCollisionCheck ? null : blockIn.defaultBlockState().getCollisionShape(world, pos);
 
@@ -257,7 +256,7 @@ public class SurvivalHelper {
 		}
 
 		//Check if double slab
-		if (placer != null && doesBecomeDoubleSlab(((Player) placer), pos, sidePlacedOn)) {
+		if (placer != null && doesBecomeDoubleSlab(((Player) placer), pos)) {
 			return true;
 		}
 
@@ -290,7 +289,7 @@ public class SurvivalHelper {
 		return ForgeEventFactory.doPlayerHarvestCheck(player, blockState, true);
 	}
 
-	public static boolean doesBecomeDoubleSlab(Player player, BlockPos pos, Direction facing) {
+	public static boolean doesBecomeDoubleSlab(Player player, BlockPos pos) {
 		BlockState placedBlockState = player.level.getBlockState(pos);
 
 		ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);

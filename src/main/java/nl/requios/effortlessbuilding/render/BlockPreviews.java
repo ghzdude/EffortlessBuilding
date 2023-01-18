@@ -30,9 +30,8 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.create.AllSpecialTextures;
 import nl.requios.effortlessbuilding.create.CreateClient;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-import nl.requios.effortlessbuilding.create.foundation.utility.VecHelper;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 
 import java.util.ArrayList;
@@ -270,7 +269,7 @@ public class BlockPreviews {
 			//Check if we can place
 			boolean canPlace = true;
 			if (checkCanPlace) {
-				canPlace = SurvivalHelper.canPlace(player.level, player, blockPos, blockState, itemstack, modifierSettings.doQuickReplace(), Direction.UP);
+				canPlace = SurvivalHelper.canPlace(player.level, player, blockPos, blockState, itemstack, modifierSettings.doQuickReplace());
 			} else {
 				//If check is turned off, check if blockstate is the same (for dissolve effect)
 				canPlace = player.level.getBlockState(blockPos) != blockState;

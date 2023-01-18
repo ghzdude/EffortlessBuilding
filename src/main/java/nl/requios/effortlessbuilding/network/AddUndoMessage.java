@@ -93,7 +93,6 @@ public class AddUndoMessage {
 					new ArrayList<BlockState>() {{
 						add(message.getNewBlockState());
 					}},
-					new Vec3(0, 0, 0),
 					message.getCoordinate(), message.getCoordinate()));
 		}
 	}

@@ -22,12 +22,13 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.RandomizerBagContainer;
-import nl.requios.effortlessbuilding.helper.DelayedBlockPlacer;
+import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
 import nl.requios.effortlessbuilding.item.*;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import nl.requios.effortlessbuilding.proxy.IProxy;
 import nl.requios.effortlessbuilding.proxy.ServerProxy;
+import nl.requios.effortlessbuilding.systems.ServerBlockPlacer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,6 +41,7 @@ public class EffortlessBuilding {
 	public static EffortlessBuilding instance;
 	public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
+	public static final ServerBlockPlacer SERVER_BLOCK_PLACER = new ServerBlockPlacer();
 	public static final DelayedBlockPlacer DELAYED_BLOCK_PLACER = new DelayedBlockPlacer();
 
 	//Registration

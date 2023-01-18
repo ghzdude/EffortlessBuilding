@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 

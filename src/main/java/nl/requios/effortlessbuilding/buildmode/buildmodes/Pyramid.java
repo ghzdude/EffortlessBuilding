@@ -2,11 +2,8 @@ package nl.requios.effortlessbuilding.buildmode.buildmodes;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
-import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ThreeClicksBuildMode;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Pyramid extends ThreeClicksBuildMode {

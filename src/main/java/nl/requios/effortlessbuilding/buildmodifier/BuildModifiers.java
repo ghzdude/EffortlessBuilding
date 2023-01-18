@@ -17,8 +17,8 @@ import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.helper.DelayedBlockPlacer;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
+import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.render.BlockPreviews;
 
@@ -54,7 +54,7 @@ public class BuildModifiers {
 
 			//place blocks after delay
 			EffortlessBuilding.DELAYED_BLOCK_PLACER.placeBlocksDelayed(new DelayedBlockPlacer.Entry(world, player, coordinates,
-					blockStates, itemStacks, hitVec, placeStartPos, delay));
+					blockStates, itemStacks, placeStartPos, delay));
 		}
 	}
 
@@ -109,8 +109,7 @@ public class BuildModifiers {
 		//add to undo stack
 		BlockPos firstPos = startCoordinates.get(0);
 		BlockPos secondPos = startCoordinates.get(startCoordinates.size() - 1);
-		Vec3 hitVec = new Vec3(0.5, 0.5, 0.5);
-		UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, hitVec, firstPos, secondPos));
+		UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
 
 	}
 

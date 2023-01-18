@@ -15,7 +15,7 @@ import nl.requios.effortlessbuilding.gui.elements.GuiCheckBoxFixed;
 import nl.requios.effortlessbuilding.gui.elements.GuiCollapsibleScrollEntry;
 import nl.requios.effortlessbuilding.gui.elements.GuiNumberField;
 import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.ArrayList;
 import java.util.List;

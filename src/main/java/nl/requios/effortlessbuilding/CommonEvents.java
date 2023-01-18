@@ -12,6 +12,7 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,7 +25,7 @@ import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
 import nl.requios.effortlessbuilding.network.ClearUndoMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
@@ -62,13 +63,12 @@ public class CommonEvents {
 
 	@SubscribeEvent
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
-		if (event.getLevel().isClientSide()) return;
+		if (event.getLevel().isClientSide()) return; //Never called clientside anyway, but just to be sure
 
-		if (!(event.getEntity() instanceof Player)) return;
+		if (!(event.getEntity() instanceof Player player)) return;
 
 		if (event.getEntity() instanceof FakePlayer) return;
 
-		ServerPlayer player = ((ServerPlayer) event.getEntity());
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
@@ -85,15 +85,15 @@ public class CommonEvents {
 			if (isPlayerHoldingBlock(player)) {
 				event.setCanceled(true);
 			}
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RequestLookAtMessage(true));
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
+			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new RequestLookAtMessage(true));
+			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
 		} else {
 			//NORMAL mode, let vanilla handle block placing
 			//But modifiers should still work
 
 			//Send message to client, which sends message back with raytrace info
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RequestLookAtMessage(false));
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
+			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new RequestLookAtMessage(false));
+			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
 		}
 	}
 
@@ -101,22 +101,23 @@ public class CommonEvents {
 	public static void onBlockBroken(BlockEvent.BreakEvent event) {
 		if (event.getLevel().isClientSide()) return;
 
-		if (event.getPlayer() instanceof FakePlayer) return;
+		Player player = event.getPlayer();
+		if (player instanceof FakePlayer) return;
 
 		//Cancel event if necessary
 		//If cant break far then dont cancel event ever
-		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(event.getPlayer()).getBuildMode();
-		if (buildMode != BuildModes.BuildModeEnum.DISABLED && ReachHelper.canBreakFar(event.getPlayer())) {
+		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
+		if (buildMode != BuildModes.BuildModeEnum.DISABLED && ReachHelper.canBreakFar(player)) {
 			event.setCanceled(true);
 		} else {
 			//NORMAL mode, let vanilla handle block breaking
 			//But modifiers and QuickReplace should still work
 			//Dont break the original block yourself, otherwise Tinkers Hammer and Veinminer won't work
-			BuildModes.onBlockBroken(event.getPlayer(), event.getPos(), false);
+			BuildModes.onBlockBroken(player, event.getPos(), false);
 
 			//Add to undo stack in client
-			if (event.getPlayer() instanceof ServerPlayer && event.getState() != null && event.getPos() != null) {
-				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer());
+			if (player instanceof ServerPlayer && event.getState() != null && event.getPos() != null) {
+				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayer) player);
 				if (packetTarget != null)
 					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.defaultBlockState()));
 			}

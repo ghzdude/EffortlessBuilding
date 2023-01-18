@@ -40,7 +40,7 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
 import nl.requios.effortlessbuilding.gui.buildmodifier.ModifierSettingsGui;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.*;
 import nl.requios.effortlessbuilding.render.BuildRenderTypes;
 import org.lwjgl.glfw.GLFW;

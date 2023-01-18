@@ -1,16 +1,15 @@
-package nl.requios.effortlessbuilding.helper;
+package nl.requios.effortlessbuilding.systems;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.buildmodifier.BlockSet;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
-import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
+import nl.requios.effortlessbuilding.utilities.InventoryHelper;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 import java.util.*;
 
@@ -45,18 +44,16 @@ public class DelayedBlockPlacer {
         private List<BlockPos> coordinates;
         private List<BlockState> blockStates;
         private List<ItemStack> itemStacks;
-        private Vec3 hitVec;
         private boolean placeStartPos;
         private int ticksTillPlacement;
 
         public Entry(Level world, Player player, List<BlockPos> coordinates, List<BlockState> blockStates,
-                     List<ItemStack> itemStacks, Vec3 hitVec, boolean placeStartPos, int ticksTillPlacement) {
+                     List<ItemStack> itemStacks, boolean placeStartPos, int ticksTillPlacement) {
             this.world = world;
             this.player = player;
             this.coordinates = coordinates;
             this.blockStates = blockStates;
             this.itemStacks = itemStacks;
-            this.hitVec = hitVec;
             this.placeStartPos = placeStartPos;
             this.ticksTillPlacement = ticksTillPlacement;
         }
@@ -80,7 +77,7 @@ public class DelayedBlockPlacer {
 						itemStack = InventoryHelper.findItemStackInInventory(player, blockState.getBlock());
 						if (itemStack.isEmpty()) continue;
 					}
-					SurvivalHelper.placeBlock(world, player, blockPos, blockState, itemStack, Direction.UP, hitVec, false, false, false);
+					SurvivalHelper.placeBlock(world, player, blockPos, blockState, itemStack, false, false, false);
 				}
 			}
 
@@ -100,7 +97,7 @@ public class DelayedBlockPlacer {
                 //add to undo stack
                 BlockPos firstPos = coordinates.get(0);
                 BlockPos secondPos = coordinates.get(coordinates.size() - 1);
-                UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, hitVec, firstPos, secondPos));
+                UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
             }
         }
 

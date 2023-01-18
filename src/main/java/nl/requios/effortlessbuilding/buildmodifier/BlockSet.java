@@ -10,16 +10,14 @@ public class BlockSet {
 	private final List<BlockPos> coordinates;
 	private final List<BlockState> previousBlockStates;
 	private final List<BlockState> newBlockStates;
-	private final Vec3 hitVec;
 	private final BlockPos firstPos;
 	private final BlockPos secondPos;
 
-	public BlockSet(List<BlockPos> coordinates, List<BlockState> previousBlockStates, List<BlockState> newBlockStates, Vec3 hitVec,
+	public BlockSet(List<BlockPos> coordinates, List<BlockState> previousBlockStates, List<BlockState> newBlockStates,
 					BlockPos firstPos, BlockPos secondPos) {
 		this.coordinates = coordinates;
 		this.previousBlockStates = previousBlockStates;
 		this.newBlockStates = newBlockStates;
-		this.hitVec = hitVec;
 		this.firstPos = firstPos;
 		this.secondPos = secondPos;
 	}
@@ -34,10 +32,6 @@ public class BlockSet {
 
 	public List<BlockState> getNewBlockStates() {
 		return newBlockStates;
-	}
-
-	public Vec3 getHitVec() {
-		return hitVec;
 	}
 
 	public BlockPos getFirstPos() {

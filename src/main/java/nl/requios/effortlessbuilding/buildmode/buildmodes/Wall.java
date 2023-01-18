@@ -6,7 +6,7 @@ import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.TwoClicksBuildMode;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.ArrayList;
 import java.util.List;

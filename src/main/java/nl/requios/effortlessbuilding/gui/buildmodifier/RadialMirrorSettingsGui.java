@@ -14,7 +14,7 @@ import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
 import nl.requios.effortlessbuilding.gui.elements.*;
-import nl.requios.effortlessbuilding.helper.ReachHelper;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

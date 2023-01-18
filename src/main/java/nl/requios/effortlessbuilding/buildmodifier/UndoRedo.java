@@ -12,9 +12,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.helper.FixedStack;
-import nl.requios.effortlessbuilding.helper.InventoryHelper;
-import nl.requios.effortlessbuilding.helper.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.FixedStack;
+import nl.requios.effortlessbuilding.utilities.InventoryHelper;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.render.BlockPreviews;
 
 import java.util.*;
@@ -82,7 +82,6 @@ public class UndoRedo {
 		List<BlockPos> coordinates = blockSet.getCoordinates();
 		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
 		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
-		Vec3 hitVec = blockSet.getHitVec();
 
 		//Find up to date itemstacks in player inventory
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
@@ -118,7 +117,7 @@ public class UndoRedo {
 					}
 					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
 					//if previousBlockState is air, placeBlock will set it to air
-					SurvivalHelper.placeBlock(player.level, player, coordinate, previousBlockState, itemStack, Direction.UP, hitVec, true, false, false);
+					SurvivalHelper.placeBlock(player.level, player, coordinate, previousBlockState, itemStack, true, false, false);
 				}
 			}
 		}
@@ -142,7 +141,6 @@ public class UndoRedo {
 		List<BlockPos> coordinates = blockSet.getCoordinates();
 		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
 		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
-		Vec3 hitVec = blockSet.getHitVec();
 
 		//Find up to date itemstacks in player inventory
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
@@ -177,7 +175,7 @@ public class UndoRedo {
 						}
 					}
 					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
-					SurvivalHelper.placeBlock(player.level, player, coordinate, newBlockState, itemStack, Direction.UP, hitVec, true, false, false);
+					SurvivalHelper.placeBlock(player.level, player, coordinate, newBlockState, itemStack, true, false, false);
 				}
 			}
 		}

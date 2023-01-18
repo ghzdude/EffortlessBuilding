@@ -1,4 +1,4 @@
-package nl.requios.effortlessbuilding.helper;
+package nl.requios.effortlessbuilding.utilities;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
