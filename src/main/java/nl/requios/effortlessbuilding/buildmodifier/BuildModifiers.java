@@ -50,7 +50,7 @@ public class BuildModifiers {
 
 		} else {
 
-			int delay = CommonConfig.visuals.appearAnimationLength.get() * 3 - 3; //DelayedBlockPlacer is called 3 times per tick?
+			int delay = CommonConfig.visuals.appearAnimationLength.get() * 3 - 3; //DelayedBlockPlacer is 3 times faster than client tick?
 
 			//place blocks after delay
 			EffortlessBuilding.DELAYED_BLOCK_PLACER.placeBlocksDelayed(new DelayedBlockPlacer.Entry(world, player, coordinates,

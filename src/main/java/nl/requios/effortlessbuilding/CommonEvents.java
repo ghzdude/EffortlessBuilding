@@ -68,7 +68,6 @@ public class CommonEvents {
 
 		if (event.getEntity() instanceof FakePlayer) return;
 
-		//Cancel event if necessary
 		ServerPlayer player = ((ServerPlayer) event.getEntity());
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
@@ -77,15 +76,15 @@ public class CommonEvents {
 
 			//Only cancel if itemblock in hand
 			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
-			ItemStack currentItemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-			if (currentItemStack.getItem() instanceof BlockItem ||
-				(CompatHelper.isItemBlockProxy(currentItemStack) && !player.isShiftKeyDown())) {
+			if (isPlayerHoldingBlock(player)) {
 				event.setCanceled(true);
 			}
 
 		} else if (modifierSettings.doQuickReplace()) {
 			//Cancel event and send message if QuickReplace
-			event.setCanceled(true);
+			if (isPlayerHoldingBlock(player)) {
+				event.setCanceled(true);
+			}
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RequestLookAtMessage(true));
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
 		} else {
@@ -96,11 +95,6 @@ public class CommonEvents {
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RequestLookAtMessage(false));
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
 		}
-
-//        Stat<ResourceLocation> blocksPlacedStat = StatList.CUSTOM.get(new ResourceLocation(EffortlessBuilding.MODID, "blocks_placed"));
-//        player.getStats().increment(player, blocksPlacedStat, 1);
-//
-//        System.out.println(player.getStats().getValue(blocksPlacedStat));
 	}
 
 	@SubscribeEvent
@@ -127,6 +121,12 @@ public class CommonEvents {
 					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.defaultBlockState()));
 			}
 		}
+	}
+
+	private static boolean isPlayerHoldingBlock(Player player) {
+		ItemStack currentItemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+		return currentItemStack.getItem() instanceof BlockItem ||
+				(CompatHelper.isItemBlockProxy(currentItemStack) && !player.isShiftKeyDown());
 	}
 
 	@SubscribeEvent
