@@ -9,11 +9,12 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
+import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
+import static nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
 @Mod.EventBusSubscriber
 public class ModeCapabilityManager {
@@ -83,7 +84,7 @@ public class ModeCapabilityManager {
 		public Tag serializeNBT() {
 			CompoundTag compound = new CompoundTag();
 			ModeSettings modeSettings = instance.getModeData();
-			if (modeSettings == null) modeSettings = new ModeSettings();
+			if (modeSettings == null) modeSettings = new ModeSettingsManager.ModeSettings();
 
 			//compound.putInteger("buildMode", modeSettings.getBuildMode().ordinal());
 

@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
@@ -18,6 +19,7 @@ import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
+import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.render.BlockPreviews;
@@ -27,6 +29,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class BuildModifiers {
+
+	public void findCoordinates(List<BlockEntry> blocks, LocalPlayer player, ModifierSettingsManager.ModifierSettings modifierSettings) {
+
+	}
 
 	//Called from BuildModes
 	public static void onBlockPlaced(Player player, List<BlockPos> startCoordinates, Direction sideHit, Vec3 hitVec, boolean placeStartPos) {

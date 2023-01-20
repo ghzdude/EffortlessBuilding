@@ -6,6 +6,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
@@ -47,7 +48,9 @@ public class ModeSettingsManager {
 		modeCapability.ifPresent((capability) -> {
 			capability.setModeData(modeSettings);
 
-			BuildModes.initializeMode(player);
+			if (player.level.isClientSide) {
+				EffortlessBuildingClient.BUILDER_CHAIN.cancel();
+			}
 		});
 
 		if (!modeCapability.isPresent()) {
@@ -56,11 +59,7 @@ public class ModeSettingsManager {
 	}
 
 	public static String sanitize(ModeSettings modeSettings, Player player) {
-		int maxReach = ReachHelper.getMaxReach(player);
 		String error = "";
-
-		//TODO sanitize
-
 		return error;
 	}
 

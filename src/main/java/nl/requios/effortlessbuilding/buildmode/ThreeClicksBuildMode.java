@@ -12,49 +12,6 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	protected Dictionary<UUID, BlockPos> secondPosTable = new Hashtable<>();
 
 	//Finds height after floor has been chosen in buildmodes with 3 clicks
-	public static BlockPos findHeight(Player player, BlockPos secondPos, boolean skipRaytrace) {
-		Vec3 look = BuildModes.getPlayerLookVec(player);
-		Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
-
-		List<HeightCriteria> criteriaList = new ArrayList<>(3);
-
-		//X
-		Vec3 xBound = BuildModes.findXBound(secondPos.getX(), start, look);
-		criteriaList.add(new HeightCriteria(xBound, secondPos, start));
-
-		//Z
-		Vec3 zBound = BuildModes.findZBound(secondPos.getZ(), start, look);
-		criteriaList.add(new HeightCriteria(zBound, secondPos, start));
-
-		//Remove invalid criteria
-		int reach = ReachHelper.getPlacementReach(player) * 4; //4 times as much as normal placement reach
-		criteriaList.removeIf(criteria -> !criteria.isValid(start, look, reach, player, skipRaytrace));
-
-		//If none are valid, return empty list of blocks
-		if (criteriaList.isEmpty()) return null;
-
-		//If only 1 is valid, choose that one
-		HeightCriteria selected = criteriaList.get(0);
-
-		//If multiple are valid, choose based on criteria
-		if (criteriaList.size() > 1) {
-			//Select the one that is closest (from wall position to its line counterpart)
-			for (int i = 1; i < criteriaList.size(); i++) {
-				HeightCriteria criteria = criteriaList.get(i);
-				if (criteria.distToLineSq < 2.0 && selected.distToLineSq < 2.0) {
-					//Both very close to line, choose closest to player
-					if (criteria.distToPlayerSq < selected.distToPlayerSq)
-						selected = criteria;
-				} else {
-					//Pick closest to line
-					if (criteria.distToLineSq < selected.distToLineSq)
-						selected = criteria;
-				}
-			}
-		}
-		return new BlockPos(selected.lineBound);
-	}
-
 	@Override
 	public void initialize(Player player) {
 		super.initialize(player);
@@ -170,6 +127,49 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 		}
 
 		return list;
+	}
+
+	public static BlockPos findHeight(Player player, BlockPos secondPos, boolean skipRaytrace) {
+		Vec3 look = BuildModes.getPlayerLookVec(player);
+		Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
+
+		List<HeightCriteria> criteriaList = new ArrayList<>(3);
+
+		//X
+		Vec3 xBound = BuildModes.findXBound(secondPos.getX(), start, look);
+		criteriaList.add(new HeightCriteria(xBound, secondPos, start));
+
+		//Z
+		Vec3 zBound = BuildModes.findZBound(secondPos.getZ(), start, look);
+		criteriaList.add(new HeightCriteria(zBound, secondPos, start));
+
+		//Remove invalid criteria
+		int reach = ReachHelper.getPlacementReach(player) * 4; //4 times as much as normal placement reach
+		criteriaList.removeIf(criteria -> !criteria.isValid(start, look, reach, player, skipRaytrace));
+
+		//If none are valid, return empty list of blocks
+		if (criteriaList.isEmpty()) return null;
+
+		//If only 1 is valid, choose that one
+		HeightCriteria selected = criteriaList.get(0);
+
+		//If multiple are valid, choose based on criteria
+		if (criteriaList.size() > 1) {
+			//Select the one that is closest (from wall position to its line counterpart)
+			for (int i = 1; i < criteriaList.size(); i++) {
+				HeightCriteria criteria = criteriaList.get(i);
+				if (criteria.distToLineSq < 2.0 && selected.distToLineSq < 2.0) {
+					//Both very close to line, choose closest to player
+					if (criteria.distToPlayerSq < selected.distToPlayerSq)
+						selected = criteria;
+				} else {
+					//Pick closest to line
+					if (criteria.distToLineSq < selected.distToLineSq)
+						selected = criteria;
+				}
+			}
+		}
+		return new BlockPos(selected.lineBound);
 	}
 
 	//Finds the place of the second block pos

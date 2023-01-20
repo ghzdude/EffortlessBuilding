@@ -4,6 +4,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
+import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.ArrayList;
@@ -13,34 +14,28 @@ import java.util.UUID;
 
 public abstract class TwoClicksBuildMode extends BaseBuildMode {
 
+	protected BlockEntry firstBlockEntry;
+
 	@Override
-	public List<BlockPos> onRightClick(Player player, BlockPos blockPos, Direction sideHit, Vec3 hitVec, boolean skipRaytrace) {
-		List<BlockPos> list = new ArrayList<>();
+	public boolean onClick(List<BlockEntry> blocks) {
+		super.onClick(blocks);
 
-		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUUID());
-		rightClickNr++;
-		rightClickTable.put(player.getUUID(), rightClickNr);
+		if (clicks == 1) {
+			//First click, remember starting position
 
-		if (rightClickNr == 1) {
 			//If clicking in air, reset and try again
-			if (blockPos == null) {
-				rightClickTable.put(player.getUUID(), 0);
-				return list;
+			if (blocks.size() == 0) {
+				clicks = 0;
+				return false;
 			}
 
-			//First click, remember starting position
-			firstPosTable.put(player.getUUID(), blockPos);
-			sideHitTable.put(player.getUUID(), sideHit);
-			hitVecTable.put(player.getUUID(), hitVec);
-			//Keep list empty, dont place any blocks yet
+			firstBlockEntry = blocks.get(0);
 		} else {
 			//Second click, place blocks
-			list = findCoordinates(player, blockPos, skipRaytrace);
-			rightClickTable.put(player.getUUID(), 0);
+			clicks = 0;
+			return true;
 		}
-
-		return list;
+		return false;
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -29,7 +28,6 @@ import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
 import nl.requios.effortlessbuilding.network.ClearUndoMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.network.RequestLookAtMessage;
 
 @EventBusSubscriber
 public class CommonEvents {
@@ -61,18 +59,17 @@ public class CommonEvents {
 		EffortlessBuilding.DELAYED_BLOCK_PLACER.tick();
 	}
 
+	//Cancel event if necessary. Nothing more, rest is handled on mouse right click
 	@SubscribeEvent
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
 		if (event.getLevel().isClientSide()) return; //Never called clientside anyway, but just to be sure
-
 		if (!(event.getEntity() instanceof Player player)) return;
-
 		if (event.getEntity() instanceof FakePlayer) return;
 
 		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-		if (buildMode != BuildModes.BuildModeEnum.DISABLED) {
+		if (buildMode != BuildModes.BuildModeEnum.DISABLED || modifierSettings.doQuickReplace()) {
 
 			//Only cancel if itemblock in hand
 			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
@@ -80,19 +77,10 @@ public class CommonEvents {
 				event.setCanceled(true);
 			}
 
-		} else if (modifierSettings.doQuickReplace()) {
-			//Cancel event and send message if QuickReplace
-			if (isPlayerHoldingBlock(player)) {
-				event.setCanceled(true);
-			}
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new RequestLookAtMessage(true));
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
-		} else {
+		}  else {
 			//NORMAL mode, let vanilla handle block placing
-			//But modifiers should still work
 
-			//Send message to client, which sends message back with raytrace info
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new RequestLookAtMessage(false));
+			//TODO move UndoRedo to serverside only
 			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
 		}
 	}
@@ -100,7 +88,6 @@ public class CommonEvents {
 	@SubscribeEvent
 	public static void onBlockBroken(BlockEvent.BreakEvent event) {
 		if (event.getLevel().isClientSide()) return;
-
 		Player player = event.getPlayer();
 		if (player instanceof FakePlayer) return;
 
@@ -111,9 +98,6 @@ public class CommonEvents {
 			event.setCanceled(true);
 		} else {
 			//NORMAL mode, let vanilla handle block breaking
-			//But modifiers and QuickReplace should still work
-			//Dont break the original block yourself, otherwise Tinkers Hammer and Veinminer won't work
-			BuildModes.onBlockBroken(player, event.getPos(), false);
 
 			//Add to undo stack in client
 			if (player instanceof ServerPlayer && event.getState() != null && event.getPos() != null) {

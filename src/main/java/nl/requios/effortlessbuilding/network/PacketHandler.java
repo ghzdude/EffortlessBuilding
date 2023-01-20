@@ -20,12 +20,10 @@ public class PacketHandler {
 		INSTANCE.registerMessage(id++, ModifierSettingsMessage.class, ModifierSettingsMessage::encode, ModifierSettingsMessage::decode, ModifierSettingsMessage.Handler::handle);
 		INSTANCE.registerMessage(id++, ModeSettingsMessage.class, ModeSettingsMessage::encode, ModeSettingsMessage::decode, ModeSettingsMessage.Handler::handle);
 		INSTANCE.registerMessage(id++, ModeActionMessage.class, ModeActionMessage::encode, ModeActionMessage::decode, ModeActionMessage.Handler::handle);
-		INSTANCE.registerMessage(id++, BlockPlacedMessage.class, BlockPlacedMessage::encode, BlockPlacedMessage::decode, BlockPlacedMessage.Handler::handle);
-		INSTANCE.registerMessage(id++, BlockBrokenMessage.class, BlockBrokenMessage::encode, BlockBrokenMessage::decode, BlockBrokenMessage.Handler::handle);
-		INSTANCE.registerMessage(id++, CancelModeMessage.class, CancelModeMessage::encode, CancelModeMessage::decode, CancelModeMessage.Handler::handle);
-		INSTANCE.registerMessage(id++, RequestLookAtMessage.class, RequestLookAtMessage::encode, RequestLookAtMessage::decode, RequestLookAtMessage.Handler::handle);
+		INSTANCE.registerMessage(id++, OnBlockPlacedMessage.class, OnBlockPlacedMessage::encode, OnBlockPlacedMessage::decode, OnBlockPlacedMessage.Handler::handle);
 		INSTANCE.registerMessage(id++, AddUndoMessage.class, AddUndoMessage::encode, AddUndoMessage::decode, AddUndoMessage.Handler::handle);
 		INSTANCE.registerMessage(id++, ClearUndoMessage.class, ClearUndoMessage::encode, ClearUndoMessage::decode, ClearUndoMessage.Handler::handle);
+		INSTANCE.registerMessage(id++, ServerPlaceBlocksMessage.class, ServerPlaceBlocksMessage::encode, ServerPlaceBlocksMessage::decode, ServerPlaceBlocksMessage.Handler::handle);
 
 	}
 

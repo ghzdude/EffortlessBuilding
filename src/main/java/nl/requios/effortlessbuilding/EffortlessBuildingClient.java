@@ -3,14 +3,18 @@ package nl.requios.effortlessbuilding;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import nl.requios.effortlessbuilding.buildmode.BuildModes;
+import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagScreen;
 import nl.requios.effortlessbuilding.gui.RandomizerBagScreen;
-import nl.requios.effortlessbuilding.systems.BlockChain;
+import nl.requios.effortlessbuilding.systems.BuilderChain;
 
 public class EffortlessBuildingClient {
 
-    public static final BlockChain BLOCK_CHAIN = new BlockChain();
+    public static final BuilderChain BUILDER_CHAIN = new BuilderChain();
+    public static final BuildModes BUILD_MODES = new BuildModes();
+    public static final BuildModifiers BUILD_MODIFIERS = new BuildModifiers();
 
     public static void onConstructorClient(IEventBus modEventBus, IEventBus forgeEventBus) {
         modEventBus.addListener(EffortlessBuildingClient::clientSetup);

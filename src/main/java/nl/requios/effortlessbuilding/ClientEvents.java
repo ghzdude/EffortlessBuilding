@@ -8,17 +8,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -36,7 +29,6 @@ import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
-import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
 import nl.requios.effortlessbuilding.gui.buildmodifier.ModifierSettingsGui;
@@ -92,7 +84,12 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (!isGameActive()) return;
+
         if (event.phase == TickEvent.Phase.START) {
+
+            EffortlessBuildingClient.BUILDER_CHAIN.onTick();
+
             onMouseInput();
 
             //Update previousLookAt
@@ -140,41 +137,11 @@ public class ClientEvents {
 
         if (mc.options.keyUse.isDown()) {
 
-            //KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
-
             if (placeCooldown <= 0) {
                 placeCooldown = 4;
 
-                ItemStack currentItemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-                if (currentItemStack.getItem() instanceof BlockItem ||
-                    (CompatHelper.isItemBlockProxy(currentItemStack) && !player.isShiftKeyDown())) {
+                EffortlessBuildingClient.BUILDER_CHAIN.onRightClick();
 
-                    ItemStack itemStack = CompatHelper.getItemBlockFromStack(currentItemStack);
-
-                    //find position in distance
-                    HitResult lookingAt = getLookingAt(player);
-                    if (lookingAt != null && lookingAt.getType() == HitResult.Type.BLOCK) {
-                        BlockHitResult blockLookingAt = (BlockHitResult) lookingAt;
-
-                        BuildModes.onBlockPlacedMessage(player, new BlockPlacedMessage(blockLookingAt, true));
-                        PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage(blockLookingAt, true));
-
-                        //play sound if further than normal
-                        if ((blockLookingAt.getLocation().subtract(player.getEyePosition(1f))).lengthSqr() > 25f &&
-                            itemStack.getItem() instanceof BlockItem) {
-
-                            BlockState state = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
-                            BlockPos blockPos = blockLookingAt.getBlockPos();
-                            SoundType soundType = state.getBlock().getSoundType(state, player.level, blockPos, player);
-                            player.level.playSound(player, player.blockPosition(), soundType.getPlaceSound(), SoundSource.BLOCKS,
-                                    0.4f, soundType.getPitch());
-                            player.swing(InteractionHand.MAIN_HAND);
-                        }
-                    } else {
-                        BuildModes.onBlockPlacedMessage(player, new BlockPlacedMessage());
-                        PacketHandler.INSTANCE.sendToServer(new BlockPlacedMessage());
-                    }
-                }
             } else if (buildMode == BuildModes.BuildModeEnum.SINGLE) {
                 placeCooldown--;
                 if (ModeOptions.getBuildSpeed() == ModeOptions.ActionEnum.FAST_SPEED) placeCooldown = 0;
@@ -189,33 +156,12 @@ public class ClientEvents {
             if (breakCooldown <= 0) {
                 breakCooldown = 4;
 
-                HitResult lookingAt = getLookingAt(player);
-                if (lookingAt != null && lookingAt.getType() == HitResult.Type.BLOCK) {
-                    BlockHitResult blockLookingAt = (BlockHitResult) lookingAt;
+                EffortlessBuildingClient.BUILDER_CHAIN.onLeftClick();
 
-                    BuildModes.onBlockBrokenMessage(player, new BlockBrokenMessage(blockLookingAt));
-                    PacketHandler.INSTANCE.sendToServer(new BlockBrokenMessage(blockLookingAt));
-
-                    //play sound if further than normal
-                    if ((blockLookingAt.getLocation().subtract(player.getEyePosition(1f))).lengthSqr() > 25f) {
-
-                        BlockPos blockPos = blockLookingAt.getBlockPos();
-                        BlockState state = player.level.getBlockState(blockPos);
-                        SoundType soundtype = state.getBlock().getSoundType(state, player.level, blockPos, player);
-                        player.level.playSound(player, player.blockPosition(), soundtype.getBreakSound(), SoundSource.BLOCKS,
-                                0.4f, soundtype.getPitch());
-                        player.swing(InteractionHand.MAIN_HAND);
-                    }
-                } else {
-                    BuildModes.onBlockBrokenMessage(player, new BlockBrokenMessage());
-                    PacketHandler.INSTANCE.sendToServer(new BlockBrokenMessage());
-                }
             } else if (buildMode == BuildModes.BuildModeEnum.SINGLE) {
                 breakCooldown--;
                 if (ModeOptions.getBuildSpeed() == ModeOptions.ActionEnum.FAST_SPEED) breakCooldown = 0;
             }
-
-            //EffortlessBuilding.packetHandler.sendToServer(new CancelModeMessage());
 
         } else {
             breakCooldown = 0;
@@ -310,7 +256,7 @@ public class ClientEvents {
     public static void onGuiOpen(ScreenEvent event) {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
-            BuildModes.initializeMode(player);
+            EffortlessBuildingClient.BUILDER_CHAIN.cancel();
         }
     }
 
@@ -320,7 +266,7 @@ public class ClientEvents {
                 keyBindings[2].getKey().getValue());
     }
 
-    public static HitResult getLookingAt(Player player) {
+    public static BlockHitResult getLookingAt(Player player) {
         Level world = player.level;
 
         //base distance off of player ability (config)
@@ -329,9 +275,12 @@ public class ClientEvents {
         Vec3 look = player.getLookAngle();
         Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
         Vec3 end = new Vec3(player.getX() + look.x * raytraceRange, player.getY() + player.getEyeHeight() + look.y * raytraceRange, player.getZ() + look.z * raytraceRange);
-//        return player.rayTrace(raytraceRange, 1f, RayTraceFluidMode.NEVER);
-        //TODO 1.14 check if correct
+
         return world.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+    }
+
+    public static boolean isGameActive() {
+        return !(Minecraft.getInstance().level == null || Minecraft.getInstance().player == null);
     }
 
 }

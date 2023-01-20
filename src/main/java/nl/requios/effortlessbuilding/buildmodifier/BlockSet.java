@@ -6,6 +6,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
+//Used only for Undo
 public class BlockSet {
 	private final List<BlockPos> coordinates;
 	private final List<BlockState> previousBlockStates;

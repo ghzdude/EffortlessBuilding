@@ -25,7 +25,6 @@ import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.network.ModeActionMessage;
 import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import org.apache.commons.lang3.text.WordUtils;
 import org.lwjgl.opengl.GL11;
 

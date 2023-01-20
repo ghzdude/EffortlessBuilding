@@ -21,8 +21,6 @@ import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.IBuildMode;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
@@ -37,6 +35,8 @@ import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
 @OnlyIn(Dist.CLIENT)
 public class BlockPreviews {

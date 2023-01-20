@@ -2,179 +2,39 @@ package nl.requios.effortlessbuilding.buildmode;
 
 import com.mojang.math.Vector4f;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.buildmode.buildmodes.*;
-import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
+import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
-import nl.requios.effortlessbuilding.network.BlockBrokenMessage;
-import nl.requios.effortlessbuilding.network.BlockPlacedMessage;
 
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import static nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 
+@OnlyIn(Dist.CLIENT)
 public class BuildModes {
 
-	//Static variables are shared between client and server in singleplayer
-	//We need them separate
-	public static Dictionary<Player, Boolean> currentlyBreakingClient = new Hashtable<>();
-	public static Dictionary<Player, Boolean> currentlyBreakingServer = new Hashtable<>();
-
-	//Uses a network message to get the previous raytraceresult from the player
-	//The server could keep track of all raytraceresults but this might lag with many players
-	//Raytraceresult is needed for sideHit and hitVec
-	public static void onBlockPlacedMessage(Player player, BlockPlacedMessage message) {
-
-		//Check if not in the middle of breaking
-		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
-		if (currentlyBreaking.get(player) != null && currentlyBreaking.get(player)) {
-			//Cancel breaking
-			initializeMode(player);
-			return;
-		}
-
-		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-		BuildModeEnum buildMode = modeSettings.getBuildMode();
-
-		BlockPos startPos = null;
-
-		if (message.isBlockHit() && message.getBlockPos() != null) {
-			startPos = message.getBlockPos();
-
-			//Offset in direction of sidehit if not quickreplace and not replaceable
-			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
-			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
-			if (!modifierSettings.doQuickReplace() && !replaceable && !becomesDoubleSlab) {
-				startPos = startPos.relative(message.getSideHit());
-			}
-
-			//Get under tall grass and other replaceable blocks
-			if (modifierSettings.doQuickReplace() && replaceable) {
-				startPos = startPos.below();
-			}
-
-			//Check if player reach does not exceed startpos
-			int maxReach = ReachHelper.getMaxReach(player);
-			if (buildMode != BuildModeEnum.DISABLED && player.blockPosition().distSqr(startPos) > maxReach * maxReach) {
-				EffortlessBuilding.log(player, "Placement exceeds your reach.");
-				return;
-			}
-		}
-
-		//Even when no starting block is found, call buildmode instance
-		//We might want to place things in the air
-		List<BlockPos> coordinates = buildMode.instance.onRightClick(player, startPos, message.getSideHit(), message.getHitVec(), modifierSettings.doQuickReplace());
-
-		if (coordinates.isEmpty()) {
-			currentlyBreaking.put(player, false);
-			return;
-		}
+	public void findCoordinates(List<BlockEntry> blocks, Player player, BuildModeEnum buildMode) {
+		buildMode.instance.findCoordinates(blocks);
 
 		//Limit number of blocks you can place
 		int limit = ReachHelper.getMaxBlocksPlacedAtOnce(player);
-		if (coordinates.size() > limit) {
-			coordinates = coordinates.subList(0, limit);
+		while (blocks.size() > limit) {
+			blocks.remove(blocks.size()-1);
 		}
-
-		Direction sideHit = buildMode.instance.getSideHit(player);
-		if (sideHit == null) sideHit = message.getSideHit();
-
-		Vec3 hitVec = buildMode.instance.getHitVec(player);
-		if (hitVec == null) hitVec = message.getHitVec();
-
-		BuildModifiers.onBlockPlaced(player, coordinates, sideHit, hitVec, message.getPlaceStartPos());
-
-		//Only works when finishing a buildmode is equal to placing some blocks
-		//No intermediate blocks allowed
-		currentlyBreaking.remove(player);
 	}
 
-	//Use a network message to break blocks in the distance using clientside mouse input
-	public static void onBlockBrokenMessage(Player player, BlockBrokenMessage message) {
-		BlockPos startPos = message.isBlockHit() ? message.getBlockPos() : null;
-		onBlockBroken(player, startPos, true);
+	public BuildModeEnum getBuildMode(Player player) {
+		return ModeSettingsManager.getModeSettings(player).getBuildMode();
 	}
 
-	public static void onBlockBroken(Player player, BlockPos startPos, boolean breakStartPos) {
-
-		//Check if not in the middle of placing
-		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
-		if (currentlyBreaking.get(player) != null && !currentlyBreaking.get(player)) {
-			//Cancel placing
-			initializeMode(player);
-			return;
-		}
-
-		if (!ReachHelper.canBreakFar(player)) return;
-
-		//If first click
-		if (currentlyBreaking.get(player) == null) {
-			//If startpos is null, dont do anything
-			if (startPos == null) return;
-		}
-
-		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-
-		//Get coordinates
-		BuildModeEnum buildMode = modeSettings.getBuildMode();
-		List<BlockPos> coordinates = buildMode.instance.onRightClick(player, startPos, Direction.UP, Vec3.ZERO, true);
-
-		if (coordinates.isEmpty()) {
-			currentlyBreaking.put(player, true);
-			return;
-		}
-
-		//Let buildmodifiers break blocks
-		BuildModifiers.onBlockBroken(player, coordinates, breakStartPos);
-
-		//Only works when finishing a buildmode is equal to breaking some blocks
-		//No intermediate blocks allowed
-		currentlyBreaking.remove(player);
-	}
-
-	public static List<BlockPos> findCoordinates(Player player, BlockPos startPos, boolean skipRaytrace) {
-		List<BlockPos> coordinates = new ArrayList<>();
-
-		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-		coordinates.addAll(modeSettings.getBuildMode().instance.findCoordinates(player, startPos, skipRaytrace));
-
-		return coordinates;
-	}
-
-	public static void initializeMode(Player player) {
-		//Resetting mode, so not placing or breaking
-		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
-		currentlyBreaking.remove(player);
-
-		ModeSettingsManager.getModeSettings(player).getBuildMode().instance.initialize(player);
-	}
-
-	public static boolean isCurrentlyPlacing(Player player) {
-		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
-		return currentlyBreaking.get(player) != null && !currentlyBreaking.get(player);
-	}
-
-	public static boolean isCurrentlyBreaking(Player player) {
-		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
-		return currentlyBreaking.get(player) != null && currentlyBreaking.get(player);
-	}
-
-	//Either placing or breaking
-	public static boolean isActive(Player player) {
-		Dictionary<Player, Boolean> currentlyBreaking = player.level.isClientSide ? currentlyBreakingClient : currentlyBreakingServer;
-		return currentlyBreaking.get(player) != null;
+	public void onCancel(Player player) {
+		getBuildMode(player).instance.initialize();
 	}
 
 	//Find coordinates on a line bound by a plane

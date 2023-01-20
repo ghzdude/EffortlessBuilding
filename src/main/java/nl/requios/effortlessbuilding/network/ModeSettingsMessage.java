@@ -6,9 +6,10 @@ import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
 import java.util.function.Supplier;
+
+import static nl.requios.effortlessbuilding.buildmode.ModeSettingsManager.ModeSettings;
 
 /**
  * Shares mode settings (see ModeSettingsManager) between server and client
