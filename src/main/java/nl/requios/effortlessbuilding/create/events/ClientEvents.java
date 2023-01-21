@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -29,10 +30,8 @@ public class ClientEvents {
 
 	@SubscribeEvent
 	public static void onTick(ClientTickEvent event) {
-		if (!isGameActive())
-			return;
+		if (!isGameActive() || event.phase != TickEvent.Phase.END) return;
 
-		Level world = Minecraft.getInstance().level;
 		AnimationTickHolder.tick();
 
 		CreateClient.GHOST_BLOCKS.tickGhosts();

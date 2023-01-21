@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 /***
  * Sends a message to the client asking to add a block to the undo stack.
  */
+@Deprecated
 public class AddUndoMessage {
 	private final BlockPos coordinate;
 	private final BlockState previousBlockState;

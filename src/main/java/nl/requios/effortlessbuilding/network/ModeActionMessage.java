@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 /**
  * Shares mode settings (see ModeSettingsManager) between server and client
  */
+@Deprecated
 public class ModeActionMessage {
 
 	private ModeOptions.ActionEnum action;

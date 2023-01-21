@@ -4,9 +4,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.ChatFormatting;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
 
 public class ModeOptions {
 
@@ -72,10 +72,8 @@ public class ModeOptions {
 				UndoRedo.redo(player);
 				break;
 			case REPLACE:
-				ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-				modifierSettings.setQuickReplace(!modifierSettings.doQuickReplace());
-				EffortlessBuilding.log(player, "Set " + ChatFormatting.GOLD + "Quick Replace " + ChatFormatting.RESET + (
-					modifierSettings.doQuickReplace() ? "on" : "off"), true);
+				if (player.level.isClientSide)
+					EffortlessBuildingClient.QUICK_REPLACE.toggleQuickReplacing();
 				break;
 			case OPEN_MODIFIER_SETTINGS:
 				if (player.level.isClientSide)

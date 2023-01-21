@@ -20,10 +20,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.network.ModeActionMessage;
-import nl.requios.effortlessbuilding.network.ModeSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import org.apache.commons.lang3.text.WordUtils;
 import org.lwjgl.opengl.GL11;
@@ -33,7 +32,7 @@ import java.util.ArrayList;
 
 import static nl.requios.effortlessbuilding.buildmode.ModeOptions.*;
 
-import nl.requios.effortlessbuilding.buildmode.BuildModes.BuildModeEnum;
+import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 
@@ -99,7 +98,7 @@ public class RadialMenu extends Screen {
 
 	@Override
 	public void render(PoseStack ms, final int mouseX, final int mouseY, final float partialTicks) {
-		BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(minecraft.player).getBuildMode();
+		BuildModeEnum currentBuildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
 
 		ms.pushPose();
 		ms.translate(0, 0, 200);
@@ -450,16 +449,12 @@ public class RadialMenu extends Screen {
 	private void performAction(boolean fromMouseClick) {
 		LocalPlayer player = Minecraft.getInstance().player;
 
-		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-
 		if (switchTo != null) {
 			playRadialMenuSound();
 
-			modeSettings.setBuildMode(switchTo);
-			ModeSettingsManager.setModeSettings(player, modeSettings);
-			PacketHandler.INSTANCE.sendToServer(new ModeSettingsMessage(modeSettings));
+			EffortlessBuildingClient.BUILD_MODES.setBuildMode(switchTo);
 
-			EffortlessBuilding.log(player, I18n.get(modeSettings.getBuildMode().getNameKey()), true);
+			EffortlessBuilding.log(player, I18n.get(switchTo.getNameKey()), true);
 
 			if (fromMouseClick) performedActionUsingMouse = true;
 		}

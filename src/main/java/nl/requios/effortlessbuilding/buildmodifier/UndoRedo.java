@@ -87,7 +87,7 @@ public class UndoRedo {
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
 
 		if (player.level.isClientSide) {
-			BlockPreviews.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
+//			BlockPreviews.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
 		} else {
 			//break all those blocks, reset to what they were
 			for (int i = 0; i < coordinates.size(); i++) {
@@ -146,7 +146,7 @@ public class UndoRedo {
 		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
 
 		if (player.level.isClientSide) {
-			BlockPreviews.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
+//			BlockPreviews.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
 		} else {
 			//place blocks
 			for (int i = 0; i < coordinates.size(); i++) {

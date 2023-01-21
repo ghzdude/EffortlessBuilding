@@ -19,8 +19,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.ClientEvents;
-import nl.requios.effortlessbuilding.buildmode.BuildModes;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
+import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
@@ -30,56 +30,6 @@ import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
  */
 @EventBusSubscriber(Dist.CLIENT)
 public class RenderHandler {
-
-	@SubscribeEvent
-	public static void onTick(TickEvent.ClientTickEvent event) {
-		if (!nl.requios.effortlessbuilding.create.events.ClientEvents.isGameActive()) return;
-
-		var player = Minecraft.getInstance().player;
-		var modeSettings = ModeSettingsManager.getModeSettings(player);
-		var modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-
-		BlockPreviews.drawPlacedBlocks(player, modifierSettings);
-
-
-		HitResult lookingAt = ClientEvents.getLookingAt(player);
-		if (modeSettings.getBuildMode() == BuildModes.BuildModeEnum.DISABLED)
-			lookingAt = Minecraft.getInstance().hitResult;
-
-		ItemStack mainhand = player.getMainHandItem();
-		boolean noBlockInHand = !(!mainhand.isEmpty() && CompatHelper.isItemBlockProxy(mainhand));
-
-		//Find start position, side hit and hit vector
-		BlockPos startPos = null;
-		Direction sideHit = null;
-		Vec3 hitVec = null;
-
-		//Checking for null is necessary! Even in vanilla when looking down ladders it is occasionally null (instead of Type MISS)
-		if (lookingAt != null && lookingAt.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockLookingAt = (BlockHitResult) lookingAt;
-			startPos = blockLookingAt.getBlockPos();
-
-			//Check if tool (or none) in hand
-			boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
-			boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
-			if (!modifierSettings.doQuickReplace() && !noBlockInHand && !replaceable && !becomesDoubleSlab) {
-				startPos = startPos.relative(blockLookingAt.getDirection());
-			}
-
-			//Get under tall grass and other replaceable blocks
-			if (modifierSettings.doQuickReplace() && !noBlockInHand && replaceable) {
-				startPos = startPos.below();
-			}
-
-			sideHit = blockLookingAt.getDirection();
-			hitVec = blockLookingAt.getLocation();
-		}
-
-
-		BlockPreviews.drawLookAtPreview(player, modeSettings, modifierSettings, startPos, sideHit, hitVec);
-
-		if (noBlockInHand) BlockPreviews.drawOutlinesIfNoBlockInHand(player, lookingAt);
-	}
 
 	@SubscribeEvent
 	public static void onRender(RenderLevelStageEvent event) {
@@ -92,7 +42,6 @@ public class RenderHandler {
 		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(bufferBuilder);
 
 		Player player = Minecraft.getInstance().player;
-		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
 		ms.pushPose();

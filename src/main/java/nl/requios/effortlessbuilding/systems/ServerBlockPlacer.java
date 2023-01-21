@@ -3,17 +3,17 @@ package nl.requios.effortlessbuilding.systems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.items.ItemHandlerHelper;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.create.foundation.utility.BlockHelper;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 
 import java.util.List;
 
 // Receives block placement requests from the client and places them
 public class ServerBlockPlacer {
+    private boolean isPlacingOrBreakingBlocks = false;
 
     public void placeBlocks(Player player, List<BlockEntry> blocks) {
         EffortlessBuilding.log(player, "Placing " + blocks.size() + " blocks");
@@ -27,31 +27,33 @@ public class ServerBlockPlacer {
         Level world = player.level;
         if (!world.isLoaded(block.blockPos)) return;
 
-        if (block.meansBreakBlock()) {
-            breakBlock(player, block.blockPos);
-            return;
-        }
-
-        boolean success = world.setBlock(block.blockPos, block.blockState, 3);
+        isPlacingOrBreakingBlocks = true;
+        BlockHelper.placeSchematicBlock(world, block.blockState, block.blockPos, block.itemStack, null);
+        isPlacingOrBreakingBlocks = false;
     }
 
-    public void breakBlock(Player player, BlockPos pos) {
+    public void breakBlocks(Player player, List<BlockEntry> blocks) {
+        EffortlessBuilding.log(player, "Breaking " + blocks.size() + " blocks");
+
+        for (BlockEntry block : blocks) {
+            breakBlock(player, block);
+        }
+    }
+
+    public void breakBlock(Player player, BlockEntry block) {
         ServerLevel world = (ServerLevel) player.level;
-        if (!world.isLoaded(pos) || world.isEmptyBlock(pos)) return;
+        if (!world.isLoaded(block.blockPos) || world.isEmptyBlock(block.blockPos)) return;
 
-        //Held tool
-
-        if (!player.getAbilities().instabuild) {
-
-            //Drops
-            BlockState blockState = world.getBlockState(pos);
-            List<ItemStack> drops = Block.getDrops(blockState, world, pos, world.getBlockEntity(pos), player, player.getMainHandItem());
-            for (ItemStack drop : drops) {
-                player.addItem(drop);
+        isPlacingOrBreakingBlocks = true;
+        BlockHelper.destroyBlockAs(world, block.blockPos, player, player.getMainHandItem(), 1.0f, stack -> {
+            if (!player.isCreative()) {
+                ItemHandlerHelper.giveItemToPlayer(player, stack);
             }
-        }
-
-        world.removeBlock(pos, false);
+        });
+        isPlacingOrBreakingBlocks = false;
     }
 
+    public boolean isPlacingOrBreakingBlocks() {
+        return isPlacingOrBreakingBlocks;
+    }
 }

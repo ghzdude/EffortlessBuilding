@@ -1,15 +1,14 @@
 package nl.requios.effortlessbuilding.buildmode;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	protected BlockEntry firstBlockEntry;

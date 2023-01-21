@@ -99,14 +99,6 @@ public class ModifierSettingsManager {
 			error += "Radial mirror exceeds your maximum reach of " + (maxReach / 2) + ". Radius has been set to " + (maxReach / 2) + ". ";
 		}
 
-		//Other
-		if (modifierSettings.reachUpgrade < 0) {
-			modifierSettings.reachUpgrade = 0;
-		}
-		if (modifierSettings.reachUpgrade > 3) {
-			modifierSettings.reachUpgrade = 3;
-		}
-
 		return error;
 	}
 
@@ -126,8 +118,6 @@ public class ModifierSettingsManager {
 		private Mirror.MirrorSettings mirrorSettings;
 		private Array.ArraySettings arraySettings;
 		private RadialMirror.RadialMirrorSettings radialMirrorSettings;
-		private boolean quickReplace = false;
-		private int reachUpgrade = 0;
 
 		public ModifierSettings() {
 			mirrorSettings = new Mirror.MirrorSettings();
@@ -136,12 +126,10 @@ public class ModifierSettingsManager {
 		}
 
 		public ModifierSettings(Mirror.MirrorSettings mirrorSettings, Array.ArraySettings arraySettings,
-								RadialMirror.RadialMirrorSettings radialMirrorSettings, boolean quickReplace, int reachUpgrade) {
+								RadialMirror.RadialMirrorSettings radialMirrorSettings) {
 			this.mirrorSettings = mirrorSettings;
 			this.arraySettings = arraySettings;
 			this.radialMirrorSettings = radialMirrorSettings;
-			this.quickReplace = quickReplace;
-			this.reachUpgrade = reachUpgrade;
 		}
 
 		public Mirror.MirrorSettings getMirrorSettings() {
@@ -172,43 +160,6 @@ public class ModifierSettingsManager {
 		public void setRadialMirrorSettings(RadialMirror.RadialMirrorSettings radialMirrorSettings) {
 			if (radialMirrorSettings == null) return;
 			this.radialMirrorSettings = radialMirrorSettings;
-		}
-
-		public boolean doQuickReplace() {
-			return quickReplace;
-		}
-
-		public void setQuickReplace(boolean quickReplace) {
-			this.quickReplace = quickReplace;
-		}
-
-		public int getReachUpgrade() {
-			return reachUpgrade;
-		}
-
-		public void setReachUpgrade(int reachUpgrade) {
-			this.reachUpgrade = reachUpgrade;
-			//Set mirror radius to max
-			int reach = 10;
-			switch (reachUpgrade) {
-				case 0:
-					reach = CommonConfig.reach.maxReachLevel0.get();
-					break;
-				case 1:
-					reach = CommonConfig.reach.maxReachLevel1.get();
-					break;
-				case 2:
-					reach = CommonConfig.reach.maxReachLevel2.get();
-					break;
-				case 3:
-					reach = CommonConfig.reach.maxReachLevel3.get();
-					break;
-			}
-
-			if (this.mirrorSettings != null)
-				this.mirrorSettings.radius = reach / 2;
-			if (this.radialMirrorSettings != null)
-				this.radialMirrorSettings.radius = reach / 2;
 		}
 	}
 }

@@ -25,13 +25,14 @@ import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import nl.requios.effortlessbuilding.buildmode.BuildModes;
+import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
 import nl.requios.effortlessbuilding.gui.buildmodifier.ModifierSettingsGui;
+import nl.requios.effortlessbuilding.render.BlockPreviews;
+import nl.requios.effortlessbuilding.render.RenderHandler;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.*;
 import nl.requios.effortlessbuilding.render.BuildRenderTypes;
@@ -43,8 +44,6 @@ import java.io.IOException;
 public class ClientEvents {
 
     public static KeyMapping[] keyBindings;
-    public static HitResult previousLookAt;
-    public static HitResult currentLookAt;
     public static int ticksInGame = 0;
     private static int placeCooldown = 0;
     private static int breakCooldown = 0;
@@ -92,28 +91,8 @@ public class ClientEvents {
 
             onMouseInput();
 
-            //Update previousLookAt
-            HitResult objectMouseOver = Minecraft.getInstance().hitResult;
-            //Checking for null is necessary! Even in vanilla when looking down ladders it is occasionally null (instead of Type MISS)
-            if (objectMouseOver == null) return;
+            EffortlessBuildingClient.BLOCK_PREVIEWS.onTick();
 
-            if (currentLookAt == null) {
-                currentLookAt = objectMouseOver;
-                previousLookAt = objectMouseOver;
-                return;
-            }
-
-            if (objectMouseOver.getType() == HitResult.Type.BLOCK) {
-                if (currentLookAt.getType() != HitResult.Type.BLOCK) {
-                    currentLookAt = objectMouseOver;
-                    previousLookAt = objectMouseOver;
-                } else {
-                    if (((BlockHitResult) currentLookAt).getBlockPos() != ((BlockHitResult) objectMouseOver).getBlockPos()) {
-                        previousLookAt = currentLookAt;
-                        currentLookAt = objectMouseOver;
-                    }
-                }
-            }
         } else if (event.phase == TickEvent.Phase.END) {
             Screen gui = Minecraft.getInstance().screen;
             if (gui == null || !gui.isPauseScreen()) {
@@ -127,10 +106,10 @@ public class ClientEvents {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null) return;
-        BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
+        BuildModeEnum buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
 
         if (mc.screen != null ||
-            buildMode == BuildModes.BuildModeEnum.DISABLED ||
+            buildMode == BuildModeEnum.DISABLED ||
             RadialMenu.instance.isVisible()) {
             return;
         }
@@ -142,7 +121,7 @@ public class ClientEvents {
 
                 EffortlessBuildingClient.BUILDER_CHAIN.onRightClick();
 
-            } else if (buildMode == BuildModes.BuildModeEnum.SINGLE) {
+            } else if (buildMode == BuildModeEnum.SINGLE) {
                 placeCooldown--;
                 if (ModeOptions.getBuildSpeed() == ModeOptions.ActionEnum.FAST_SPEED) placeCooldown = 0;
             }
@@ -158,7 +137,7 @@ public class ClientEvents {
 
                 EffortlessBuildingClient.BUILDER_CHAIN.onLeftClick();
 
-            } else if (buildMode == BuildModes.BuildModeEnum.SINGLE) {
+            } else if (buildMode == BuildModeEnum.SINGLE) {
                 breakCooldown--;
                 if (ModeOptions.getBuildSpeed() == ModeOptions.ActionEnum.FAST_SPEED) breakCooldown = 0;
             }
@@ -182,11 +161,7 @@ public class ClientEvents {
 
         //QuickReplace toggle
         if (keyBindings[1].consumeClick()) {
-            ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-            modifierSettings.setQuickReplace(!modifierSettings.doQuickReplace());
-            EffortlessBuilding.log(player, "Set " + ChatFormatting.GOLD + "Quick Replace " + ChatFormatting.RESET + (
-                    modifierSettings.doQuickReplace() ? "on" : "off"));
-            PacketHandler.INSTANCE.sendToServer(new ModifierSettingsMessage(modifierSettings));
+            EffortlessBuildingClient.QUICK_REPLACE.toggleQuickReplacing();
         }
 
         //Radial menu
@@ -217,7 +192,7 @@ public class ClientEvents {
         //Change placement mode
         if (keyBindings[5].consumeClick()) {
             //Toggle between first two actions of the first option of the current build mode
-            BuildModes.BuildModeEnum currentBuildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
+            BuildModeEnum currentBuildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
             if (currentBuildMode.options.length > 0) {
                 ModeOptions.OptionEnum option = currentBuildMode.options[0];
                 if (option.actions.length >= 2) {

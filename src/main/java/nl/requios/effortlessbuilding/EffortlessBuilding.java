@@ -39,7 +39,7 @@ public class EffortlessBuilding {
 	public static final Logger logger = LogManager.getLogger();
 
 	public static EffortlessBuilding instance;
-	public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
+	public static IProxy proxy = DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
 	public static final ServerBlockPlacer SERVER_BLOCK_PLACER = new ServerBlockPlacer();
 	public static final DelayedBlockPlacer DELAYED_BLOCK_PLACER = new DelayedBlockPlacer();

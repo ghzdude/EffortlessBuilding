@@ -5,7 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.network.TranslatedLogMessage;
+import nl.requios.effortlessbuilding.network.TranslatedLogPacket;
 
 import java.util.function.Supplier;
 
@@ -17,6 +17,6 @@ public class ServerProxy implements IProxy {
 	}
 
 	public void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar) {
-		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new TranslatedLogMessage(prefix, translationKey, suffix, actionBar));
+		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new TranslatedLogPacket(prefix, translationKey, suffix, actionBar));
 	}
 }

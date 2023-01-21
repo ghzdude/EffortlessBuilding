@@ -40,10 +40,10 @@ public class ReachUpgrade2Item extends Item {
 			return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
 		}
 
-		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-		int currentLevel = modifierSettings.getReachUpgrade();
+		int currentLevel = ReachHelper.getReachUpgrade(player);
 		if (currentLevel == 1) {
-			modifierSettings.setReachUpgrade(2);
+			ReachHelper.setReachUpgrade(player, 2);
+
 			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);
 

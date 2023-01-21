@@ -17,11 +17,9 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.network.PacketDistributor;
-import nl.requios.effortlessbuilding.buildmode.BuildModes;
-import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
+import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
-import nl.requios.effortlessbuilding.capability.ModeCapabilityManager;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
@@ -39,7 +37,6 @@ public class CommonEvents {
 		@SubscribeEvent
 		public void registerCapabilities(RegisterCapabilitiesEvent event){
 			event.register(ModifierCapabilityManager.IModifierCapability.class);
-			event.register(ModeCapabilityManager.IModeCapability.class);
 		}
 	}
 
@@ -48,7 +45,6 @@ public class CommonEvents {
 		if (event.getObject() instanceof FakePlayer) return;
 		if (event.getObject() instanceof Player) {
 			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
-			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_mode"), new ModeCapabilityManager.Provider());
 		}
 	}
 
@@ -66,10 +62,12 @@ public class CommonEvents {
 		if (!(event.getEntity() instanceof Player player)) return;
 		if (event.getEntity() instanceof FakePlayer) return;
 
-		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
-		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
+		//Don't cancel event if our custom logic is breaking blocks
+		if (EffortlessBuilding.SERVER_BLOCK_PLACER.isPlacingOrBreakingBlocks()) return;
 
-		if (buildMode != BuildModes.BuildModeEnum.DISABLED || modifierSettings.doQuickReplace()) {
+		BuildModeEnum buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
+
+		if (buildMode != BuildModeEnum.DISABLED || EffortlessBuildingClient.QUICK_REPLACE.isQuickReplacing()) {
 
 			//Only cancel if itemblock in hand
 			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
@@ -91,15 +89,19 @@ public class CommonEvents {
 		Player player = event.getPlayer();
 		if (player instanceof FakePlayer) return;
 
+		//Don't cancel event if our custom logic is breaking blocks
+		if (EffortlessBuilding.SERVER_BLOCK_PLACER.isPlacingOrBreakingBlocks()) return;
+
 		//Cancel event if necessary
 		//If cant break far then dont cancel event ever
-		BuildModes.BuildModeEnum buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
-		if (buildMode != BuildModes.BuildModeEnum.DISABLED && ReachHelper.canBreakFar(player)) {
+		BuildModeEnum buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
+		if (buildMode != BuildModeEnum.DISABLED && ReachHelper.canBreakFar(player)) {
 			event.setCanceled(true);
 		} else {
 			//NORMAL mode, let vanilla handle block breaking
 
 			//Add to undo stack in client
+			//TODO move UndoRedo to serverside only
 			if (player instanceof ServerPlayer && event.getState() != null && event.getPos() != null) {
 				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayer) player);
 				if (packetTarget != null)
@@ -119,7 +121,6 @@ public class CommonEvents {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
 		ModifierSettingsManager.handleNewPlayer(player);
-		ModeSettingsManager.handleNewPlayer(player);
 	}
 
 	@SubscribeEvent
@@ -137,7 +138,6 @@ public class CommonEvents {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
 		ModifierSettingsManager.handleNewPlayer(player);
-		ModeSettingsManager.handleNewPlayer(player);
 	}
 
 	@SubscribeEvent
@@ -145,11 +145,6 @@ public class CommonEvents {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
 		if (player.getCommandSenderWorld().isClientSide) return;
-
-		//Set build mode to normal
-		ModeSettingsManager.ModeSettings modeSettings = ModeSettingsManager.getModeSettings(player);
-		modeSettings.setBuildMode(BuildModes.BuildModeEnum.DISABLED);
-		ModeSettingsManager.setModeSettings(player, modeSettings);
 
 		//Disable modifiers
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
@@ -159,7 +154,6 @@ public class CommonEvents {
 		ModifierSettingsManager.setModifierSettings(player, modifierSettings);
 
 		ModifierSettingsManager.handleNewPlayer(player);
-		ModeSettingsManager.handleNewPlayer(player);
 
 		UndoRedo.clear(player);
 		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ClearUndoMessage());
@@ -174,7 +168,6 @@ public class CommonEvents {
 
 		Player newPlayer = event.getEntity();
 		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
-		ModeSettingsManager.setModeSettings(newPlayer, ModeSettingsManager.getModeSettings(oldPlayer));
 	}
 
 

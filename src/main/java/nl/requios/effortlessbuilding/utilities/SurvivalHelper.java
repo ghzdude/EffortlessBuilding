@@ -24,8 +24,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.ForgeEventFactory;
 import nl.requios.effortlessbuilding.CommonConfig;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
+import nl.requios.effortlessbuilding.systems.ServerBuildState;
 
 import javax.annotation.Nullable;
 
@@ -271,8 +273,12 @@ public class SurvivalHelper {
 		}
 
 		//Check quickreplace
-		if (placer != null && ModifierSettingsManager.getModifierSettings(((Player) placer)).doQuickReplace()) {
-			return true;
+		boolean isQuickReplacing = false;
+		if (placer instanceof Player player) {
+			if (world.isClientSide) EffortlessBuildingClient.QUICK_REPLACE.isQuickReplacing();
+			else isQuickReplacing = ServerBuildState.isQuickReplacing(player);
+
+			if (isQuickReplacing) return true;
 		}
 
 		return currentBlockState.getMaterial().isReplaceable() /*&& canPlaceBlockOnSide(world, pos, sidePlacedOn)*/;

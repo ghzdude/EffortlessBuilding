@@ -11,35 +11,35 @@ import java.util.function.Supplier;
 /**
  * Send packet to client to translate and log the containing message
  */
-public class TranslatedLogMessage {
+public class TranslatedLogPacket {
 	private final String prefix;
 	private final String translationKey;
 	private final String suffix;
 	private final boolean actionBar;
 
-	public TranslatedLogMessage() {
+	public TranslatedLogPacket() {
 		prefix = "";
 		translationKey = "";
 		suffix = "";
 		actionBar = false;
 	}
 
-	public TranslatedLogMessage(String prefix, String translationKey, String suffix, boolean actionBar) {
+	public TranslatedLogPacket(String prefix, String translationKey, String suffix, boolean actionBar) {
 		this.prefix = prefix;
 		this.translationKey = translationKey;
 		this.suffix = suffix;
 		this.actionBar = actionBar;
 	}
 
-	public static void encode(TranslatedLogMessage message, FriendlyByteBuf buf) {
+	public static void encode(TranslatedLogPacket message, FriendlyByteBuf buf) {
 		buf.writeUtf(message.prefix);
 		buf.writeUtf(message.translationKey);
 		buf.writeUtf(message.suffix);
 		buf.writeBoolean(message.actionBar);
 	}
 
-	public static TranslatedLogMessage decode(FriendlyByteBuf buf) {
-		return new TranslatedLogMessage(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean());
+	public static TranslatedLogPacket decode(FriendlyByteBuf buf) {
+		return new TranslatedLogPacket(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean());
 	}
 
 	public String getPrefix() {
@@ -59,7 +59,7 @@ public class TranslatedLogMessage {
 	}
 
 	public static class Handler {
-		public static void handle(TranslatedLogMessage message, Supplier<NetworkEvent.Context> ctx) {
+		public static void handle(TranslatedLogPacket message, Supplier<NetworkEvent.Context> ctx) {
 			ctx.get().enqueueWork(() -> {
 				if (ctx.get().getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 					//Received clientside

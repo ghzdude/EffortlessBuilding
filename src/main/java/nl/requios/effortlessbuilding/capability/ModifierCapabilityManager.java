@@ -113,8 +113,6 @@ public class ModifierCapabilityManager {
 			compound.putInt("arrayOffsetZ", a.offset.getZ());
 			compound.putInt("arrayCount", a.count);
 
-			compound.putInt("reachUpgrade", modifierSettings.getReachUpgrade());
-
 			//compound.putBoolean("quickReplace", buildSettings.doQuickReplace()); dont save quickreplace
 
 			//RADIAL MIRROR
@@ -160,10 +158,6 @@ public class ModifierCapabilityManager {
 			int arrayCount = compound.getInt("arrayCount");
 			Array.ArraySettings arraySettings = new Array.ArraySettings(arrayEnabled, arrayOffset, arrayCount);
 
-			int reachUpgrade = compound.getInt("reachUpgrade");
-
-			//boolean quickReplace = compound.getBoolean("quickReplace"); //dont load quickreplace
-
 			//RADIAL MIRROR
 			boolean radialMirrorEnabled = compound.getBoolean("radialMirrorEnabled");
 			Vec3 radialMirrorPosition = new Vec3(
@@ -178,7 +172,7 @@ public class ModifierCapabilityManager {
 			RadialMirror.RadialMirrorSettings radialMirrorSettings = new RadialMirror.RadialMirrorSettings(radialMirrorEnabled, radialMirrorPosition,
 					radialMirrorSlices, radialMirrorAlternate, radialMirrorRadius, radialMirrorDrawLines, radialMirrorDrawPlanes);
 
-			ModifierSettings modifierSettings = new ModifierSettings(mirrorSettings, arraySettings, radialMirrorSettings, false, reachUpgrade);
+			ModifierSettings modifierSettings = new ModifierSettings(mirrorSettings, arraySettings, radialMirrorSettings);
 			instance.setModifierData(modifierSettings);
 		}
 

@@ -52,7 +52,7 @@ public class BuildModifiers {
 
 		if (world.isClientSide) {
 
-			BlockPreviews.onBlocksPlaced();
+//			BlockPreviews.onBlocksPlaced(blocks);
 
 		} else {
 
@@ -79,7 +79,7 @@ public class BuildModifiers {
 		}
 
 		if (world.isClientSide) {
-			BlockPreviews.onBlocksBroken();
+//			BlockPreviews.onBlocksBroken(blocks);
 
 			//list of air blockstates
 			for (int i = 0; i < coordinates.size(); i++) {
@@ -203,14 +203,6 @@ public class BuildModifiers {
 		}
 
 		return blockStates;
-	}
-
-	public static boolean isEnabled(ModifierSettingsManager.ModifierSettings modifierSettings, BlockPos startPos) {
-		//startPos can be null
-		return Mirror.isEnabled(modifierSettings.getMirrorSettings(), startPos) ||
-			Array.isEnabled(modifierSettings.getArraySettings()) ||
-			RadialMirror.isEnabled(modifierSettings.getRadialMirrorSettings(), startPos) ||
-			modifierSettings.doQuickReplace();
 	}
 
 	public static BlockState getBlockStateFromItem(ItemStack itemStack, Player player, BlockPos blockPos, Direction facing, Vec3 hitVec, InteractionHand hand) {

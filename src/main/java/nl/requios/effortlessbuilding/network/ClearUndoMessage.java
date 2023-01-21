@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 /***
  * Sends a message to the client asking to clear the undo and redo stacks.
  */
+@Deprecated
 public class ClearUndoMessage {
 
 	public ClearUndoMessage() {

@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.network;
 
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
@@ -13,29 +12,29 @@ import java.util.function.Supplier;
 /**
  * Sends a message to the server to place multiple blocks
  */
-public class ServerPlaceBlocksMessage {
+public class ServerPlaceBlocksPacket {
 
 	private List<BlockEntry> blocks;
 
-	public ServerPlaceBlocksMessage() {}
+	public ServerPlaceBlocksPacket() {}
 
-	public ServerPlaceBlocksMessage(List<BlockEntry> blocks) {
+	public ServerPlaceBlocksPacket(List<BlockEntry> blocks) {
 		this.blocks = blocks;
 	}
 
-	public static void encode(ServerPlaceBlocksMessage message, FriendlyByteBuf buf) {
+	public static void encode(ServerPlaceBlocksPacket message, FriendlyByteBuf buf) {
 		buf.writeCollection(message.blocks, BlockEntry::encode);
 	}
 
-	public static ServerPlaceBlocksMessage decode(FriendlyByteBuf buf) {
-		ServerPlaceBlocksMessage message = new ServerPlaceBlocksMessage();
+	public static ServerPlaceBlocksPacket decode(FriendlyByteBuf buf) {
+		ServerPlaceBlocksPacket message = new ServerPlaceBlocksPacket();
 		message.blocks = buf.readList(BlockEntry::decode);
 		return message;
 	}
 
 
 	public static class Handler {
-		public static void handle(ServerPlaceBlocksMessage message, Supplier<NetworkEvent.Context> ctx) {
+		public static void handle(ServerPlaceBlocksPacket message, Supplier<NetworkEvent.Context> ctx) {
 			ctx.get().enqueueWork(() -> {
 				Player player = EffortlessBuilding.proxy.getPlayerEntityFromContext(ctx);
 

@@ -57,10 +57,6 @@ public class ModifierSettingsMessage {
 			buf.writeInt(a.count);
 		}
 
-		buf.writeBoolean(message.modifierSettings.doQuickReplace());
-
-		buf.writeInt(message.modifierSettings.getReachUpgrade());
-
 		//RADIAL MIRROR
 		RadialMirror.RadialMirrorSettings r = message.modifierSettings.getRadialMirrorSettings();
 		buf.writeBoolean(r != null);
@@ -102,10 +98,6 @@ public class ModifierSettingsMessage {
 			a = new Array.ArraySettings(arrayEnabled, arrayOffset, arrayCount);
 		}
 
-		boolean quickReplace = buf.readBoolean();
-
-		int reachUpgrade = buf.readInt();
-
 		//RADIAL MIRROR
 		RadialMirror.RadialMirrorSettings r = new RadialMirror.RadialMirrorSettings();
 		if (buf.readBoolean()) {
@@ -120,7 +112,7 @@ public class ModifierSettingsMessage {
 				radialMirrorAlternate, radialMirrorRadius, radialMirrorDrawLines, radialMirrorDrawPlanes);
 		}
 
-		ModifierSettings modifierSettings = new ModifierSettings(m, a, r, quickReplace, reachUpgrade);
+		ModifierSettings modifierSettings = new ModifierSettings(m, a, r);
 		return new ModifierSettingsMessage(modifierSettings);
 	}
 
