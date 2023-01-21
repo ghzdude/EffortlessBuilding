@@ -13,12 +13,16 @@ public class CompatHelper {
 
 	}
 
+	public static boolean isItemBlockProxy(ItemStack stack) {
+		return isItemBlockProxy(stack, true);
+	}
+
 	// Check if the item given is a proxy for blocks. For now, we check for the randomizer bag,
 	// /dank/null, or plain old blocks.
-	public static boolean isItemBlockProxy(ItemStack stack) {
+	public static boolean isItemBlockProxy(ItemStack stack, boolean seeBlockItemsAsProxies) {
 		Item item = stack.getItem();
 		if (item instanceof BlockItem)
-			return true;
+			return seeBlockItemsAsProxies;
 		return item instanceof AbstractRandomizerBagItem;
 	}
 

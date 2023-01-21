@@ -22,14 +22,4 @@ public abstract class BaseBuildMode implements IBuildMode {
 		clicks++;
 		return false;
 	}
-
-	@Override @Deprecated
-	public Direction getSideHit(Player player) {
-		return Direction.UP;
-	}
-
-	@Override @Deprecated
-	public Vec3 getHitVec(Player player) {
-		return new Vec3(0.5, 0.5, 0.5);
-	}
 }

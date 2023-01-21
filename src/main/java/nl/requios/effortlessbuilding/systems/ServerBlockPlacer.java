@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.List;
 public class ServerBlockPlacer {
 
     public void placeBlocks(Player player, List<BlockEntry> blocks) {
+        EffortlessBuilding.log(player, "Placing " + blocks.size() + " blocks");
+
         for (BlockEntry block : blocks) {
             placeBlock(player, block);
         }
@@ -26,6 +29,7 @@ public class ServerBlockPlacer {
 
         if (block.meansBreakBlock()) {
             breakBlock(player, block.blockPos);
+            return;
         }
 
         boolean success = world.setBlock(block.blockPos, block.blockState, 3);

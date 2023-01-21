@@ -30,7 +30,7 @@ public class ServerPlaceBlocksMessage {
 	public static ServerPlaceBlocksMessage decode(FriendlyByteBuf buf) {
 		ServerPlaceBlocksMessage message = new ServerPlaceBlocksMessage();
 		message.blocks = buf.readList(BlockEntry::decode);
-		return new ServerPlaceBlocksMessage();
+		return message;
 	}
 
 

@@ -263,7 +263,7 @@ public class ClientEvents {
     public static boolean isKeybindDown(int keybindIndex) {
         return InputConstants.isKeyDown(
                 Minecraft.getInstance().getWindow().getWindow(),
-                keyBindings[2].getKey().getValue());
+                keyBindings[keybindIndex].getKey().getValue());
     }
 
     public static BlockHitResult getLookingAt(Player player) {

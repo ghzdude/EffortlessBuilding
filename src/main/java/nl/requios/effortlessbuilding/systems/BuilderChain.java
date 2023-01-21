@@ -2,10 +2,14 @@ package nl.requios.effortlessbuilding.systems;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -45,8 +49,18 @@ public class BuilderChain {
 
 
     public void onRightClick() {
+        var player = Minecraft.getInstance().player;
+
         if (state == State.BREAKING) {
             cancel();
+            return;
+        }
+
+        //Check if we have a BlockItem in hand
+        var itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        boolean blockInHand = CompatHelper.isItemBlockProxy(itemStack);
+        if (!blockInHand) {
+            if (state == State.PLACING) cancel();
             return;
         }
 
@@ -54,11 +68,10 @@ public class BuilderChain {
             state = State.PLACING;
         }
 
-        var player = Minecraft.getInstance().player;
         var buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 
         //Find out if we should place blocks now
-        if (buildMode.instance.onClick()) {
+        if (buildMode.instance.onClick(blocks)) {
             state = State.IDLE;
             PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksMessage(blocks));
         }
@@ -76,12 +89,15 @@ public class BuilderChain {
 
         if (state == State.IDLE){
             state = State.BREAKING;
+
+            //Recalculate block positions, because start position has changed
+            onTick();
         }
 
         var buildMode = ModeSettingsManager.getModeSettings(player).getBuildMode();
 
         //Find out if we should break blocks now
-        if (buildMode.instance.onClick()) {
+        if (buildMode.instance.onClick(blocks)) {
             state = State.IDLE;
             PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksMessage(blocks));
         }
@@ -115,8 +131,23 @@ public class BuilderChain {
         EffortlessBuildingClient.BUILD_MODES.findCoordinates(blocks, player, buildMode);
         EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player, modifierSettings);
 
-        if (state == State.PLACING) {
-            //TODO find block states
+        if (blockInHand && state != State.BREAKING) {
+            //find block states
+
+            if (itemStack.getItem() instanceof BlockItem) {
+
+                for (BlockEntry blockEntry : blocks) {
+                    blockEntry.blockState = getBlockState(player, InteractionHand.MAIN_HAND, itemStack, blockEntry);
+                }
+
+            } else if (CompatHelper.isItemBlockProxy(itemStack, false)) {
+
+                for (BlockEntry blockEntry : blocks) {
+                    ItemStack itemBlockStack = CompatHelper.getItemBlockFromStack(itemStack);
+                    if (itemBlockStack == null || itemBlockStack.isEmpty()) continue;
+                    blockEntry.blockState = getBlockState(player, InteractionHand.MAIN_HAND, itemBlockStack, blockEntry);
+                }
+            }
         }
     }
 
@@ -136,16 +167,18 @@ public class BuilderChain {
         int maxReach = ReachHelper.getMaxReach(player);
         if (player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
 
-        //Offset in direction of sidehit if not quickreplace and not replaceable
-        boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
-        boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
-        if (!doingQuickReplace && !replaceable && !becomesDoubleSlab) {
-            startPos = startPos.relative(lookingAt.getDirection());
-        }
+        if (state != State.BREAKING) {
+            //Offset in direction of sidehit if not quickreplace and not replaceable
+            boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
+            boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
+            if (!doingQuickReplace && !replaceable && !becomesDoubleSlab) {
+                startPos = startPos.relative(lookingAt.getDirection());
+            }
 
-        //Get under tall grass and other replaceable blocks
-        if (doingQuickReplace && replaceable) {
-            startPos = startPos.below();
+            //Get under tall grass and other replaceable blocks
+            if (doingQuickReplace && replaceable) {
+                startPos = startPos.below();
+            }
         }
 
         var blockEntry = new BlockEntry(startPos);
@@ -159,6 +192,13 @@ public class BuilderChain {
         }
 
         return blockEntry;
+    }
+
+    public BlockState getBlockState(Player player, InteractionHand hand, ItemStack blockItemStack, BlockEntry blockEntry) {
+        Block block = Block.byItem(blockItemStack.getItem());
+        //TODO convert lookingAt hitvec to relative hitvec
+        var blockHitResult = new BlockHitResult(Vec3.ZERO, Direction.UP, blockEntry.blockPos, false);
+        return block.getStateForPlacement(new BlockPlaceContext(player, hand, blockItemStack, blockHitResult));
     }
 
     private void playPlacingSoundIfFurtherThanNormal(Player player, Vec3 location, BlockItem blockItem) {

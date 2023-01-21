@@ -1,81 +1,73 @@
 package nl.requios.effortlessbuilding.buildmode;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
+import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.*;
 
 public abstract class ThreeClicksBuildMode extends BaseBuildMode {
-	protected Dictionary<UUID, BlockPos> secondPosTable = new Hashtable<>();
+	protected BlockEntry firstBlockEntry;
+	protected BlockEntry secondBlockEntry;
 
 	//Finds height after floor has been chosen in buildmodes with 3 clicks
 	@Override
-	public void initialize(Player player) {
-		super.initialize(player);
-		secondPosTable.put(player.getUUID(), BlockPos.ZERO);
+	public void initialize() {
+		super.initialize();
+		firstBlockEntry = null;
+		secondBlockEntry = null;
 	}
 
 	@Override
-	public List<BlockPos> onRightClick(Player player, BlockPos blockPos, Direction sideHit, Vec3 hitVec, boolean skipRaytrace) {
-		List<BlockPos> list = new ArrayList<>();
+	public boolean onClick(List<BlockEntry> blocks) {
+		super.onClick(blocks);
 
-		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUUID());
-		rightClickNr++;
-		rightClickTable.put(player.getUUID(), rightClickNr);
-
-		if (rightClickNr == 1) {
-			//If clicking in air, reset and try again
-			if (blockPos == null) {
-				rightClickTable.put(player.getUUID(), 0);
-				return list;
-			}
-
+		if (clicks == 1) {
 			//First click, remember starting position
-			firstPosTable.put(player.getUUID(), blockPos);
-			sideHitTable.put(player.getUUID(), sideHit);
-			hitVecTable.put(player.getUUID(), hitVec);
-			//Keep list empty, dont place any blocks yet
-		} else if (rightClickNr == 2) {
-			//Second click, find other floor point
-			BlockPos firstPos = firstPosTable.get(player.getUUID());
-			BlockPos secondPos = findSecondPos(player, firstPos, true);
 
-			if (secondPos == null) {
-				rightClickTable.put(player.getUUID(), 1);
-				return list;
+			//If clicking in air, reset and try again
+			if (blocks.size() == 0) {
+				clicks = 0;
+				return false;
 			}
 
-			secondPosTable.put(player.getUUID(), secondPos);
+			firstBlockEntry = blocks.get(0);
+		} else if (clicks == 2) {
+			//Second click, find second position
 
+			//If clicking in air, reset and try again
+			if (blocks.size() == 0) {
+				clicks = 0;
+				return false;
+			}
+
+			var player = Minecraft.getInstance().player;
+			var secondPos = findSecondPos(player, firstBlockEntry.blockPos, true);
+			secondBlockEntry = new BlockEntry(secondPos);
 		} else {
-			//Third click, place diagonal wall with height
-			list = findCoordinates(player, blockPos, skipRaytrace);
-			rightClickTable.put(player.getUUID(), 0);
+			//Third click, place blocks
+			clicks = 0;
+			return true;
 		}
-
-		return list;
+		return false;
 	}
 
 	@Override
-	public List<BlockPos> findCoordinates(Player player, BlockPos blockPos, boolean skipRaytrace) {
-		List<BlockPos> list = new ArrayList<>();
-		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUUID());
+	public void findCoordinates(List<BlockEntry> blocks) {
+		if (clicks == 0) return;
 
-		if (rightClickNr == 0) {
-			if (blockPos != null)
-				list.add(blockPos);
-		} else if (rightClickNr == 1) {
-			BlockPos firstPos = firstPosTable.get(player.getUUID());
+		if (clicks == 1) {
+			var player = Minecraft.getInstance().player;
+			var firstPos = firstBlockEntry.blockPos;
+			var secondPos = findSecondPos(player, firstBlockEntry.blockPos, true);
+			if (secondPos == null) return;
 
-			BlockPos secondPos = findSecondPos(player, firstPos, true);
-			if (secondPos == null) return list;
-
-			//Limit amount of blocks you can place per row
+			//Limit amount of blocks we can place per row
 			int axisLimit = ReachHelper.getMaxBlocksPerAxis(player);
 
 			int x1 = firstPos.getX(), x2 = secondPos.getX();
@@ -90,15 +82,16 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			if (z2 - z1 >= axisLimit) z2 = z1 + axisLimit - 1;
 			if (z1 - z2 >= axisLimit) z2 = z1 - axisLimit + 1;
 
-			//Add diagonal line from first to second
-			list.addAll(getIntermediateBlocks(player, x1, y1, z1, x2, y2, z2));
-
+			blocks.clear();
+			for (BlockPos pos : getIntermediateBlocks(player, x1, y1, z1, x2, y2, z2)) {
+				blocks.add(new BlockEntry(pos));
+			}
 		} else {
-			BlockPos firstPos = firstPosTable.get(player.getUUID());
-			BlockPos secondPos = secondPosTable.get(player.getUUID());
-
-			BlockPos thirdPos = findThirdPos(player, firstPos, secondPos, skipRaytrace);
-			if (thirdPos == null) return list;
+			var player = Minecraft.getInstance().player;
+			BlockPos firstPos = firstBlockEntry.blockPos;
+			BlockPos secondPos = secondBlockEntry.blockPos;
+			BlockPos thirdPos = findThirdPos(player, firstPos, secondPos, true);
+			if (thirdPos == null) return;
 
 			//Limit amount of blocks you can place per row
 			int axisLimit = ReachHelper.getMaxBlocksPerAxis(player);
@@ -122,11 +115,11 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			if (z3 - z1 >= axisLimit) z3 = z1 + axisLimit - 1;
 			if (z1 - z3 >= axisLimit) z3 = z1 - axisLimit + 1;
 
-			//Add diagonal line from first to third
-			list.addAll(getFinalBlocks(player, x1, y1, z1, x2, y2, z2, x3, y3, z3));
+			blocks.clear();
+			for (BlockPos pos : getFinalBlocks(player, x1, y1, z1, x2, y2, z2, x3, y3, z3)) {
+				blocks.add(new BlockEntry(pos));
+			}
 		}
-
-		return list;
 	}
 
 	public static BlockPos findHeight(Player player, BlockPos secondPos, boolean skipRaytrace) {
@@ -172,7 +165,10 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 		return new BlockPos(selected.lineBound);
 	}
 
+//	protected abstract BlockEntry findSecondPos(List<BlockEntry> blocks);
+
 	//Finds the place of the second block pos
+//	@Deprecated
 	protected abstract BlockPos findSecondPos(Player player, BlockPos firstPos, boolean skipRaytrace);
 
 	//Finds the place of the third block pos

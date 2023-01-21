@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.BitSet;
@@ -13,10 +14,16 @@ public class BlockEntry {
     public boolean mirrorX;
     public boolean mirrorY;
     public boolean mirrorZ;
+    public Rotation rotation;
     public BlockState blockState;
+    public ItemStack itemStack = ItemStack.EMPTY;
 
     public BlockEntry(BlockPos blockPos) {
         this.blockPos = blockPos;
+    }
+
+    public boolean meansBreakBlock() {
+        return blockState == null || blockState.isAir();
     }
 
     public BitSet getMirrorBitSet() {
@@ -33,20 +40,20 @@ public class BlockEntry {
         mirrorZ = bitSet.get(2);
     }
 
-    public boolean meansBreakBlock() {
-        return blockState == null || blockState.isAir();
-    }
-
     public static void encode(FriendlyByteBuf buf, BlockEntry block) {
         buf.writeBlockPos(block.blockPos);
-        buf.writeBitSet(block.getMirrorBitSet());
-        buf.writeNbt(NbtUtils.writeBlockState(block.blockState));
+        buf.writeNullable(block.blockState, (buffer, blockState) -> buffer.writeNbt(NbtUtils.writeBlockState(blockState)));
+        buf.writeItem(block.itemStack);
     }
 
     public static BlockEntry decode(FriendlyByteBuf buf) {
         BlockEntry block = new BlockEntry(buf.readBlockPos());
-        block.setMirrorBitSet(buf.readBitSet());
-        block.blockState = NbtUtils.readBlockState(buf.readNbt());
+        block.blockState = buf.readNullable(buffer -> {
+            var nbt = buf.readNbt();
+            if (nbt == null) return null;
+            return NbtUtils.readBlockState(nbt);
+        });
+        block.itemStack = buf.readItem();
         return block;
     }
 

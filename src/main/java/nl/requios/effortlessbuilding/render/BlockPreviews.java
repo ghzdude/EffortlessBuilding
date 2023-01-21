@@ -21,6 +21,7 @@ import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.IBuildMode;
+import nl.requios.effortlessbuilding.buildmode.ModeSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager.ModifierSettings;
@@ -71,148 +72,148 @@ public class BlockPreviews {
 	}
 
 	public static void drawLookAtPreview(Player player, ModeSettings modeSettings, ModifierSettings modifierSettings, BlockPos startPos, Direction sideHit, Vec3 hitVec) {
-		if (!doShowBlockPreviews(modifierSettings, modeSettings, startPos)) return;
-
-		//Keep blockstate the same for every block in the buildmode
-		//So dont rotate blocks when in the middle of placing wall etc.
-		if (BuildModes.isActive(player)) {
-			IBuildMode buildModeInstance = modeSettings.getBuildMode().instance;
-			if (buildModeInstance.getSideHit(player) != null) sideHit = buildModeInstance.getSideHit(player);
-			if (buildModeInstance.getHitVec(player) != null) hitVec = buildModeInstance.getHitVec(player);
-		}
-
-		if (sideHit == null) return;
-
-		//Should be red?
-		boolean breaking = BuildModes.currentlyBreakingClient.get(player) != null && BuildModes.currentlyBreakingClient.get(player);
-
-		//get coordinates
-		List<BlockPos> startCoordinates = BuildModes.findCoordinates(player, startPos, breaking || modifierSettings.doQuickReplace());
-
-		//Remember first and last point for the shader
-		BlockPos firstPos = BlockPos.ZERO, secondPos = BlockPos.ZERO;
-		if (!startCoordinates.isEmpty()) {
-			firstPos = startCoordinates.get(0);
-			secondPos = startCoordinates.get(startCoordinates.size() - 1);
-		}
-
-		//Limit number of blocks you can place
-		int limit = ReachHelper.getMaxBlocksPlacedAtOnce(player);
-		if (startCoordinates.size() > limit) {
-			startCoordinates = startCoordinates.subList(0, limit);
-		}
-
-		List<BlockPos> newCoordinates = BuildModifiers.findCoordinates(player, startCoordinates);
-
-		sortOnDistanceToPlayer(newCoordinates, player);
-
-		hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)),
-			Math.abs(hitVec.z - ((int) hitVec.z)));
-
-		//Get blockstates
-		List<ItemStack> itemStacks = new ArrayList<>();
-		List<BlockState> blockStates = new ArrayList<>();
-		if (breaking) {
-			//Find blockstate of world
-			for (BlockPos coordinate : newCoordinates) {
-				blockStates.add(player.level.getBlockState(coordinate));
-			}
-		} else {
-			blockStates = BuildModifiers.findBlockStates(player, startCoordinates, hitVec, sideHit, itemStacks);
-		}
-
-
-		//Check if they are different from previous
-		//TODO fix triggering when moving player
-		if (!BuildModifiers.compareCoordinates(previousCoordinates, newCoordinates)) {
-			previousCoordinates = newCoordinates;
-			//remember the rest for placed blocks
-			previousBlockStates = blockStates;
-			previousItemStacks = itemStacks;
-			previousFirstPos = firstPos;
-			previousSecondPos = secondPos;
-
-			//if so, renew randomness of randomizer bag
-			AbstractRandomizerBagItem.renewRandomness();
-			//and play sound (max once every tick)
-			if (newCoordinates.size() > 1 && blockStates.size() > 1 && soundTime < ClientEvents.ticksInGame - 0) {
-				soundTime = ClientEvents.ticksInGame;
-
-				if (blockStates.get(0) != null) {
-					SoundType soundType = blockStates.get(0).getBlock().getSoundType(blockStates.get(0), player.level,
-						newCoordinates.get(0), player);
-					player.level.playSound(player, player.blockPosition(), breaking ? soundType.getBreakSound() : soundType.getPlaceSound(),
-						SoundSource.BLOCKS, 0.3f, 0.8f);
-				}
-			}
-		}
-
-		if (blockStates.size() == 0 || newCoordinates.size() != blockStates.size()) return;
-
-		int blockCount;
-
-		Object outlineID = firstPos;
-		//Dont fade out the outline if we are still determining where to place
-		//Every outline with same ID will not fade out (because it gets replaced)
-		if (newCoordinates.size() == 1 || BuildModifiers.isEnabled(modifierSettings, firstPos)) outlineID = "single";
-
-		if (!breaking) {
-			//Use fancy shader if config allows, otherwise outlines
-			if (ClientConfig.visuals.showBlockPreviews.get() && newCoordinates.size() < ClientConfig.visuals.maxBlockPreviews.get()) {
-				blockCount = renderBlockPreviews(player, modifierSettings, newCoordinates, blockStates, itemStacks, 0f, firstPos, secondPos, !breaking, breaking);
-
-				CreateClient.OUTLINER.showCluster(outlineID, newCoordinates)
-						.withFaceTexture(AllSpecialTextures.CHECKERED)
-						.disableNormals()
-						.lineWidth(1 / 32f)
-						.colored(new Color(1f, 1f, 1f, 1f));
-			} else {
-				//Thicker outline without block previews
-				CreateClient.OUTLINER.showCluster(outlineID, newCoordinates)
-						.withFaceTexture(AllSpecialTextures.HIGHLIGHT_CHECKERED)
-						.disableNormals()
-						.lineWidth(1 / 16f)
-						.colored(new Color(1f, 1f, 1f, 1f));
-
-				blockCount = newCoordinates.size();
-			}
-
-		} else {
-			//Breaking
-			CreateClient.OUTLINER.showCluster(outlineID, newCoordinates)
-					.withFaceTexture(AllSpecialTextures.THIN_CHECKERED)
-					.disableNormals()
-					.lineWidth(1 / 16f)
-					.colored(new Color(0.8f, 0.1f, 0.1f, 1f));
-			blockCount = newCoordinates.size();
-		}
-
-		//Display block count and dimensions in actionbar
-		if (BuildModes.isActive(player)) {
-
-			//Find min and max values (not simply firstPos and secondPos because that doesn't work with circles)
-			int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
-			int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
-			int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
-			for (BlockPos pos : startCoordinates) {
-				if (pos.getX() < minX) minX = pos.getX();
-				if (pos.getX() > maxX) maxX = pos.getX();
-				if (pos.getY() < minY) minY = pos.getY();
-				if (pos.getY() > maxY) maxY = pos.getY();
-				if (pos.getZ() < minZ) minZ = pos.getZ();
-				if (pos.getZ() > maxZ) maxZ = pos.getZ();
-			}
-			BlockPos dim = new BlockPos(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1);
-
-			String dimensions = "(";
-			if (dim.getX() > 1) dimensions += dim.getX() + "x";
-			if (dim.getZ() > 1) dimensions += dim.getZ() + "x";
-			if (dim.getY() > 1) dimensions += dim.getY() + "x";
-			dimensions = dimensions.substring(0, dimensions.length() - 1);
-			if (dimensions.length() > 1) dimensions += ")";
-
-			EffortlessBuilding.log(player, blockCount + " blocks " + dimensions, true);
-		}
+//		if (!doShowBlockPreviews(modifierSettings, modeSettings, startPos)) return;
+//
+//		//Keep blockstate the same for every block in the buildmode
+//		//So dont rotate blocks when in the middle of placing wall etc.
+//		if (BuildModes.isActive(player)) {
+//			IBuildMode buildModeInstance = modeSettings.getBuildMode().instance;
+//			if (buildModeInstance.getSideHit(player) != null) sideHit = buildModeInstance.getSideHit(player);
+//			if (buildModeInstance.getHitVec(player) != null) hitVec = buildModeInstance.getHitVec(player);
+//		}
+//
+//		if (sideHit == null) return;
+//
+//		//Should be red?
+//		boolean breaking = BuildModes.currentlyBreakingClient.get(player) != null && BuildModes.currentlyBreakingClient.get(player);
+//
+//		//get coordinates
+//		List<BlockPos> startCoordinates = BuildModes.findCoordinates(player, startPos, breaking || modifierSettings.doQuickReplace());
+//
+//		//Remember first and last point for the shader
+//		BlockPos firstPos = BlockPos.ZERO, secondPos = BlockPos.ZERO;
+//		if (!startCoordinates.isEmpty()) {
+//			firstPos = startCoordinates.get(0);
+//			secondPos = startCoordinates.get(startCoordinates.size() - 1);
+//		}
+//
+//		//Limit number of blocks you can place
+//		int limit = ReachHelper.getMaxBlocksPlacedAtOnce(player);
+//		if (startCoordinates.size() > limit) {
+//			startCoordinates = startCoordinates.subList(0, limit);
+//		}
+//
+//		List<BlockPos> newCoordinates = BuildModifiers.findCoordinates(player, startCoordinates);
+//
+//		sortOnDistanceToPlayer(newCoordinates, player);
+//
+//		hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)),
+//			Math.abs(hitVec.z - ((int) hitVec.z)));
+//
+//		//Get blockstates
+//		List<ItemStack> itemStacks = new ArrayList<>();
+//		List<BlockState> blockStates = new ArrayList<>();
+//		if (breaking) {
+//			//Find blockstate of world
+//			for (BlockPos coordinate : newCoordinates) {
+//				blockStates.add(player.level.getBlockState(coordinate));
+//			}
+//		} else {
+//			blockStates = BuildModifiers.findBlockStates(player, startCoordinates, hitVec, sideHit, itemStacks);
+//		}
+//
+//
+//		//Check if they are different from previous
+//		//TODO fix triggering when moving player
+//		if (!BuildModifiers.compareCoordinates(previousCoordinates, newCoordinates)) {
+//			previousCoordinates = newCoordinates;
+//			//remember the rest for placed blocks
+//			previousBlockStates = blockStates;
+//			previousItemStacks = itemStacks;
+//			previousFirstPos = firstPos;
+//			previousSecondPos = secondPos;
+//
+//			//if so, renew randomness of randomizer bag
+//			AbstractRandomizerBagItem.renewRandomness();
+//			//and play sound (max once every tick)
+//			if (newCoordinates.size() > 1 && blockStates.size() > 1 && soundTime < ClientEvents.ticksInGame - 0) {
+//				soundTime = ClientEvents.ticksInGame;
+//
+//				if (blockStates.get(0) != null) {
+//					SoundType soundType = blockStates.get(0).getBlock().getSoundType(blockStates.get(0), player.level,
+//						newCoordinates.get(0), player);
+//					player.level.playSound(player, player.blockPosition(), breaking ? soundType.getBreakSound() : soundType.getPlaceSound(),
+//						SoundSource.BLOCKS, 0.3f, 0.8f);
+//				}
+//			}
+//		}
+//
+//		if (blockStates.size() == 0 || newCoordinates.size() != blockStates.size()) return;
+//
+//		int blockCount;
+//
+//		Object outlineID = firstPos;
+//		//Dont fade out the outline if we are still determining where to place
+//		//Every outline with same ID will not fade out (because it gets replaced)
+//		if (newCoordinates.size() == 1 || BuildModifiers.isEnabled(modifierSettings, firstPos)) outlineID = "single";
+//
+//		if (!breaking) {
+//			//Use fancy shader if config allows, otherwise outlines
+//			if (ClientConfig.visuals.showBlockPreviews.get() && newCoordinates.size() < ClientConfig.visuals.maxBlockPreviews.get()) {
+//				blockCount = renderBlockPreviews(player, modifierSettings, newCoordinates, blockStates, itemStacks, 0f, firstPos, secondPos, !breaking, breaking);
+//
+//				CreateClient.OUTLINER.showCluster(outlineID, newCoordinates)
+//						.withFaceTexture(AllSpecialTextures.CHECKERED)
+//						.disableNormals()
+//						.lineWidth(1 / 32f)
+//						.colored(new Color(1f, 1f, 1f, 1f));
+//			} else {
+//				//Thicker outline without block previews
+//				CreateClient.OUTLINER.showCluster(outlineID, newCoordinates)
+//						.withFaceTexture(AllSpecialTextures.HIGHLIGHT_CHECKERED)
+//						.disableNormals()
+//						.lineWidth(1 / 16f)
+//						.colored(new Color(1f, 1f, 1f, 1f));
+//
+//				blockCount = newCoordinates.size();
+//			}
+//
+//		} else {
+//			//Breaking
+//			CreateClient.OUTLINER.showCluster(outlineID, newCoordinates)
+//					.withFaceTexture(AllSpecialTextures.THIN_CHECKERED)
+//					.disableNormals()
+//					.lineWidth(1 / 16f)
+//					.colored(new Color(0.8f, 0.1f, 0.1f, 1f));
+//			blockCount = newCoordinates.size();
+//		}
+//
+//		//Display block count and dimensions in actionbar
+//		if (BuildModes.isActive(player)) {
+//
+//			//Find min and max values (not simply firstPos and secondPos because that doesn't work with circles)
+//			int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
+//			int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
+//			int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
+//			for (BlockPos pos : startCoordinates) {
+//				if (pos.getX() < minX) minX = pos.getX();
+//				if (pos.getX() > maxX) maxX = pos.getX();
+//				if (pos.getY() < minY) minY = pos.getY();
+//				if (pos.getY() > maxY) maxY = pos.getY();
+//				if (pos.getZ() < minZ) minZ = pos.getZ();
+//				if (pos.getZ() > maxZ) maxZ = pos.getZ();
+//			}
+//			BlockPos dim = new BlockPos(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1);
+//
+//			String dimensions = "(";
+//			if (dim.getX() > 1) dimensions += dim.getX() + "x";
+//			if (dim.getZ() > 1) dimensions += dim.getZ() + "x";
+//			if (dim.getY() > 1) dimensions += dim.getY() + "x";
+//			dimensions = dimensions.substring(0, dimensions.length() - 1);
+//			if (dimensions.length() > 1) dimensions += ")";
+//
+//			EffortlessBuilding.log(player, blockCount + " blocks " + dimensions, true);
+//		}
 	}
 
 	public static void drawOutlinesIfNoBlockInHand(Player player, HitResult lookingAt) {

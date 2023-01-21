@@ -1,5 +1,7 @@
 package nl.requios.effortlessbuilding.buildmode;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
@@ -15,6 +17,12 @@ import java.util.UUID;
 public abstract class TwoClicksBuildMode extends BaseBuildMode {
 
 	protected BlockEntry firstBlockEntry;
+
+	@Override
+	public void initialize() {
+		super.initialize();
+		firstBlockEntry = null;
+	}
 
 	@Override
 	public boolean onClick(List<BlockEntry> blocks) {
@@ -39,38 +47,33 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public List<BlockPos> findCoordinates(Player player, BlockPos blockPos, boolean skipRaytrace) {
-		List<BlockPos> list = new ArrayList<>();
-		Dictionary<UUID, Integer> rightClickTable = player.level.isClientSide ? rightClickClientTable : rightClickServerTable;
-		int rightClickNr = rightClickTable.get(player.getUUID());
-		BlockPos firstPos = firstPosTable.get(player.getUUID());
+	public void findCoordinates(List<BlockEntry> blocks) {
+		if (clicks == 0) return;
 
-		if (rightClickNr == 0) {
-			if (blockPos != null)
-				list.add(blockPos);
-		} else {
-			BlockPos secondPos = findSecondPos(player, firstPos, skipRaytrace);
-			if (secondPos == null) return list;
+		var player = Minecraft.getInstance().player;
+		var firstPos = firstBlockEntry.blockPos;
+		var secondPos = findSecondPos(player, firstBlockEntry.blockPos, true);
+		if (secondPos == null) return;
 
-			//Limit amount of blocks we can place per row
-			int axisLimit = ReachHelper.getMaxBlocksPerAxis(player);
+		//Limit amount of blocks we can place per row
+		int axisLimit = ReachHelper.getMaxBlocksPerAxis(player);
 
-			int x1 = firstPos.getX(), x2 = secondPos.getX();
-			int y1 = firstPos.getY(), y2 = secondPos.getY();
-			int z1 = firstPos.getZ(), z2 = secondPos.getZ();
+		int x1 = firstPos.getX(), x2 = secondPos.getX();
+		int y1 = firstPos.getY(), y2 = secondPos.getY();
+		int z1 = firstPos.getZ(), z2 = secondPos.getZ();
 
-			//limit axis
-			if (x2 - x1 >= axisLimit) x2 = x1 + axisLimit - 1;
-			if (x1 - x2 >= axisLimit) x2 = x1 - axisLimit + 1;
-			if (y2 - y1 >= axisLimit) y2 = y1 + axisLimit - 1;
-			if (y1 - y2 >= axisLimit) y2 = y1 - axisLimit + 1;
-			if (z2 - z1 >= axisLimit) z2 = z1 + axisLimit - 1;
-			if (z1 - z2 >= axisLimit) z2 = z1 - axisLimit + 1;
+		//limit axis
+		if (x2 - x1 >= axisLimit) x2 = x1 + axisLimit - 1;
+		if (x1 - x2 >= axisLimit) x2 = x1 - axisLimit + 1;
+		if (y2 - y1 >= axisLimit) y2 = y1 + axisLimit - 1;
+		if (y1 - y2 >= axisLimit) y2 = y1 - axisLimit + 1;
+		if (z2 - z1 >= axisLimit) z2 = z1 + axisLimit - 1;
+		if (z1 - z2 >= axisLimit) z2 = z1 - axisLimit + 1;
 
-			list.addAll(getAllBlocks(player, x1, y1, z1, x2, y2, z2));
+		blocks.clear();
+		for (BlockPos pos : getAllBlocks(player, x1, y1, z1, x2, y2, z2)) {
+			blocks.add(new BlockEntry(pos));
 		}
-
-		return list;
 	}
 
 	//Finds the place of the second block pos based on criteria (floor must be on same height as first click, wall on same plane etc)
