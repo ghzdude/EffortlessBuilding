@@ -5,10 +5,12 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -21,14 +23,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.ServerBreakBlocksPacket;
 import nl.requios.effortlessbuilding.network.ServerPlaceBlocksPacket;
-import nl.requios.effortlessbuilding.render.BlockPreviews;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
@@ -43,7 +43,9 @@ import java.util.List;
 public class BuilderChain {
 
     private final List<BlockEntry> blocks = new ArrayList<>();
+    private final List<BlockPos> coordinates = new ArrayList<>();
     private int soundTime = 0;
+    private Item previousHeldItem;
 
     public enum State {
         IDLE,
@@ -81,6 +83,7 @@ public class BuilderChain {
 
             if (!blocks.isEmpty()) {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksPlaced(blocks);
+                playSoundIfFurtherThanNormal(player, blocks.get(0), false);
                 PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksPacket(blocks));
             }
         }
@@ -111,12 +114,14 @@ public class BuilderChain {
 
             if (!blocks.isEmpty()) {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksBroken(blocks);
+                playSoundIfFurtherThanNormal(player, blocks.get(0), true);
                 PacketHandler.INSTANCE.sendToServer(new ServerBreakBlocksPacket(blocks));
             }
         }
     }
 
     public void onTick() {
+        var previousCoordinates = new ArrayList<>(coordinates);
         blocks.clear();
 
         var mc = Minecraft.getInstance();
@@ -127,6 +132,7 @@ public class BuilderChain {
         var itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
         boolean blockInHand = CompatHelper.isItemBlockProxy(itemStack);
 
+        //Cancel placing as soon as we aren't holding a block anymore
 //        if (!blockInHand && state == State.PLACING) {
 //            state = State.IDLE;
 //        }
@@ -144,33 +150,46 @@ public class BuilderChain {
         EffortlessBuildingClient.BUILD_MODES.findCoordinates(blocks, player, buildMode);
         EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player, modifierSettings);
 
-        if (blockInHand && state != State.BREAKING)
-            findBlockStates(player, itemStack);
+        removeDuplicateCoordinates();
 
-        //Check if they are different
-//        if (!BuildModifiers.compareCoordinates(previousCoordinates, newCoordinates)) {
-//
-//            //Renew randomness of randomizer bag
-//            AbstractRandomizerBagItem.renewRandomness();
-//
-//            //Play sound (max once every tick)
-//            if (blocks.size() > 1 && blockStates.size() > 1 && soundTime < ClientEvents.ticksInGame) {
-//                soundTime = ClientEvents.ticksInGame;
-//
-//                var firstBlockState = blocks.get(0).blockState;
-//                if (firstBlockState != null) {
-//                    SoundType soundType = firstBlockState.getBlock().getSoundType(firstBlockState, player.level,
-//                            blocks.get(0).blockPos, player);
-//                    SoundEvent soundEvent = state == BuilderChain.State.BREAKING ? soundType.getBreakSound() : soundType.getPlaceSound();
-//                    player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.3f, 0.8f);
-//                }
-//            }
-//        }
+        coordinates.clear();
+        for (BlockEntry blockEntry : blocks) {
+            coordinates.add(blockEntry.blockPos);
+        }
+
+        findBlockStates(player, itemStack);
+
+        //Check if any changes are made
+        if (previousHeldItem != itemStack.getItem() || !previousCoordinates.equals(coordinates)) {
+            onBlocksChanged(player);
+        }
+
+        previousHeldItem = itemStack.getItem();
+    }
+
+    private void onBlocksChanged(Player player) {
+
+        //Renew randomness of randomizer bag
+        AbstractRandomizerBagItem.renewRandomness();
+
+        //Play sound (max once every tick)
+        if (blocks.size() > 1 && soundTime < ClientEvents.ticksInGame) {
+            soundTime = ClientEvents.ticksInGame;
+
+            var firstBlockState = blocks.get(0).blockState;
+            if (firstBlockState != null) {
+                SoundType soundType = firstBlockState.getBlock().getSoundType(firstBlockState, player.level, blocks.get(0).blockPos, player);
+                SoundEvent soundEvent = state == BuilderChain.State.BREAKING ? soundType.getBreakSound() : soundType.getPlaceSound();
+                player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.3f, 0.8f);
+            }
+        }
     }
 
     public void cancel() {
+        if (state == State.IDLE) return;
         state = State.IDLE;
         EffortlessBuildingClient.BUILD_MODES.onCancel();
+        Minecraft.getInstance().player.playSound(SoundEvents.UI_TOAST_OUT, 4, 1);
     }
 
     private BlockEntry findStartPosition(Player player, BlockHitResult lookingAt) {
@@ -210,7 +229,28 @@ public class BuilderChain {
         return blockEntry;
     }
 
-    private void findBlockStates(LocalPlayer player, ItemStack itemStack) {
+    private void removeDuplicateCoordinates() {
+        for (int i = 0; i < blocks.size(); i++) {
+            BlockEntry blockEntry = blocks.get(i);
+            for (int j = i + 1; j < blocks.size(); j++) {
+                BlockEntry blockEntry2 = blocks.get(j);
+                if (blockEntry.blockPos.equals(blockEntry2.blockPos)) {
+                    blocks.remove(j);
+                    j--;
+                }
+            }
+        }
+    }
+
+    private void findBlockStates(Player player, ItemStack itemStack) {
+
+        if (state == State.BREAKING) {
+            for (BlockEntry blockEntry : blocks) {
+                blockEntry.blockState = Minecraft.getInstance().level.getBlockState(blockEntry.blockPos);
+            }
+            return;
+        }
+
         if (itemStack.getItem() instanceof BlockItem) {
 
             for (BlockEntry blockEntry : blocks) {
@@ -219,6 +259,7 @@ public class BuilderChain {
 
         } else if (CompatHelper.isItemBlockProxy(itemStack, false)) {
 
+            AbstractRandomizerBagItem.resetRandomness();
             for (BlockEntry blockEntry : blocks) {
                 ItemStack itemBlockStack = CompatHelper.getItemBlockFromStack(itemStack);
                 if (itemBlockStack == null || itemBlockStack.isEmpty()) continue;
@@ -234,26 +275,17 @@ public class BuilderChain {
         return block.getStateForPlacement(new BlockPlaceContext(player, hand, blockItemStack, blockHitResult));
     }
 
-    private void playPlacingSoundIfFurtherThanNormal(Player player, Vec3 location, BlockItem blockItem) {
+    private void playSoundIfFurtherThanNormal(Player player, BlockEntry blockEntry, boolean breaking) {
 
-        if ((location.subtract(player.getEyePosition(1f))).lengthSqr() > 25f) {
-            BlockPos blockPos = new BlockPos(location);
-            BlockState state = blockItem.getBlock().defaultBlockState();
-            SoundType soundType = state.getBlock().getSoundType(state, player.level, blockPos, player);
-            player.level.playSound(player, player.blockPosition(), soundType.getPlaceSound(), SoundSource.BLOCKS,
-                    0.4f, soundType.getPitch());
-        }
-    }
+        if (Minecraft.getInstance().hitResult != null && Minecraft.getInstance().hitResult.getType() == HitResult.Type.BLOCK)
+            return;
 
-    private void playBreakingSoundIfFurtherThanNormal(Player player, Vec3 location) {
+        if (blockEntry == null || blockEntry.blockState == null)
+            return;
 
-        if ((location.subtract(player.getEyePosition(1f))).lengthSqr() > 25f) {
-            BlockPos blockPos = new BlockPos(location);
-            BlockState state = player.level.getBlockState(blockPos);
-            SoundType soundtype = state.getBlock().getSoundType(state, player.level, blockPos, player);
-            player.level.playSound(player, player.blockPosition(), soundtype.getBreakSound(), SoundSource.BLOCKS,
-                    0.4f, soundtype.getPitch());
-        }
+        SoundType soundType = blockEntry.blockState.getBlock().getSoundType(blockEntry.blockState, player.level, blockEntry.blockPos, player);
+        SoundEvent soundEvent = breaking ? soundType.getBreakSound() : soundType.getPlaceSound();
+        player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.6f, soundType.getPitch());
     }
 
     private void swingHand(Player player, InteractionHand hand) {
@@ -266,5 +298,9 @@ public class BuilderChain {
 
     public List<BlockEntry> getBlocks() {
         return blocks;
+    }
+
+    public List<BlockPos> getCoordinates() {
+        return coordinates;
     }
 }

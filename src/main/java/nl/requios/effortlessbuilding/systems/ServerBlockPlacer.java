@@ -45,7 +45,7 @@ public class ServerBlockPlacer {
         if (!world.isLoaded(block.blockPos) || world.isEmptyBlock(block.blockPos)) return;
 
         isPlacingOrBreakingBlocks = true;
-        BlockHelper.destroyBlockAs(world, block.blockPos, player, player.getMainHandItem(), 1.0f, stack -> {
+        BlockHelper.destroyBlockAs(world, block.blockPos, player, player.getMainHandItem(), 0f, stack -> {
             if (!player.isCreative()) {
                 ItemHandlerHelper.giveItemToPlayer(player, stack);
             }

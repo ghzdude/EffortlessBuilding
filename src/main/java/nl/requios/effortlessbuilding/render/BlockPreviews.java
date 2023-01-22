@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.render;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.SoundType;
@@ -72,7 +73,7 @@ public class BlockPreviews {
 
 		if (blocks.size() == 0) return;
 
-		var coordinates = blocks.stream().map(block -> block.blockPos).toList();
+		var coordinates = EffortlessBuildingClient.BUILDER_CHAIN.getCoordinates();
 
 		//Dont fade out the outline if we are still determining where to place
 		//Every outline with same ID will not fade out (because it gets replaced)
@@ -131,7 +132,8 @@ public class BlockPreviews {
 			dimensions = dimensions.substring(0, dimensions.length() - 1);
 			if (dimensions.length() > 1) dimensions += ")";
 
-			EffortlessBuilding.log(player, blocks.size() + " blocks " + dimensions, true);
+			String msg = blocks.size() + " blocks " + dimensions;
+			EffortlessBuilding.log(player, msg, true);
 		}
 	}
 
@@ -187,9 +189,6 @@ public class BlockPreviews {
 
 		var blockPos = blockEntry.blockPos;
 		var blockState = blockEntry.blockState;
-		if (breaking) {
-			blockState = Minecraft.getInstance().level.getBlockState(blockPos);
-		}
 
 		float scale = 0.5f;
 		float alpha = 0.7f;
@@ -252,7 +251,7 @@ public class BlockPreviews {
 		if (!ClientConfig.visuals.showBlockPreviews.get()) return;
 		if (blocks.size() <= 1 || blocks.size() > ClientConfig.visuals.maxBlockPreviews.get()) return;
 
-		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, false, blocks));
+		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, false, new ArrayList<>(blocks)));
 
 		CreateClient.OUTLINER.keep(blocks.get(0).blockPos, CommonConfig.visuals.appearAnimationLength.get());
 	}
@@ -261,7 +260,7 @@ public class BlockPreviews {
 		if (!ClientConfig.visuals.showBlockPreviews.get()) return;
 		if (blocks.size() <= 1 || blocks.size() > ClientConfig.visuals.maxBlockPreviews.get()) return;
 
-		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, true, blocks));
+		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, true, new ArrayList<>(blocks)));
 
 		CreateClient.OUTLINER.keep(blocks.get(0).blockPos, CommonConfig.visuals.breakAnimationLength.get());
 	}

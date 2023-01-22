@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.BitSet;
+import java.util.Objects;
 
 public class BlockEntry {
     public final BlockPos blockPos;
@@ -56,5 +57,4 @@ public class BlockEntry {
         block.itemStack = buf.readItem();
         return block;
     }
-
 }
