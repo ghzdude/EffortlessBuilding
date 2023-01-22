@@ -17,11 +17,11 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.network.PacketDistributor;
-import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
+import nl.requios.effortlessbuilding.systems.ServerBuildState;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.AddUndoMessage;
 import nl.requios.effortlessbuilding.network.ClearUndoMessage;
@@ -55,7 +55,7 @@ public class CommonEvents {
 		EffortlessBuilding.DELAYED_BLOCK_PLACER.tick();
 	}
 
-	//Cancel event if necessary. Nothing more, rest is handled on mouse right click
+	//Cancel event if necessary. Nothing more, rest is handled on mouseclick
 	@SubscribeEvent
 	public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
 		if (event.getLevel().isClientSide()) return; //Never called clientside anyway, but just to be sure
@@ -65,9 +65,7 @@ public class CommonEvents {
 		//Don't cancel event if our custom logic is breaking blocks
 		if (EffortlessBuilding.SERVER_BLOCK_PLACER.isPlacingOrBreakingBlocks()) return;
 
-		BuildModeEnum buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
-
-		if (buildMode != BuildModeEnum.DISABLED || EffortlessBuildingClient.QUICK_REPLACE.isQuickReplacing()) {
+		if (!ServerBuildState.isLikeVanilla(player)) {
 
 			//Only cancel if itemblock in hand
 			//Fixed issue with e.g. Create Wrench shift-rightclick disassembling being cancelled.
@@ -83,6 +81,7 @@ public class CommonEvents {
 		}
 	}
 
+	//Cancel event if necessary. Nothing more, rest is handled on mouseclick
 	@SubscribeEvent
 	public static void onBlockBroken(BlockEvent.BreakEvent event) {
 		if (event.getLevel().isClientSide()) return;
@@ -92,10 +91,7 @@ public class CommonEvents {
 		//Don't cancel event if our custom logic is breaking blocks
 		if (EffortlessBuilding.SERVER_BLOCK_PLACER.isPlacingOrBreakingBlocks()) return;
 
-		//Cancel event if necessary
-		//If cant break far then dont cancel event ever
-		BuildModeEnum buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
-		if (buildMode != BuildModeEnum.DISABLED && ReachHelper.canBreakFar(player)) {
+		if (!ServerBuildState.isLikeVanilla(player) && ReachHelper.canBreakFar(player)) {
 			event.setCanceled(true);
 		} else {
 			//NORMAL mode, let vanilla handle block breaking

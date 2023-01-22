@@ -6,16 +6,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.utilities.FixedStack;
 import nl.requios.effortlessbuilding.utilities.InventoryHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
-import nl.requios.effortlessbuilding.render.BlockPreviews;
 
 import java.util.*;
 
@@ -23,14 +20,14 @@ public class UndoRedo {
 
 	//Undo and redo stacks per player
 	//Gets added to twice in singleplayer (server and client) if not careful. So separate stacks.
-	private static final Map<UUID, FixedStack<BlockSet>> undoStacksClient = new HashMap<>();
-	private static final Map<UUID, FixedStack<BlockSet>> undoStacksServer = new HashMap<>();
-	private static final Map<UUID, FixedStack<BlockSet>> redoStacksClient = new HashMap<>();
-	private static final Map<UUID, FixedStack<BlockSet>> redoStacksServer = new HashMap<>();
+	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacksClient = new HashMap<>();
+	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacksServer = new HashMap<>();
+	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacksClient = new HashMap<>();
+	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacksServer = new HashMap<>();
 
 	//add to undo stack
-	public static void addUndo(Player player, BlockSet blockSet) {
-		Map<UUID, FixedStack<BlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+	public static void addUndo(Player player, UndoRedoBlockSet blockSet) {
+		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
 
 		//Assert coordinates is as long as previous and new blockstate lists
 		if (blockSet.getCoordinates().size() != blockSet.getPreviousBlockStates().size() ||
@@ -50,35 +47,35 @@ public class UndoRedo {
 
 		//If no stack exists, make one
 		if (!undoStacks.containsKey(player.getUUID())) {
-			undoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
+			undoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
 		}
 
 		undoStacks.get(player.getUUID()).push(blockSet);
 	}
 
-	private static void addRedo(Player player, BlockSet blockSet) {
-		Map<UUID, FixedStack<BlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+	private static void addRedo(Player player, UndoRedoBlockSet blockSet) {
+		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
 
 		//(No asserts necessary, it's private)
 
 		//If no stack exists, make one
 		if (!redoStacks.containsKey(player.getUUID())) {
-			redoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
+			redoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
 		}
 
 		redoStacks.get(player.getUUID()).push(blockSet);
 	}
 
 	public static boolean undo(Player player) {
-		Map<UUID, FixedStack<BlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
 
 		if (!undoStacks.containsKey(player.getUUID())) return false;
 
-		FixedStack<BlockSet> undoStack = undoStacks.get(player.getUUID());
+		FixedStack<UndoRedoBlockSet> undoStack = undoStacks.get(player.getUUID());
 
 		if (undoStack.isEmpty()) return false;
 
-		BlockSet blockSet = undoStack.pop();
+		UndoRedoBlockSet blockSet = undoStack.pop();
 		List<BlockPos> coordinates = blockSet.getCoordinates();
 		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
 		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
@@ -129,15 +126,15 @@ public class UndoRedo {
 	}
 
 	public static boolean redo(Player player) {
-		Map<UUID, FixedStack<BlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
 
 		if (!redoStacks.containsKey(player.getUUID())) return false;
 
-		FixedStack<BlockSet> redoStack = redoStacks.get(player.getUUID());
+		FixedStack<UndoRedoBlockSet> redoStack = redoStacks.get(player.getUUID());
 
 		if (redoStack.isEmpty()) return false;
 
-		BlockSet blockSet = redoStack.pop();
+		UndoRedoBlockSet blockSet = redoStack.pop();
 		List<BlockPos> coordinates = blockSet.getCoordinates();
 		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
 		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
@@ -187,8 +184,8 @@ public class UndoRedo {
 	}
 
 	public static void clear(Player player) {
-		Map<UUID, FixedStack<BlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
-		Map<UUID, FixedStack<BlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
 		if (undoStacks.containsKey(player.getUUID())) {
 			undoStacks.get(player.getUUID()).clear();
 		}

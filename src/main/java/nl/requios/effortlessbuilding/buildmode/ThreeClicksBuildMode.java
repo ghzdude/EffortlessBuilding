@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public boolean onClick(List<BlockEntry> blocks) {
+	public boolean onClick(BlockSet blocks) {
 		super.onClick(blocks);
 
 		if (clicks == 1) {
@@ -35,7 +36,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 				return false;
 			}
 
-			firstBlockEntry = blocks.get(0);
+			firstBlockEntry = blocks.getFirstBlockEntry();
 		} else if (clicks == 2) {
 			//Second click, find second position
 
@@ -57,7 +58,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public void findCoordinates(List<BlockEntry> blocks) {
+	public void findCoordinates(BlockSet blocks) {
 		if (clicks == 0) return;
 
 		if (clicks == 1) {
@@ -85,6 +86,8 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			for (BlockPos pos : getIntermediateBlocks(player, x1, y1, z1, x2, y2, z2)) {
 				blocks.add(new BlockEntry(pos));
 			}
+			blocks.firstPos = firstPos;
+			blocks.lastPos = secondPos;
 		} else {
 			var player = Minecraft.getInstance().player;
 			BlockPos firstPos = firstBlockEntry.blockPos;
@@ -118,6 +121,8 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			for (BlockPos pos : getFinalBlocks(player, x1, y1, z1, x2, y2, z2, x3, y3, z3)) {
 				blocks.add(new BlockEntry(pos));
 			}
+			blocks.firstPos = firstPos;
+			blocks.lastPos = thirdPos;
 		}
 	}
 

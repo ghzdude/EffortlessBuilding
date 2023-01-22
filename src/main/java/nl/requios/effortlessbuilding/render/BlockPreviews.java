@@ -1,15 +1,8 @@
 package nl.requios.effortlessbuilding.render;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -17,20 +10,17 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.*;
 import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
-import nl.requios.effortlessbuilding.buildmodifier.BuildModifiers;
-import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.create.AllSpecialTextures;
 import nl.requios.effortlessbuilding.create.CreateClient;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.systems.BuilderChain;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @OnlyIn(Dist.CLIENT)
 public class BlockPreviews {
@@ -69,16 +59,15 @@ public class BlockPreviews {
 			   !ClientConfig.visuals.alwaysShowBlockPreview.get()) return;
 
 		var blocks = EffortlessBuildingClient.BUILDER_CHAIN.getBlocks();
-		var state = EffortlessBuildingClient.BUILDER_CHAIN.getState();
-
 		if (blocks.size() == 0) return;
 
-		var coordinates = EffortlessBuildingClient.BUILDER_CHAIN.getCoordinates();
+		var coordinates = blocks.getCoordinates();
+		var state = EffortlessBuildingClient.BUILDER_CHAIN.getState();
 
 		//Dont fade out the outline if we are still determining where to place
 		//Every outline with same ID will not fade out (because it gets replaced)
 		Object outlineID = "single";
-		if (blocks.size() > 1) outlineID = blocks.get(0).blockPos;
+		if (blocks.size() > 1) outlineID = blocks.firstPos;
 
 		if (state != BuilderChain.State.BREAKING) {
 			//Use fancy shader if config allows, otherwise outlines
@@ -138,57 +127,44 @@ public class BlockPreviews {
 	}
 
 	public void drawOutlinesIfNoBlockInHand(Player player) {
-		ItemStack mainhand = player.getMainHandItem();
-		HitResult lookingAt = ClientEvents.getLookingAt(player);
-		if (EffortlessBuildingClient.BUILD_MODES.getBuildMode() == BuildModeEnum.DISABLED)
-			lookingAt = Minecraft.getInstance().hitResult;
+		var builderChain = EffortlessBuildingClient.BUILDER_CHAIN;
+		if (builderChain.isBlockInHand()) return;
+		if (builderChain.getState() != BuilderChain.State.IDLE) return;
 
-		boolean noBlockInHand = !(!mainhand.isEmpty() && CompatHelper.isItemBlockProxy(mainhand));
-		if (!noBlockInHand) return;
+		var blocks = new ArrayList<>(builderChain.getBlocks().values());
+		if (blocks.size() == 0) return;
 
-		//Draw outlines if no block in hand
-		//Find proper raytrace: either normal range or increased range depending on canBreakFar
-		HitResult objectMouseOver = Minecraft.getInstance().hitResult;
-		HitResult breakingRaytrace = ReachHelper.canBreakFar(player) ? lookingAt : objectMouseOver;
+		//Only render first outline if further than normal reach
+		var lookingAtNear = Minecraft.getInstance().hitResult;
+		if (lookingAtNear != null && lookingAtNear.getType() == HitResult.Type.BLOCK)
+			blocks.remove(0);
 
-		if (player.isCreative() && breakingRaytrace != null && breakingRaytrace.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockBreakingRaytrace = (BlockHitResult) breakingRaytrace;
-			List<BlockPos> breakCoordinates = BuildModifiers.findCoordinates(player, blockBreakingRaytrace.getBlockPos());
+		//Only render outlines if there is a block, like vanilla
+		blocks.removeIf(blockEntry -> blockEntry.existingBlockState == null ||
+									  blockEntry.existingBlockState.isAir() ||
+									  blockEntry.existingBlockState.getMaterial().isLiquid());
 
-			//Only render first outline if further than normal reach
-			if (objectMouseOver != null && objectMouseOver.getType() == HitResult.Type.BLOCK)
-				breakCoordinates.remove(0);
-
-			breakCoordinates.removeIf(pos -> {
-				BlockState blockState = player.level.getBlockState(pos);
-				if (blockState.isAir() || blockState.getMaterial().isLiquid()) return true;
-				return !SurvivalHelper.canBreak(player.level, player, pos);
-			});
-
-			if (!breakCoordinates.isEmpty()) {
-				CreateClient.OUTLINER.showCluster("break", breakCoordinates)
-						.disableNormals()
-						.lineWidth(1 / 64f)
-						.colored(0x222222);
-			}
+		if (!blocks.isEmpty()) {
+			var coordinates = blocks.stream().map(blockEntry -> blockEntry.blockPos).collect(Collectors.toList());
+			CreateClient.OUTLINER.showCluster("break", coordinates)
+					.disableNormals()
+					.lineWidth(1 / 64f)
+					.colored(0x222222);
 		}
 	}
 
-	protected void renderBlockPreviews(List<BlockEntry> blocks, boolean breaking, float dissolve) {
-
-		var firstPos = blocks.get(0).blockPos;
-		var lastPos = blocks.get(blocks.size() - 1).blockPos;
+	protected void renderBlockPreviews(BlockSet blocks, boolean breaking, float dissolve) {
 
 		for (BlockEntry blockEntry : blocks) {
-			renderBlockPreview(blockEntry, breaking, dissolve, firstPos, lastPos);
+			renderBlockPreview(blockEntry, breaking, dissolve, blocks.firstPos, blocks.lastPos);
 		}
 	}
 
 	protected void renderBlockPreview(BlockEntry blockEntry, boolean breaking, float dissolve, BlockPos firstPos, BlockPos lastPos) {
-		if (blockEntry.blockState == null) return;
+		if (blockEntry.newBlockState == null) return;
 
 		var blockPos = blockEntry.blockPos;
-		var blockState = blockEntry.blockState;
+		var blockState = blockEntry.newBlockState;
 
 		float scale = 0.5f;
 		float alpha = 0.7f;
@@ -247,22 +223,22 @@ public class BlockPreviews {
 		return (ay * t3) + (by * t2) + (cy * t) + 0;
 	}
 
-	public void onBlocksPlaced(List<BlockEntry> blocks) {
+	public void onBlocksPlaced(BlockSet blocks) {
 		if (!ClientConfig.visuals.showBlockPreviews.get()) return;
 		if (blocks.size() <= 1 || blocks.size() > ClientConfig.visuals.maxBlockPreviews.get()) return;
 
-		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, false, new ArrayList<>(blocks)));
+		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, false, new BlockSet(blocks)));
 
-		CreateClient.OUTLINER.keep(blocks.get(0).blockPos, CommonConfig.visuals.appearAnimationLength.get());
+		CreateClient.OUTLINER.keep(blocks.firstPos, CommonConfig.visuals.appearAnimationLength.get());
 	}
 
-	public void onBlocksBroken(List<BlockEntry> blocks) {
+	public void onBlocksBroken(BlockSet blocks) {
 		if (!ClientConfig.visuals.showBlockPreviews.get()) return;
 		if (blocks.size() <= 1 || blocks.size() > ClientConfig.visuals.maxBlockPreviews.get()) return;
 
-		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, true, new ArrayList<>(blocks)));
+		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, true, new BlockSet(blocks)));
 
-		CreateClient.OUTLINER.keep(blocks.get(0).blockPos, CommonConfig.visuals.breakAnimationLength.get());
+		CreateClient.OUTLINER.keep(blocks.firstPos, CommonConfig.visuals.breakAnimationLength.get());
 	}
 
 	private void sortOnDistanceToPlayer(List<BlockPos> coordinates, Player player) {
@@ -279,9 +255,9 @@ public class BlockPreviews {
 	public static class PlacedBlocksEntry {
 		float time;
 		boolean breaking;
-		List<BlockEntry> blocks;
+		BlockSet blocks;
 
-		public PlacedBlocksEntry(float time, boolean breaking, List<BlockEntry> blocks) {
+		public PlacedBlocksEntry(float time, boolean breaking, BlockSet blocks) {
 			this.time = time;
 			this.breaking = breaking;
 			this.blocks = blocks;

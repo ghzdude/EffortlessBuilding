@@ -9,6 +9,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.network.IsUsingBuildModePacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.*;
@@ -17,14 +18,8 @@ import java.util.*;
 public class BuildModes {
 	private BuildModeEnum buildMode = BuildModeEnum.DISABLED;
 
-	public void findCoordinates(List<BlockEntry> blocks, Player player, BuildModeEnum buildMode) {
+	public void findCoordinates(BlockSet blocks, Player player, BuildModeEnum buildMode) {
 		buildMode.instance.findCoordinates(blocks);
-
-		//Limit number of blocks you can place
-		int limit = ReachHelper.getMaxBlocksPlacedAtOnce(player);
-		while (blocks.size() > limit) {
-			blocks.remove(blocks.size()-1);
-		}
 	}
 
 	public BuildModeEnum getBuildMode() {

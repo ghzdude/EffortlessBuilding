@@ -6,7 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import nl.requios.effortlessbuilding.buildmodifier.BlockSet;
+import nl.requios.effortlessbuilding.buildmodifier.UndoRedoBlockSet;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 import nl.requios.effortlessbuilding.utilities.InventoryHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
@@ -97,7 +97,7 @@ public class DelayedBlockPlacer {
                 //add to undo stack
                 BlockPos firstPos = coordinates.get(0);
                 BlockPos secondPos = coordinates.get(coordinates.size() - 1);
-                UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
+                UndoRedo.addUndo(player, new UndoRedoBlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
             }
         }
 

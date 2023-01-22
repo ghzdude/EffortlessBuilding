@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding.utilities;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -20,12 +19,10 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.material.Material;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.ForgeEventFactory;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 
@@ -273,11 +270,9 @@ public class SurvivalHelper {
 		}
 
 		//Check quickreplace
-		boolean isQuickReplacing = false;
 		if (placer instanceof Player player) {
-			if (world.isClientSide) EffortlessBuildingClient.QUICK_REPLACE.isQuickReplacing();
-			else isQuickReplacing = ServerBuildState.isQuickReplacing(player);
-
+			boolean isQuickReplacing = world.isClientSide ? EffortlessBuildingClient.BUILD_SETTINGS.isQuickReplacing()
+														  : ServerBuildState.isQuickReplacing(player);
 			if (isQuickReplacing) return true;
 		}
 

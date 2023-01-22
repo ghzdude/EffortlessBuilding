@@ -1,9 +1,7 @@
 package nl.requios.effortlessbuilding.systems;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -12,10 +10,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -29,11 +25,10 @@ import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.ServerBreakBlocksPacket;
 import nl.requios.effortlessbuilding.network.ServerPlaceBlocksPacket;
-import nl.requios.effortlessbuilding.utilities.BlockEntry;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 // Receives block placed events, then finds additional blocks we want to place through various systems,
@@ -42,10 +37,11 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class BuilderChain {
 
-    private final List<BlockEntry> blocks = new ArrayList<>();
-    private final List<BlockPos> coordinates = new ArrayList<>();
-    private int soundTime = 0;
+    private final BlockSet blocks = new BlockSet();
+    private boolean blockInHand;
+    private boolean lookingAtInteractiveObject;
     private Item previousHeldItem;
+    private int soundTime = 0;
 
     public enum State {
         IDLE,
@@ -56,6 +52,7 @@ public class BuilderChain {
     private State state = State.IDLE;
 
     public void onRightClick() {
+        if (lookingAtInteractiveObject) return;
         var player = Minecraft.getInstance().player;
 
         if (state == State.BREAKING) {
@@ -63,9 +60,6 @@ public class BuilderChain {
             return;
         }
 
-        //Check if we have a BlockItem in hand
-        var itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        boolean blockInHand = CompatHelper.isItemBlockProxy(itemStack);
         if (!blockInHand) {
             if (state == State.PLACING) cancel();
             return;
@@ -83,13 +77,15 @@ public class BuilderChain {
 
             if (!blocks.isEmpty()) {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksPlaced(blocks);
-                playSoundIfFurtherThanNormal(player, blocks.get(0), false);
+                BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), false);
+                player.swing(InteractionHand.MAIN_HAND);
                 PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksPacket(blocks));
             }
         }
     }
 
     public void onLeftClick() {
+        if (lookingAtInteractiveObject) return;
         var player = Minecraft.getInstance().player;
 
         if (state == State.PLACING) {
@@ -114,53 +110,55 @@ public class BuilderChain {
 
             if (!blocks.isEmpty()) {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksBroken(blocks);
-                playSoundIfFurtherThanNormal(player, blocks.get(0), true);
+                BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), true);
+                player.swing(InteractionHand.MAIN_HAND);
                 PacketHandler.INSTANCE.sendToServer(new ServerBreakBlocksPacket(blocks));
             }
         }
     }
 
     public void onTick() {
-        var previousCoordinates = new ArrayList<>(coordinates);
+        var previousCoordinates = new HashSet<>(blocks.getCoordinates());
         blocks.clear();
 
         var mc = Minecraft.getInstance();
         var player = mc.player;
-        var level = mc.level;
+        var world = mc.level;
 
         //Check if we have a BlockItem in hand
         var itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        boolean blockInHand = CompatHelper.isItemBlockProxy(itemStack);
+        blockInHand = CompatHelper.isItemBlockProxy(itemStack);
 
-        //Cancel placing as soon as we aren't holding a block anymore
-//        if (!blockInHand && state == State.PLACING) {
-//            state = State.IDLE;
-//        }
+        lookingAtInteractiveObject = BlockUtilities.determineIfLookingAtInteractiveObject(mc, world);
+        if (lookingAtInteractiveObject) return;
 
-        var modifierSettings = ModifierSettingsManager.getModifierSettings(player);
         var buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
+        var modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
-
-        BlockHitResult lookingAt = ClientEvents.getLookingAt(player);
-        BlockEntry startEntry = findStartPosition(player, lookingAt);
-        if (startEntry != null) {
-            blocks.add(startEntry);
+        if (state == State.IDLE) {
+            //Find start position
+            BlockHitResult lookingAt = ClientEvents.getLookingAtFar(player);
+            BlockEntry startEntry = findStartPosition(player, lookingAt);
+            if (startEntry != null) {
+                blocks.add(startEntry);
+                blocks.firstPos = startEntry.blockPos;
+                blocks.lastPos = startEntry.blockPos;
+            }
         }
 
         EffortlessBuildingClient.BUILD_MODES.findCoordinates(blocks, player, buildMode);
         EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player, modifierSettings);
 
-        removeDuplicateCoordinates();
+        BuilderFilter.filterOnCoordinates(blocks, player);
 
-        coordinates.clear();
-        for (BlockEntry blockEntry : blocks) {
-            coordinates.add(blockEntry.blockPos);
-        }
+        findExistingBlockStates(world);
+        BuilderFilter.filterOnExistingBlockStates(blocks, player);
 
-        findBlockStates(player, itemStack);
+        findNewBlockStates(player, itemStack);
+        BuilderFilter.filterOnNewBlockStates(blocks, player);
 
         //Check if any changes are made
-        if (previousHeldItem != itemStack.getItem() || !previousCoordinates.equals(coordinates)) {
+        if (previousHeldItem != itemStack.getItem() || !previousCoordinates.equals(blocks.getCoordinates())) {
             onBlocksChanged(player);
         }
 
@@ -176,9 +174,9 @@ public class BuilderChain {
         if (blocks.size() > 1 && soundTime < ClientEvents.ticksInGame) {
             soundTime = ClientEvents.ticksInGame;
 
-            var firstBlockState = blocks.get(0).blockState;
-            if (firstBlockState != null) {
-                SoundType soundType = firstBlockState.getBlock().getSoundType(firstBlockState, player.level, blocks.get(0).blockPos, player);
+            if (blocks.getLastBlockEntry() != null && blocks.getLastBlockEntry().newBlockState != null) {
+                var lastBlockState = blocks.getLastBlockEntry().newBlockState;
+                SoundType soundType = lastBlockState.getBlock().getSoundType(lastBlockState, player.level, blocks.lastPos, player);
                 SoundEvent soundEvent = state == BuilderChain.State.BREAKING ? soundType.getBreakSound() : soundType.getPlaceSound();
                 player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.3f, 0.8f);
             }
@@ -192,34 +190,45 @@ public class BuilderChain {
         Minecraft.getInstance().player.playSound(SoundEvents.UI_TOAST_OUT, 4, 1);
     }
 
-    private BlockEntry findStartPosition(Player player, BlockHitResult lookingAt) {
-        if (lookingAt == null || lookingAt.getType() == HitResult.Type.MISS) return null;
+    private BlockEntry findStartPosition(Player player, BlockHitResult lookingAtFar) {
+        if (lookingAtFar == null || lookingAtFar.getType() == HitResult.Type.MISS) return null;
 
-        var startPos = lookingAt.getBlockPos();
+        var startPos = lookingAtFar.getBlockPos();
 
         //Check if out of reach
         int maxReach = ReachHelper.getMaxReach(player);
         if (player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
 
+        //TODO we are always at IDLE state here, find another way to check if we are breaking
         if (state != State.BREAKING) {
             //Offset in direction of sidehit if not quickreplace and not replaceable
-            boolean isQuickReplacing = EffortlessBuildingClient.QUICK_REPLACE.isQuickReplacing();
+            boolean shouldOffsetStartPosition = EffortlessBuildingClient.BUILD_SETTINGS.shouldOffsetStartPosition();
             boolean replaceable = player.level.getBlockState(startPos).getMaterial().isReplaceable();
             boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
-            if (!isQuickReplacing && !replaceable && !becomesDoubleSlab) {
-                startPos = startPos.relative(lookingAt.getDirection());
+            if (!shouldOffsetStartPosition && !replaceable && !becomesDoubleSlab) {
+                startPos = startPos.relative(lookingAtFar.getDirection());
             }
 
             //Get under tall grass and other replaceable blocks
-            if (isQuickReplacing && replaceable) {
+            if (shouldOffsetStartPosition && replaceable) {
                 startPos = startPos.below();
+            }
+        } else {
+            //Do not break far if we are not allowed to
+            if (!ReachHelper.canBreakFar(player)) {
+                boolean startPosIsNear = false;
+                var lookingAtNear = Minecraft.getInstance().hitResult;
+                if (lookingAtNear != null && lookingAtNear.getType() == HitResult.Type.BLOCK) {
+                    startPosIsNear = ((BlockHitResult) lookingAtNear).getBlockPos().equals(startPos);
+                }
+                if (!startPosIsNear) return null;
             }
         }
 
         var blockEntry = new BlockEntry(startPos);
 
         //Place upside-down stairs if we aim high at block
-        var hitVec = lookingAt.getLocation();
+        var hitVec = lookingAtFar.getLocation();
         //Format hitvec to 0.x
         hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
         if (hitVec.y > 0.5) {
@@ -229,32 +238,19 @@ public class BuilderChain {
         return blockEntry;
     }
 
-    private void removeDuplicateCoordinates() {
-        for (int i = 0; i < blocks.size(); i++) {
-            BlockEntry blockEntry = blocks.get(i);
-            for (int j = i + 1; j < blocks.size(); j++) {
-                BlockEntry blockEntry2 = blocks.get(j);
-                if (blockEntry.blockPos.equals(blockEntry2.blockPos)) {
-                    blocks.remove(j);
-                    j--;
-                }
-            }
+    private void findExistingBlockStates(Level world) {
+        for (BlockEntry blockEntry : blocks) {
+            blockEntry.existingBlockState = world.getBlockState(blockEntry.blockPos);
         }
     }
 
-    private void findBlockStates(Player player, ItemStack itemStack) {
-
-        if (state == State.BREAKING) {
-            for (BlockEntry blockEntry : blocks) {
-                blockEntry.blockState = Minecraft.getInstance().level.getBlockState(blockEntry.blockPos);
-            }
-            return;
-        }
+    private void findNewBlockStates(Player player, ItemStack itemStack) {
+        if (state == State.BREAKING) return;
 
         if (itemStack.getItem() instanceof BlockItem) {
 
             for (BlockEntry blockEntry : blocks) {
-                blockEntry.blockState = getBlockState(player, InteractionHand.MAIN_HAND, itemStack, blockEntry);
+                blockEntry.newBlockState = BlockUtilities.getBlockState(player, InteractionHand.MAIN_HAND, itemStack, blockEntry);
             }
 
         } else if (CompatHelper.isItemBlockProxy(itemStack, false)) {
@@ -263,44 +259,25 @@ public class BuilderChain {
             for (BlockEntry blockEntry : blocks) {
                 ItemStack itemBlockStack = CompatHelper.getItemBlockFromStack(itemStack);
                 if (itemBlockStack == null || itemBlockStack.isEmpty()) continue;
-                blockEntry.blockState = getBlockState(player, InteractionHand.MAIN_HAND, itemBlockStack, blockEntry);
+                blockEntry.newBlockState = BlockUtilities.getBlockState(player, InteractionHand.MAIN_HAND, itemBlockStack, blockEntry);
             }
         }
     }
 
-    public BlockState getBlockState(Player player, InteractionHand hand, ItemStack blockItemStack, BlockEntry blockEntry) {
-        Block block = Block.byItem(blockItemStack.getItem());
-        //TODO convert lookingAt hitvec to relative hitvec
-        var blockHitResult = new BlockHitResult(Vec3.ZERO, Direction.UP, blockEntry.blockPos, false);
-        return block.getStateForPlacement(new BlockPlaceContext(player, hand, blockItemStack, blockHitResult));
-    }
-
-    private void playSoundIfFurtherThanNormal(Player player, BlockEntry blockEntry, boolean breaking) {
-
-        if (Minecraft.getInstance().hitResult != null && Minecraft.getInstance().hitResult.getType() == HitResult.Type.BLOCK)
-            return;
-
-        if (blockEntry == null || blockEntry.blockState == null)
-            return;
-
-        SoundType soundType = blockEntry.blockState.getBlock().getSoundType(blockEntry.blockState, player.level, blockEntry.blockPos, player);
-        SoundEvent soundEvent = breaking ? soundType.getBreakSound() : soundType.getPlaceSound();
-        player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.6f, soundType.getPitch());
-    }
-
-    private void swingHand(Player player, InteractionHand hand) {
-        player.swing(hand);
-    }
 
     public State getState() {
         return state;
     }
 
-    public List<BlockEntry> getBlocks() {
+    public BlockSet getBlocks() {
         return blocks;
     }
 
-    public List<BlockPos> getCoordinates() {
-        return coordinates;
+    public boolean isBlockInHand() {
+        return blockInHand;
+    }
+
+    public boolean isLookingAtInteractiveObject() {
+        return lookingAtInteractiveObject;
     }
 }

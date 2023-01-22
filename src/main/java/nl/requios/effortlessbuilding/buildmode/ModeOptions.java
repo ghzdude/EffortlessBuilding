@@ -1,11 +1,9 @@
 package nl.requios.effortlessbuilding.buildmode;
 
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.ChatFormatting;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
 
 public class ModeOptions {
@@ -73,7 +71,7 @@ public class ModeOptions {
 				break;
 			case REPLACE:
 				if (player.level.isClientSide)
-					EffortlessBuildingClient.QUICK_REPLACE.toggleQuickReplacing();
+					EffortlessBuildingClient.BUILD_SETTINGS.toggleQuickReplace();
 				break;
 			case OPEN_MODIFIER_SETTINGS:
 				if (player.level.isClientSide)

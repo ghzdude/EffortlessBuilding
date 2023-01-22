@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -14,24 +15,23 @@ import java.util.function.Supplier;
  */
 public class ServerPlaceBlocksPacket {
 
-	private List<BlockEntry> blocks;
+	private BlockSet blocks;
 
 	public ServerPlaceBlocksPacket() {}
 
-	public ServerPlaceBlocksPacket(List<BlockEntry> blocks) {
+	public ServerPlaceBlocksPacket(BlockSet blocks) {
 		this.blocks = blocks;
 	}
 
 	public static void encode(ServerPlaceBlocksPacket message, FriendlyByteBuf buf) {
-		buf.writeCollection(message.blocks, BlockEntry::encode);
+		BlockSet.encode(buf, message.blocks);
 	}
 
 	public static ServerPlaceBlocksPacket decode(FriendlyByteBuf buf) {
 		ServerPlaceBlocksPacket message = new ServerPlaceBlocksPacket();
-		message.blocks = buf.readList(BlockEntry::decode);
+		message.blocks = BlockSet.decode(buf);
 		return message;
 	}
-
 
 	public static class Handler {
 		public static void handle(ServerPlaceBlocksPacket message, Supplier<NetworkEvent.Context> ctx) {

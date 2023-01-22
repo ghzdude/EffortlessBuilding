@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
@@ -27,12 +25,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
 import nl.requios.effortlessbuilding.gui.buildmodifier.ModifierSettingsGui;
-import nl.requios.effortlessbuilding.render.BlockPreviews;
-import nl.requios.effortlessbuilding.render.RenderHandler;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.network.*;
 import nl.requios.effortlessbuilding.render.BuildRenderTypes;
@@ -161,7 +156,7 @@ public class ClientEvents {
 
         //QuickReplace toggle
         if (keyBindings[1].consumeClick()) {
-            EffortlessBuildingClient.QUICK_REPLACE.toggleQuickReplacing();
+            EffortlessBuildingClient.BUILD_SETTINGS.toggleQuickReplace();
         }
 
         //Radial menu
@@ -241,7 +236,7 @@ public class ClientEvents {
                 keyBindings[keybindIndex].getKey().getValue());
     }
 
-    public static BlockHitResult getLookingAt(Player player) {
+    public static BlockHitResult getLookingAtFar(Player player) {
         Level world = player.level;
 
         //base distance off of player ability (config)

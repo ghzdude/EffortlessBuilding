@@ -23,7 +23,6 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 import nl.requios.effortlessbuilding.capability.ItemHandlerCapabilityProvider;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
@@ -133,7 +132,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
             if (world.isClientSide) return InteractionResult.SUCCESS;
 
             //Only place manually if in normal vanilla mode
-            if (ServerBuildState.isUsingBuildMode(player) || ServerBuildState.isQuickReplacing(player)) {
+            if (!ServerBuildState.isLikeVanilla(player)) {
                 return InteractionResult.FAIL;
             }
 

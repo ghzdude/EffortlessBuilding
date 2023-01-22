@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public boolean onClick(List<BlockEntry> blocks) {
+	public boolean onClick(BlockSet blocks) {
 		super.onClick(blocks);
 
 		if (clicks == 1) {
@@ -31,7 +32,7 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 				return false;
 			}
 
-			firstBlockEntry = blocks.get(0);
+			firstBlockEntry = blocks.getFirstBlockEntry();
 		} else {
 			//Second click, place blocks
 			clicks = 0;
@@ -41,7 +42,7 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 	}
 
 	@Override
-	public void findCoordinates(List<BlockEntry> blocks) {
+	public void findCoordinates(BlockSet blocks) {
 		if (clicks == 0) return;
 
 		var player = Minecraft.getInstance().player;
@@ -68,6 +69,8 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 		for (BlockPos pos : getAllBlocks(player, x1, y1, z1, x2, y2, z2)) {
 			blocks.add(new BlockEntry(pos));
 		}
+		blocks.firstPos = firstPos;
+		blocks.lastPos = secondPos;
 	}
 
 	//Finds the place of the second block pos based on criteria (floor must be on same height as first click, wall on same plane etc)

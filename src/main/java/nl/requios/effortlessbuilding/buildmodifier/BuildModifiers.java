@@ -20,9 +20,9 @@ import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
-import nl.requios.effortlessbuilding.render.BlockPreviews;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +30,7 @@ import java.util.List;
 
 public class BuildModifiers {
 
-	public void findCoordinates(List<BlockEntry> blocks, LocalPlayer player, ModifierSettingsManager.ModifierSettings modifierSettings) {
+	public void findCoordinates(BlockSet blocks, LocalPlayer player, ModifierSettingsManager.ModifierSettings modifierSettings) {
 
 	}
 
@@ -115,7 +115,7 @@ public class BuildModifiers {
 		//add to undo stack
 		BlockPos firstPos = startCoordinates.get(0);
 		BlockPos secondPos = startCoordinates.get(startCoordinates.size() - 1);
-		UndoRedo.addUndo(player, new BlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
+		UndoRedo.addUndo(player, new UndoRedoBlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
 
 	}
 

@@ -32,6 +32,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.level.BlockEvent;
 
 import javax.annotation.Nullable;
@@ -144,7 +145,7 @@ public class BlockHelper {
 		destroyBlockAs(world, pos, null, ItemStack.EMPTY, effectChance, droppedItemCallback);
 	}
 
-	public static void destroyBlockAs(Level world, BlockPos pos, @Nullable Player player, ItemStack usedTool,
+	public static boolean destroyBlockAs(Level world, BlockPos pos, @Nullable Player player, ItemStack usedTool,
 		float effectChance, Consumer<ItemStack> droppedItemCallback) {
 		FluidState fluidState = world.getFluidState(pos);
 		BlockState state = world.getBlockState(pos);
@@ -157,7 +158,7 @@ public class BlockHelper {
 			BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
 			MinecraftForge.EVENT_BUS.post(event);
 			if (event.isCanceled())
-				return;
+				return false;
 
 			if (event.getExpToDrop() > 0 && world instanceof ServerLevel)
 				state.getBlock()
@@ -178,19 +179,20 @@ public class BlockHelper {
 			if (state.getBlock() instanceof IceBlock && usedTool.getEnchantmentLevel(Enchantments.SILK_TOUCH) == 0) {
 				if (world.dimensionType()
 					.ultraWarm())
-					return;
+					return false;
 
 				Material material = world.getBlockState(pos.below())
 					.getMaterial();
 				if (material.blocksMotion() || material.isLiquid())
 					world.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
-				return;
+				return true;
 			}
 
 			state.spawnAfterBreak((ServerLevel) world, pos, ItemStack.EMPTY, true);
 		}
 		
 		world.setBlockAndUpdate(pos, fluidState.createLegacyBlock());
+		return true;
 	}
 
 	public static boolean isSolidWall(BlockGetter reader, BlockPos fromPos, Direction toDirection) {
@@ -223,7 +225,7 @@ public class BlockHelper {
 			.getBlock(), target.below());
 	}
 
-	public static void placeSchematicBlock(Level world, BlockState state, BlockPos target, ItemStack stack,
+	public static boolean placeSchematicBlock(Level world, Player player, BlockState state, BlockPos target, ItemStack stack,
 		@Nullable CompoundTag data) {
 		BlockEntity existingTile = world.getBlockEntity(target);
 
@@ -253,7 +255,7 @@ public class BlockHelper {
 					0.0D, 0.0D, 0.0D);
 			}
 			Block.dropResources(state, world, target);
-			return;
+			return true;
 		}
 
 		if (state.getBlock() instanceof BaseRailBlock) {
@@ -287,6 +289,7 @@ public class BlockHelper {
 				.setPlacedBy(world, target, state, null, stack);
 		} catch (Exception e) {
 		}
+		return true;
 	}
 
 	public static double getBounceMultiplier(Block block) {

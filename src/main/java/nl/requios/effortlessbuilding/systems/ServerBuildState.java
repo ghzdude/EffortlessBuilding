@@ -30,4 +30,8 @@ public class ServerBuildState {
             player.getPersistentData().remove(IS_QUICK_REPLACING_KEY);
         }
     }
+
+    public static boolean isLikeVanilla(Player player) {
+        return !isUsingBuildMode(player) && !isQuickReplacing(player);
+    }
 }

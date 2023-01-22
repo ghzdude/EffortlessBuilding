@@ -1,9 +1,7 @@
 package nl.requios.effortlessbuilding.buildmode.buildmodes;
 
 import nl.requios.effortlessbuilding.buildmode.IBuildMode;
-import nl.requios.effortlessbuilding.utilities.BlockEntry;
-
-import java.util.List;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 
 public class Disabled implements IBuildMode {
 
@@ -13,12 +11,12 @@ public class Disabled implements IBuildMode {
 	}
 
 	@Override
-	public boolean onClick(List<BlockEntry> blocks) {
+	public boolean onClick(BlockSet blocks) {
 		return true;
 	}
 
 	@Override
-	public void findCoordinates(List<BlockEntry> blocks) {
+	public void findCoordinates(BlockSet blocks) {
 		//Do nothing
 	}
 }

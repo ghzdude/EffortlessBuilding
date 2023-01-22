@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class InventoryHelper {
 
+	@Deprecated //Use BlockHelper.findAndRemoveInInventory instead
 	public static ItemStack findItemStackInInventory(Player player, Block block) {
 		for (ItemStack invStack : player.getInventory().items) {
 			if (!invStack.isEmpty() && invStack.getItem() instanceof BlockItem &&

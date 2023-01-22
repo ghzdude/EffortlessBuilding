@@ -1,10 +1,14 @@
 package nl.requios.effortlessbuilding.compatibility;
 
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import nl.requios.effortlessbuilding.create.foundation.item.ItemHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 
 public class CompatHelper {
@@ -62,6 +66,23 @@ public class CompatHelper {
 		}
 
 		return ItemStack.EMPTY;
+	}
+
+	public static boolean containsBlock(ItemStack stack, Block block) {
+		if (stack == null || stack.isEmpty() || !isItemBlockProxy(stack)) {
+			return block == null || block == Blocks.AIR;
+		}
+
+		if (stack.getItem() instanceof BlockItem) {
+			return ((BlockItem) stack.getItem()).getBlock() == block;
+		}
+
+		if (stack.getItem() instanceof AbstractRandomizerBagItem randomizerBagItem) {
+			IItemHandler bagInventory = randomizerBagItem.getBagInventory(stack);
+			ItemStack firstMatch = ItemHelper.findFirstMatch(bagInventory, s -> s.getItem() instanceof BlockItem);
+			return firstMatch != null && !firstMatch.isEmpty();
+		}
+		return false;
 	}
 
 }
