@@ -3,6 +3,7 @@ package nl.requios.effortlessbuilding.buildmode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
@@ -25,14 +26,11 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 
 		if (clicks == 1) {
 			//First click, remember starting position
+			firstBlockEntry = EffortlessBuildingClient.BUILDER_CHAIN.getStartPos();
 
 			//If clicking in air, reset and try again
-			if (blocks.size() == 0) {
-				clicks = 0;
-				return false;
-			}
+			if (firstBlockEntry == null) clicks = 0;
 
-			firstBlockEntry = blocks.getFirstBlockEntry();
 		} else {
 			//Second click, place blocks
 			clicks = 0;

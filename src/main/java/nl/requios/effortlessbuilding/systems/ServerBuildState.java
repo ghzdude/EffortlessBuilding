@@ -7,6 +7,11 @@ public class ServerBuildState {
     private static final String IS_USING_BUILD_MODE_KEY = EffortlessBuilding.MODID + ":isUsingBuildMode";
     private static final String IS_QUICK_REPLACING_KEY = EffortlessBuilding.MODID + ":isQuickReplacing";
 
+    public static void handleNewPlayer(Player player) {
+        setIsUsingBuildMode(player, false);
+        setIsQuickReplacing(player, false);
+    }
+
     public static boolean isUsingBuildMode(Player player) {
         return player.getPersistentData().contains(IS_USING_BUILD_MODE_KEY);
     }

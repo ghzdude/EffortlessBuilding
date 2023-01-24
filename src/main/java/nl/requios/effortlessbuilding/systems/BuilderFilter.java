@@ -5,7 +5,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
-import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.PlaceChecker;
 
@@ -17,7 +16,8 @@ public class BuilderFilter {
 
     public static void filterOnExistingBlockStates(BlockSet blocks, Player player) {
         var buildSettings = EffortlessBuildingClient.BUILD_SETTINGS;
-        boolean placing = EffortlessBuildingClient.BUILDER_CHAIN.getState() == BuilderChain.State.PLACING;
+        var buildingState = EffortlessBuildingClient.BUILDER_CHAIN.getPretendBuildingState();
+        boolean placing = buildingState == BuilderChain.BuildingState.PLACING;
 
         var iter = blocks.entrySet().iterator();
         while (iter.hasNext()) {
@@ -25,12 +25,13 @@ public class BuilderFilter {
             var blockState = blockEntry.existingBlockState;
             boolean remove = false;
 
-            if (!buildSettings.shouldReplaceTileEntities() && blockState.hasBlockEntity()) remove = true;
+            if (buildSettings.shouldProtectTileEntities() && blockState.hasBlockEntity()) remove = true;
 
-            if (placing) {
+            if (placing && !buildSettings.shouldReplaceFiltered()) {
                 if (!buildSettings.shouldReplaceAir() && blockState.isAir()) remove = true;
-                boolean isSolid = blockState.isRedstoneConductor(player.level, blockEntry.blockPos);
-                if (!buildSettings.shouldReplaceSolid() && isSolid) remove = true;
+                boolean isReplaceable = blockState.getMaterial().isReplaceable();
+//                boolean isSolid = blockState.isRedstoneConductor(player.level, blockEntry.blockPos);
+                if (!buildSettings.shouldReplaceBlocks() && !isReplaceable) remove = true;
             }
 
             if (buildSettings.shouldReplaceFiltered()) {
@@ -43,13 +44,16 @@ public class BuilderFilter {
     }
 
     public static void filterOnNewBlockStates(BlockSet blocks, Player player) {
+        var buildSettings = EffortlessBuildingClient.BUILD_SETTINGS;
+        var buildingState = EffortlessBuildingClient.BUILDER_CHAIN.getPretendBuildingState();
+        boolean placing = buildingState == BuilderChain.BuildingState.PLACING;
 
         var iter = blocks.entrySet().iterator();
         while (iter.hasNext()) {
             var blockEntry = iter.next().getValue();
             boolean remove = false;
 
-            if (!PlaceChecker.shouldPlaceBlock(player.level, blockEntry)) remove = true;
+            if (placing && !PlaceChecker.shouldPlaceBlock(player.level, blockEntry)) remove = true;
 
             if (remove) iter.remove();
         }

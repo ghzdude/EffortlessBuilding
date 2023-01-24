@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
@@ -29,18 +30,14 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 
 		if (clicks == 1) {
 			//First click, remember starting position
+			firstBlockEntry = EffortlessBuildingClient.BUILDER_CHAIN.getStartPos();
 
 			//If clicking in air, reset and try again
-			if (blocks.size() == 0) {
-				clicks = 0;
-				return false;
-			}
+			if (firstBlockEntry == null) clicks = 0;
 
-			firstBlockEntry = blocks.getFirstBlockEntry();
 		} else if (clicks == 2) {
 			//Second click, find second position
 
-			//If clicking in air, reset and try again
 			if (blocks.size() == 0) {
 				clicks = 0;
 				return false;

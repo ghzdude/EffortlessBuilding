@@ -6,8 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import nl.requios.effortlessbuilding.buildmodifier.UndoRedoBlockSet;
-import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
+import nl.requios.effortlessbuilding.utilities.UndoRedoBlockSet;
 import nl.requios.effortlessbuilding.utilities.InventoryHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 

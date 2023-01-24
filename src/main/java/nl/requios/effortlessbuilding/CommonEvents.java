@@ -18,13 +18,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
-import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
+import nl.requios.effortlessbuilding.systems.UndoRedo;
 import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.network.AddUndoMessage;
-import nl.requios.effortlessbuilding.network.ClearUndoMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 
 @EventBusSubscriber
@@ -72,12 +70,6 @@ public class CommonEvents {
 			if (isPlayerHoldingBlock(player)) {
 				event.setCanceled(true);
 			}
-
-		}  else {
-			//NORMAL mode, let vanilla handle block placing
-
-			//TODO move UndoRedo to serverside only
-			PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new AddUndoMessage(event.getPos(), event.getBlockSnapshot().getReplacedBlock(), event.getState()));
 		}
 	}
 
@@ -93,16 +85,6 @@ public class CommonEvents {
 
 		if (!ServerBuildState.isLikeVanilla(player) && ReachHelper.canBreakFar(player)) {
 			event.setCanceled(true);
-		} else {
-			//NORMAL mode, let vanilla handle block breaking
-
-			//Add to undo stack in client
-			//TODO move UndoRedo to serverside only
-			if (player instanceof ServerPlayer && event.getState() != null && event.getPos() != null) {
-				PacketDistributor.PacketTarget packetTarget = PacketDistributor.PLAYER.with(() -> (ServerPlayer) player);
-				if (packetTarget != null)
-					PacketHandler.INSTANCE.send(packetTarget, new AddUndoMessage(event.getPos(), event.getState(), Blocks.AIR.defaultBlockState()));
-			}
 		}
 	}
 
@@ -116,6 +98,7 @@ public class CommonEvents {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
+		ServerBuildState.handleNewPlayer(player);
 		ModifierSettingsManager.handleNewPlayer(player);
 	}
 
@@ -126,13 +109,13 @@ public class CommonEvents {
 		if (player.getCommandSenderWorld().isClientSide) return;
 
 		UndoRedo.clear(player);
-		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ClearUndoMessage());
 	}
 
 	@SubscribeEvent
 	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
+		ServerBuildState.handleNewPlayer(player);
 		ModifierSettingsManager.handleNewPlayer(player);
 	}
 
@@ -149,10 +132,10 @@ public class CommonEvents {
 		modifierSettings.getArraySettings().enabled = false;
 		ModifierSettingsManager.setModifierSettings(player, modifierSettings);
 
+		ServerBuildState.handleNewPlayer(player);
 		ModifierSettingsManager.handleNewPlayer(player);
 
 		UndoRedo.clear(player);
-		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ClearUndoMessage());
 	}
 
 	@SubscribeEvent
@@ -165,6 +148,4 @@ public class CommonEvents {
 		Player newPlayer = event.getEntity();
 		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
 	}
-
-
 }

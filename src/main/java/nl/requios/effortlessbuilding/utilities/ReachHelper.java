@@ -6,6 +6,7 @@ import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 
+//Common
 public class ReachHelper {
 	private static final String REACH_UPGRADE_KEY = EffortlessBuilding.MODID + ":reachUpgrade";
 

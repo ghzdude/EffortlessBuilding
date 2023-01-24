@@ -17,12 +17,15 @@ public class PlaceChecker {
 
     //SchematicPrinter::shouldPlaceBlock
     public static boolean shouldPlaceBlock(Level world, BlockEntry blockEntry) {
-        if (world == null)
+        if (world == null || blockEntry == null)
             return false;
 
         var pos = blockEntry.blockPos;
         var state = blockEntry.newBlockState;
         BlockEntity tileEntity = null;
+
+        if (state == null)
+            return false;
 
         BlockState toReplace = world.getBlockState(pos);
         BlockEntity toReplaceTE = world.getBlockEntity(pos);

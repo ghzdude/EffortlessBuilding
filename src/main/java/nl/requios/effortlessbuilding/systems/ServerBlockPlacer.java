@@ -30,7 +30,7 @@ public class ServerBlockPlacer {
     private boolean isPlacingOrBreakingBlocks = false;
 
     public void placeBlocks(Player player, BlockSet blocks) {
-        EffortlessBuilding.log(player, "Placing " + blocks.size() + " blocks");
+//        EffortlessBuilding.log(player, "Placing " + blocks.size() + " blocks");
 
         for (BlockEntry block : blocks) {
             placeBlock(player, block);
@@ -47,7 +47,7 @@ public class ServerBlockPlacer {
     }
 
     public void breakBlocks(Player player, BlockSet blocks) {
-        EffortlessBuilding.log(player, "Breaking " + blocks.size() + " blocks");
+//        EffortlessBuilding.log(player, "Breaking " + blocks.size() + " blocks");
 
         for (BlockEntry block : blocks) {
             breakBlock(player, block);

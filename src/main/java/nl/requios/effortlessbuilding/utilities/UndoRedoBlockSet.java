@@ -1,11 +1,12 @@
-package nl.requios.effortlessbuilding.buildmodifier;
+package nl.requios.effortlessbuilding.utilities;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
-//Used only for Undo
+//Server only
+@Deprecated
 public class UndoRedoBlockSet {
 	private final List<BlockPos> coordinates;
 	private final List<BlockState> previousBlockStates;

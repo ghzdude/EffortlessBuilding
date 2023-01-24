@@ -52,15 +52,14 @@ public class ClientEvents {
             EffortlessBuilding.log("Registering KeyMappings!");
 
             // register key bindings
-            keyBindings = new KeyMapping[6];
+            keyBindings = new KeyMapping[5];
 
             // instantiate the key bindings
-            keyBindings[0] = new KeyMapping("key.effortlessbuilding.hud.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
-            keyBindings[1] = new KeyMapping("key.effortlessbuilding.replace.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_KP_SUBTRACT, 0), "key.effortlessbuilding.category");
-            keyBindings[2] = new KeyMapping("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category");
-            keyBindings[3] = new KeyMapping("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
-            keyBindings[4] = new KeyMapping("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
-            keyBindings[5] = new KeyMapping("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
+            keyBindings[0] = new KeyMapping("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category");
+            keyBindings[1] = new KeyMapping("key.effortlessbuilding.hud.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
+            keyBindings[2] = new KeyMapping("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
+            keyBindings[3] = new KeyMapping("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
+            keyBindings[4] = new KeyMapping("key.effortlessbuilding.altplacement.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_CONTROL, 0), "key.effortlessbuilding.category");
 
             for (KeyMapping keyBinding : keyBindings) {
                 event.register(keyBinding);
@@ -148,19 +147,8 @@ public class ClientEvents {
         if (player == null)
             return;
 
-        //Remember to send packet to server if necessary
-        //Show Modifier Settings GUI
-        if (keyBindings[0].consumeClick()) {
-            openModifierSettings();
-        }
-
-        //QuickReplace toggle
-        if (keyBindings[1].consumeClick()) {
-            EffortlessBuildingClient.BUILD_SETTINGS.toggleQuickReplace();
-        }
-
         //Radial menu
-        if (keyBindings[2].isDown()) {
+        if (keyBindings[0].isDown()) {
             if (ReachHelper.getMaxReach(player) > 0) {
                 if (!RadialMenu.instance.isVisible()) {
                     Minecraft.getInstance().setScreen(RadialMenu.instance);
@@ -170,22 +158,23 @@ public class ClientEvents {
             }
         }
 
+        //Show Modifier Settings GUI
+        if (keyBindings[1].consumeClick()) {
+            openModifierSettings();
+        }
+
         //Undo (Ctrl+Z)
-        if (keyBindings[3].consumeClick()) {
-            ModeOptions.ActionEnum action = ModeOptions.ActionEnum.UNDO;
-            ModeOptions.performAction(player, action);
-            PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
+        if (keyBindings[2].consumeClick()) {
+            ModeOptions.performAction(player, ModeOptions.ActionEnum.UNDO);
         }
 
         //Redo (Ctrl+Y)
-        if (keyBindings[4].consumeClick()) {
-            ModeOptions.ActionEnum action = ModeOptions.ActionEnum.REDO;
-            ModeOptions.performAction(player, action);
-            PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
+        if (keyBindings[3].consumeClick()) {
+            ModeOptions.performAction(player, ModeOptions.ActionEnum.REDO);
         }
 
         //Change placement mode
-        if (keyBindings[5].consumeClick()) {
+        if (keyBindings[4].isDown()) {
             //Toggle between first two actions of the first option of the current build mode
             BuildModeEnum currentBuildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
             if (currentBuildMode.options.length > 0) {
@@ -193,10 +182,8 @@ public class ClientEvents {
                 if (option.actions.length >= 2) {
                     if (ModeOptions.getOptionSetting(option) == option.actions[0]) {
                         ModeOptions.performAction(player, option.actions[1]);
-                        PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(option.actions[1]));
                     } else {
                         ModeOptions.performAction(player, option.actions[0]);
-                        PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(option.actions[0]));
                     }
                 }
             }

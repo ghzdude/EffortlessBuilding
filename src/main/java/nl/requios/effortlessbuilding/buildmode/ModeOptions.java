@@ -1,11 +1,17 @@
 package nl.requios.effortlessbuilding.buildmode;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.buildmodifier.UndoRedo;
+import nl.requios.effortlessbuilding.network.PacketHandler;
+import nl.requios.effortlessbuilding.network.PerformRedoPacket;
+import nl.requios.effortlessbuilding.network.PerformUndoPacket;
+import nl.requios.effortlessbuilding.systems.BuildSettings;
 
+@OnlyIn(Dist.CLIENT)
 public class ModeOptions {
 
 	private static ActionEnum buildSpeed = ActionEnum.NORMAL_SPEED;
@@ -58,76 +64,43 @@ public class ModeOptions {
 		return circleStart;
 	}
 
-	//Called on both client and server
 	public static void performAction(Player player, ActionEnum action) {
 		if (action == null) return;
 
 		switch (action) {
-			case UNDO:
-				UndoRedo.undo(player);
-				break;
-			case REDO:
-				UndoRedo.redo(player);
-				break;
-			case REPLACE:
-				if (player.level.isClientSide)
-					EffortlessBuildingClient.BUILD_SETTINGS.toggleQuickReplace();
-				break;
-			case OPEN_MODIFIER_SETTINGS:
-				if (player.level.isClientSide)
-					ClientEvents.openModifierSettings();
-				break;
-			case OPEN_PLAYER_SETTINGS:
-				if (player.level.isClientSide)
-					ClientEvents.openPlayerSettings();
-				break;
+			case UNDO -> PacketHandler.INSTANCE.sendToServer(new PerformUndoPacket());
+			case REDO -> PacketHandler.INSTANCE.sendToServer(new PerformRedoPacket());
+			case OPEN_MODIFIER_SETTINGS -> ClientEvents.openModifierSettings();
+			case OPEN_PLAYER_SETTINGS -> ClientEvents.openPlayerSettings();
 
-			case NORMAL_SPEED:
-				buildSpeed = ActionEnum.NORMAL_SPEED;
-				break;
-			case FAST_SPEED:
-				buildSpeed = ActionEnum.FAST_SPEED;
-				break;
-			case FULL:
-				fill = ActionEnum.FULL;
-				break;
-			case HOLLOW:
-				fill = ActionEnum.HOLLOW;
-				break;
-			case CUBE_FULL:
-				cubeFill = ActionEnum.CUBE_FULL;
-				break;
-			case CUBE_HOLLOW:
-				cubeFill = ActionEnum.CUBE_HOLLOW;
-				break;
-			case CUBE_SKELETON:
-				cubeFill = ActionEnum.CUBE_SKELETON;
-				break;
-			case SHORT_EDGE:
-				raisedEdge = ActionEnum.SHORT_EDGE;
-				break;
-			case LONG_EDGE:
-				raisedEdge = ActionEnum.LONG_EDGE;
-				break;
-			case THICKNESS_1:
-				lineThickness = ActionEnum.THICKNESS_1;
-				break;
-			case THICKNESS_3:
-				lineThickness = ActionEnum.THICKNESS_3;
-				break;
-			case THICKNESS_5:
-				lineThickness = ActionEnum.THICKNESS_5;
-				break;
-			case CIRCLE_START_CENTER:
-				circleStart = ActionEnum.CIRCLE_START_CENTER;
-				break;
-			case CIRCLE_START_CORNER:
-				circleStart = ActionEnum.CIRCLE_START_CORNER;
-				break;
+			case REPLACE_ONLY_AIR -> EffortlessBuildingClient.BUILD_SETTINGS.setReplaceMode(BuildSettings.ReplaceMode.ONLY_AIR);
+			case REPLACE_BLOCKS_AND_AIR -> EffortlessBuildingClient.BUILD_SETTINGS.setReplaceMode(BuildSettings.ReplaceMode.BLOCKS_AND_AIR);
+			case REPLACE_ONLY_BLOCKS -> EffortlessBuildingClient.BUILD_SETTINGS.setReplaceMode(BuildSettings.ReplaceMode.ONLY_BLOCKS);
+			case REPLACE_FILTERED_BY_OFFHAND -> EffortlessBuildingClient.BUILD_SETTINGS.setReplaceMode(BuildSettings.ReplaceMode.FILTERED_BY_OFFHAND);
+			case TOGGLE_PROTECT_TILE_ENTITIES -> EffortlessBuildingClient.BUILD_SETTINGS.toggleProtectTileEntities();
+
+			case NORMAL_SPEED -> buildSpeed = ActionEnum.NORMAL_SPEED;
+			case FAST_SPEED -> buildSpeed = ActionEnum.FAST_SPEED;
+
+			case FULL -> fill = ActionEnum.FULL;
+			case HOLLOW -> fill = ActionEnum.HOLLOW;
+
+			case CUBE_FULL -> cubeFill = ActionEnum.CUBE_FULL;
+			case CUBE_HOLLOW -> cubeFill = ActionEnum.CUBE_HOLLOW;
+			case CUBE_SKELETON -> cubeFill = ActionEnum.CUBE_SKELETON;
+
+			case SHORT_EDGE -> raisedEdge = ActionEnum.SHORT_EDGE;
+			case LONG_EDGE -> raisedEdge = ActionEnum.LONG_EDGE;
+
+			case THICKNESS_1 -> lineThickness = ActionEnum.THICKNESS_1;
+			case THICKNESS_3 -> lineThickness = ActionEnum.THICKNESS_3;
+			case THICKNESS_5 -> lineThickness = ActionEnum.THICKNESS_5;
+
+			case CIRCLE_START_CENTER -> circleStart = ActionEnum.CIRCLE_START_CENTER;
+			case CIRCLE_START_CORNER -> circleStart = ActionEnum.CIRCLE_START_CORNER;
 		}
 
 		if (player.level.isClientSide &&
-			action != ActionEnum.REPLACE &&
 			action != ActionEnum.OPEN_MODIFIER_SETTINGS &&
 			action != ActionEnum.OPEN_PLAYER_SETTINGS) {
 
@@ -138,9 +111,14 @@ public class ModeOptions {
 	public enum ActionEnum {
 		UNDO("effortlessbuilding.action.undo"),
 		REDO("effortlessbuilding.action.redo"),
-		REPLACE("effortlessbuilding.action.replace"),
 		OPEN_MODIFIER_SETTINGS("effortlessbuilding.action.open_modifier_settings"),
 		OPEN_PLAYER_SETTINGS("effortlessbuilding.action.open_player_settings"),
+
+		REPLACE_ONLY_AIR("effortlessbuilding.action.replace_only_air"),
+		REPLACE_BLOCKS_AND_AIR("effortlessbuilding.action.replace_blocks_and_air"),
+		REPLACE_ONLY_BLOCKS("effortlessbuilding.action.replace_only_blocks"),
+		REPLACE_FILTERED_BY_OFFHAND("effortlessbuilding.action.replace_filtered_by_offhand"),
+		TOGGLE_PROTECT_TILE_ENTITIES("effortlessbuilding.action.toggle_protect_tile_entities"),
 
 		NORMAL_SPEED("effortlessbuilding.action.normal_speed"),
 		FAST_SPEED("effortlessbuilding.action.fast_speed"),

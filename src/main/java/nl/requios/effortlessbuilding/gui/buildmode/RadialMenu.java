@@ -14,6 +14,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -22,8 +23,6 @@ import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
-import nl.requios.effortlessbuilding.network.ModeActionMessage;
-import nl.requios.effortlessbuilding.network.PacketHandler;
 import org.apache.commons.lang3.text.WordUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -64,7 +63,8 @@ public class RadialMenu extends Screen {
 	private final double textDistance = 75;
 	private final double buttonDistance = 105;
 	private final float fadeSpeed = 0.3f;
-	private final int descriptionHeight = 100;
+	private final int buildModeDescriptionHeight = 100;
+	private final int actionDescriptionWidth = 200;
 
 	public BuildModeEnum switchTo = null;
 	public ActionEnum doAction = null;
@@ -91,7 +91,7 @@ public class RadialMenu extends Screen {
 	public void tick() {
 		super.tick();
 
-		if (!ClientEvents.isKeybindDown(2)) {
+		if (!ClientEvents.isKeybindDown(0)) {
 			onClose();
 		}
 	}
@@ -146,18 +146,23 @@ public class RadialMenu extends Screen {
 		}
 
 		//Add actions
-		buttons.add(new MenuButton(ActionEnum.UNDO.name, ActionEnum.UNDO, -buttonDistance - 26, -13, Direction.UP));
-		buttons.add(new MenuButton(ActionEnum.REDO.name, ActionEnum.REDO, -buttonDistance, -13, Direction.UP));
-//		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS.name, ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 26 - 13, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS.name, ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 26, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.REPLACE.name, ActionEnum.REPLACE, -buttonDistance, 13, Direction.DOWN));
+//		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 65, -13, Direction.UP));
+		buttons.add(new MenuButton(ActionEnum.TOGGLE_PROTECT_TILE_ENTITIES, -buttonDistance - 78, -13, Direction.UP));
+		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 52, -13, Direction.UP));
+		buttons.add(new MenuButton(ActionEnum.UNDO, -buttonDistance - 26, -13, Direction.UP));
+		buttons.add(new MenuButton(ActionEnum.REDO, -buttonDistance, -13, Direction.UP));
+
+		buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_AIR, -buttonDistance - 78, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.REPLACE_BLOCKS_AND_AIR, -buttonDistance - 52, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_BLOCKS, -buttonDistance - 26, 13, Direction.DOWN));
+		buttons.add(new MenuButton(ActionEnum.REPLACE_FILTERED_BY_OFFHAND, -buttonDistance, 13, Direction.DOWN));
 
 		//Add buildmode dependent options
 		OptionEnum[] options = currentBuildMode.options;
 		for (int i = 0; i < options.length; i++) {
 			for (int j = 0; j < options[i].actions.length; j++) {
 				ActionEnum action = options[i].actions[j];
-				buttons.add(new MenuButton(action.name, action, buttonDistance + j * 26, -13 + i * 39, Direction.DOWN));
+				buttons.add(new MenuButton(action, buttonDistance + j * 26, -13 + i * 39, Direction.DOWN));
 			}
 		}
 
@@ -250,15 +255,17 @@ public class RadialMenu extends Screen {
 	private void drawSideButtonBackgrounds(BufferBuilder buffer, double middleX, double middleY, double mouseXCenter, double mouseYCenter, ArrayList<MenuButton> buttons) {
 		for (final MenuButton btn : buttons) {
 
-			final boolean isSelected =
+			final boolean isHighlighted = btn.x1 <= mouseXCenter && btn.x2 >= mouseXCenter && btn.y1 <= mouseYCenter && btn.y2 >= mouseYCenter;
+
+			boolean isSelected =
 					btn.action == getBuildSpeed() ||
 					btn.action == getFill() ||
 					btn.action == getCubeFill() ||
 					btn.action == getRaisedEdge() ||
 					btn.action == getLineThickness() ||
-					btn.action == getCircleStart();
-
-			final boolean isHighlighted = btn.x1 <= mouseXCenter && btn.x2 >= mouseXCenter && btn.y1 <= mouseYCenter && btn.y2 >= mouseYCenter;
+					btn.action == getCircleStart() ||
+					btn.action == EffortlessBuildingClient.BUILD_SETTINGS.getReplaceModeActionEnum() ||
+					btn.action == ActionEnum.TOGGLE_PROTECT_TILE_ENTITIES && EffortlessBuildingClient.BUILD_SETTINGS.shouldProtectTileEntities();
 
 			Vector4f color = sideButtonColor;
 			if (isSelected) color = selectedColor;
@@ -340,20 +347,21 @@ public class RadialMenu extends Screen {
 
 				//Draw description
 				text = I18n.get(menuRegion.mode.getDescriptionKey());
-				font.drawShadow(ms, text, (int) middleX - font.width(text) / 2f, (int) middleY + descriptionHeight, descriptionTextColor);
+				font.drawShadow(ms, text, (int) middleX - font.width(text) / 2f, (int) middleY + buildModeDescriptionHeight, descriptionTextColor);
 			}
 		}
 
 		//Draw action text
 		for (final MenuButton button : buttons) {
 			if (button.highlighted) {
+
 				String text = ChatFormatting.AQUA + button.name;
+				String description = ChatFormatting.WHITE + button.description;
 
 				//Add keybind in brackets
 				String keybind = findKeybind(button, currentBuildMode);
-				String keybindFormatted = "";
-				if (!keybind.isEmpty())
-					keybindFormatted = ChatFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
+				boolean hasKeybind = !keybind.isEmpty();
+				keybind = ChatFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
 
 				if (button.textSide == Direction.WEST) {
 
@@ -367,19 +375,31 @@ public class RadialMenu extends Screen {
 
 				} else if (button.textSide == Direction.UP || button.textSide == Direction.NORTH) {
 
-					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
-							(int) (middleY + button.y1 - 26), whiteTextColor);
+					int y = (int) (middleY + button.y1 - 14);
+					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5), y, whiteTextColor);
 
-					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
-							(int) (middleY + button.y1 - 14), whiteTextColor);
+					y -= 12;
+					if (hasKeybind) {
+						font.draw(ms, keybind, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybind) * 0.5), y, whiteTextColor);
+						y -= 12;
+					}
+
+					if (!description.isEmpty())
+						font.drawWordWrap(FormattedText.of(description), (int) (middleX + (button.x1 + button.x2) * 0.5 - actionDescriptionWidth * 0.5), y, actionDescriptionWidth, whiteTextColor);
 
 				} else if (button.textSide == Direction.DOWN || button.textSide == Direction.SOUTH) {
 
-					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5),
-							(int) (middleY + button.y1 + 26), whiteTextColor);
+					int y = (int) (middleY + button.y1 + 26);
+					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5), y, whiteTextColor);
 
-					font.draw(ms, keybindFormatted, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybindFormatted) * 0.5),
-							(int) (middleY + button.y1 + 38), whiteTextColor);
+					y += 12;
+					if (hasKeybind) {
+						font.draw(ms, keybind, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybind) * 0.5), y, whiteTextColor);
+						y += 12;
+					}
+
+					if (!description.isEmpty())
+						font.drawWordWrap(FormattedText.of(description), (int) (middleX + (button.x1 + button.x2) * 0.5 - actionDescriptionWidth * 0.5), y, actionDescriptionWidth, whiteTextColor);
 
 				}
 
@@ -390,15 +410,14 @@ public class RadialMenu extends Screen {
 	private String findKeybind(MenuButton button, BuildModeEnum currentBuildMode){
 		String result = "";
 		int keybindingIndex = -1;
-		if (button.action == ActionEnum.UNDO) keybindingIndex = 3;
-		if (button.action == ActionEnum.REDO) keybindingIndex = 4;
-		if (button.action == ActionEnum.REPLACE) keybindingIndex = 1;
-		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 0;
+		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 1;
+		if (button.action == ActionEnum.UNDO) keybindingIndex = 2;
+		if (button.action == ActionEnum.REDO) keybindingIndex = 3;
 
 		if (keybindingIndex != -1) {
 			KeyMapping keyMap = ClientEvents.keyBindings[keybindingIndex];
 
-			if (!keyMap.getKeyModifier().name().equals("none")) {
+			if (!keyMap.getKeyModifier().name().equals("None")) {
 				result = keyMap.getKeyModifier().name() + " ";
 			}
 			result += I18n.get(keyMap.getKey().getName());
@@ -408,10 +427,12 @@ public class RadialMenu extends Screen {
 			//Add (ctrl) to first two actions of first option
 			if (button.action == currentBuildMode.options[0].actions[0]
 				|| button.action == currentBuildMode.options[0].actions[1]) {
-				result = I18n.get(ClientEvents.keyBindings[5].getKey().getName());
+				result = I18n.get(ClientEvents.keyBindings[4].getKey().getDisplayName().getString());
 				if (result.equals("Left Control")) result = "Ctrl";
 			}
 		}
+
+		result = result.replace("Key.keyboard.", "");
 		return result;
 	}
 
@@ -465,7 +486,6 @@ public class RadialMenu extends Screen {
 			playRadialMenuSound();
 
 			ModeOptions.performAction(player, action);
-			PacketHandler.INSTANCE.sendToServer(new ModeActionMessage(action));
 
 			if (fromMouseClick) performedActionUsingMouse = true;
 		}
@@ -487,11 +507,17 @@ public class RadialMenu extends Screen {
 		public double y1, y2;
 		public boolean highlighted;
 		public String name;
+		public String description = "";
 		public Direction textSide;
 
-		public MenuButton(final String name, final ActionEnum action, final double x, final double y,
+		public MenuButton(final ActionEnum action, final double x, final double y,
 						  final Direction textSide) {
-			this.name = I18n.get(name);
+			this.name = I18n.get(action.name);
+
+			if (I18n.exists(action.name + ".description")) {
+				this.description = I18n.get(action.name + ".description");
+			}
+
 			this.action = action;
 			x1 = x - 10;
 			x2 = x + 10;

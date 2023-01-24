@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -29,12 +30,12 @@ public class BlockPreviews {
 	public void onTick() {
 		var player = Minecraft.getInstance().player;
 
-		drawPlacedBlocks(player);
+		drawPlacedBlocks();
 		drawLookAtPreview(player);
-		drawOutlinesIfNoBlockInHand(player);
+		drawOutlineAtBreakPosition(player);
 	}
 
-	public void drawPlacedBlocks(Player player) {
+	public void drawPlacedBlocks() {
 		//Render placed blocks with appear animation
 		if (ClientConfig.visuals.showBlockPreviews.get()) {
 			for (PlacedBlocksEntry placed : placedBlocksList) {
@@ -55,21 +56,22 @@ public class BlockPreviews {
 	}
 
 	public void drawLookAtPreview(Player player) {
-		if (EffortlessBuildingClient.BUILD_MODES.getBuildMode() == BuildModeEnum.DISABLED &&
-			   !ClientConfig.visuals.alwaysShowBlockPreview.get()) return;
+		if (EffortlessBuildingClient.BUILD_MODES.getBuildMode() == BuildModeEnum.DISABLED) return;
+		if (EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState() == BuilderChain.BuildingState.IDLE &&
+			ClientConfig.visuals.onlyShowBlockPreviewsWhenBuilding.get()) return;
 
 		var blocks = EffortlessBuildingClient.BUILDER_CHAIN.getBlocks();
 		if (blocks.size() == 0) return;
 
 		var coordinates = blocks.getCoordinates();
-		var state = EffortlessBuildingClient.BUILDER_CHAIN.getState();
+		var state = EffortlessBuildingClient.BUILDER_CHAIN.getPretendBuildingState();
 
 		//Dont fade out the outline if we are still determining where to place
 		//Every outline with same ID will not fade out (because it gets replaced)
 		Object outlineID = "single";
 		if (blocks.size() > 1) outlineID = blocks.firstPos;
 
-		if (state != BuilderChain.State.BREAKING) {
+		if (state != BuilderChain.BuildingState.BREAKING) {
 			//Use fancy shader if config allows, otherwise outlines
 			if (ClientConfig.visuals.showBlockPreviews.get() && blocks.size() < ClientConfig.visuals.maxBlockPreviews.get()) {
 				renderBlockPreviews(blocks, false, 0f);
@@ -98,7 +100,7 @@ public class BlockPreviews {
 		}
 
 		//Display block count and dimensions in actionbar
-		if (state != BuilderChain.State.IDLE) {
+		if (state != BuilderChain.BuildingState.IDLE) {
 
 			//Find min and max values (not simply firstPos and secondPos because that doesn't work with circles)
 			int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
@@ -126,31 +128,35 @@ public class BlockPreviews {
 		}
 	}
 
-	public void drawOutlinesIfNoBlockInHand(Player player) {
-		var builderChain = EffortlessBuildingClient.BUILDER_CHAIN;
-		if (builderChain.isBlockInHand()) return;
-		if (builderChain.getState() != BuilderChain.State.IDLE) return;
+	public void drawOutlineAtBreakPosition(Player player) {
+		if (EffortlessBuildingClient.BUILD_MODES.getBuildMode() == BuildModeEnum.DISABLED) return;
 
-		var blocks = new ArrayList<>(builderChain.getBlocks().values());
-		if (blocks.size() == 0) return;
+		BuilderChain builderChain = EffortlessBuildingClient.BUILDER_CHAIN;
+		BlockPos pos = builderChain.getStartPosForBreaking();
+		if (pos == null) return;
 
-		//Only render first outline if further than normal reach
-		var lookingAtNear = Minecraft.getInstance().hitResult;
-		if (lookingAtNear != null && lookingAtNear.getType() == HitResult.Type.BLOCK)
-			blocks.remove(0);
-
-		//Only render outlines if there is a block, like vanilla
-		blocks.removeIf(blockEntry -> blockEntry.existingBlockState == null ||
-									  blockEntry.existingBlockState.isAir() ||
-									  blockEntry.existingBlockState.getMaterial().isLiquid());
-
-		if (!blocks.isEmpty()) {
-			var coordinates = blocks.stream().map(blockEntry -> blockEntry.blockPos).collect(Collectors.toList());
-			CreateClient.OUTLINER.showCluster("break", coordinates)
-					.disableNormals()
-					.lineWidth(1 / 64f)
-					.colored(0x222222);
+		var abilitiesState = builderChain.getAbilitiesState();
+		if (ClientConfig.visuals.onlyShowBlockPreviewsWhenBuilding.get()) {
+			if (abilitiesState == BuilderChain.AbilitiesState.NONE) return;
+		} else {
+			if (abilitiesState != BuilderChain.AbilitiesState.CAN_BREAK) return;
 		}
+
+		//Only render if further than normal reach
+		if (EffortlessBuildingClient.BUILDER_CHAIN.getLookingAtNear() != null) return;
+
+		AABB aabb = new AABB(pos);
+		if (player.level.isLoaded(pos)) {
+			var blockState = player.level.getBlockState(pos);
+			if (!blockState.isAir()) {
+				aabb = blockState.getShape(player.level, pos).bounds().move(pos);
+			}
+		}
+
+		CreateClient.OUTLINER.showAABB("break", aabb)
+				.disableNormals()
+				.lineWidth(1 / 64f)
+				.colored(0x222222);
 	}
 
 	protected void renderBlockPreviews(BlockSet blocks, boolean breaking, float dissolve) {
@@ -186,8 +192,8 @@ public class BlockPreviews {
 			t = Mth.clamp(t, 0, 1);
 			//Now we got a usable t value for this block
 
-			t = (float) Mth.smoothstep(t);
-//			t = (float) bezier(t, .58,-0.08,.23,1.33);
+//			t = (float) Mth.smoothstep(t);
+			t = gain(t, 0.5f);
 
 			if (!breaking) {
 				scale = 0.5f + (t * 0.3f);
@@ -206,21 +212,12 @@ public class BlockPreviews {
 				.scale(scale);
 	}
 
-	//A bezier easing function where implicit first and last control points are (0,0) and (1,1).
-	public double bezier(double t, double x1, double y1, double x2, double y2) {
-		double t2 = t * t;
-		double t3 = t2 * t;
-
-		double cx = 3.0 * x1;
-		double bx = 3.0 * (x2 - x1) - cx;
-		double ax = 1.0 - cx -bx;
-
-		double cy = 3.0 * y1;
-		double by = 3.0 * (y2 - y1) - cy;
-		double ay = 1.0 - cy - by;
-
-		// Calculate the curve point at parameter value t
-		return (ay * t3) + (by * t2) + (cy * t) + 0;
+	//k=1 is the identity curve, k<1 produces the classic gain() shape, and k>1 produces "s" shaped curves. The curves are symmetric (and inverse) for k=a and k=1/a.
+	//https://iquilezles.org/articles/functions/
+	private float gain(float x, float k)
+	{
+        float a = (float) (0.5 * Math.pow(2.0 * ((x < 0.5) ? x : 1.0 - x), k));
+		return (x < 0.5) ? a : (1.0f - a);
 	}
 
 	public void onBlocksPlaced(BlockSet blocks) {

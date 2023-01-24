@@ -1,4 +1,4 @@
-package nl.requios.effortlessbuilding.buildmodifier;
+package nl.requios.effortlessbuilding.systems;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -10,12 +10,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.utilities.UndoRedoBlockSet;
 import nl.requios.effortlessbuilding.utilities.FixedStack;
 import nl.requios.effortlessbuilding.utilities.InventoryHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 import java.util.*;
 
+//Server only
 public class UndoRedo {
 
 	//Undo and redo stacks per player

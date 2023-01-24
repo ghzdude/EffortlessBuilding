@@ -88,7 +88,7 @@ public class ModifierSettingsGui extends Screen {
 
 	@Override
 	public boolean keyPressed(int keyCode, int p_96553_, int p_96554_) {
-		if (keyCode == ClientEvents.keyBindings[0].getKey().getValue()) {
+		if (keyCode == ClientEvents.keyBindings[1].getKey().getValue()) {
 			minecraft.player.closeContainer();
 			return true;
 		}

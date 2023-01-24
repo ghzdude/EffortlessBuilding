@@ -26,16 +26,14 @@ public class PacketHandler {
 				IsQuickReplacingPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 		INSTANCE.registerMessage(id++, ModifierSettingsMessage.class, ModifierSettingsMessage::encode, ModifierSettingsMessage::decode,
 				ModifierSettingsMessage.Handler::handle);
-		INSTANCE.registerMessage(id++, ModeActionMessage.class, ModeActionMessage::encode, ModeActionMessage::decode,
-				ModeActionMessage.Handler::handle);
 		INSTANCE.registerMessage(id++, ServerPlaceBlocksPacket.class, ServerPlaceBlocksPacket::encode, ServerPlaceBlocksPacket::decode,
 				ServerPlaceBlocksPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 		INSTANCE.registerMessage(id++, ServerBreakBlocksPacket.class, ServerBreakBlocksPacket::encode, ServerBreakBlocksPacket::decode,
 				ServerBreakBlocksPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
-		INSTANCE.registerMessage(id++, AddUndoMessage.class, AddUndoMessage::encode, AddUndoMessage::decode,
-				AddUndoMessage.Handler::handle);
-		INSTANCE.registerMessage(id++, ClearUndoMessage.class, ClearUndoMessage::encode, ClearUndoMessage::decode,
-				ClearUndoMessage.Handler::handle);
+		INSTANCE.registerMessage(id++, PerformUndoPacket.class, PerformUndoPacket::encode, PerformUndoPacket::decode,
+				PerformUndoPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+		INSTANCE.registerMessage(id++, PerformRedoPacket.class, PerformRedoPacket::encode, PerformRedoPacket::decode,
+				PerformRedoPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 	}
 
 }

@@ -55,7 +55,7 @@ public class RenderHandler {
 		renderSubText(event.getPoseStack());
 	}
 
-	private static final ChatFormatting highlightColor = ChatFormatting.BLUE;
+	private static final ChatFormatting highlightColor = ChatFormatting.DARK_AQUA;
 	private static final ChatFormatting normalColor = ChatFormatting.WHITE;
 	private static final Component placingText = Component.literal(
 			normalColor + "Left-click to " + highlightColor + "cancel, " +
@@ -66,10 +66,10 @@ public class RenderHandler {
 			normalColor + "Right-click to " + highlightColor + "cancel");
 
 	private static void renderSubText(PoseStack ms) {
-		var state = EffortlessBuildingClient.BUILDER_CHAIN.getState();
-		if (state == BuilderChain.State.IDLE) return;
+		var state = EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState();
+		if (state == BuilderChain.BuildingState.IDLE) return;
 
-		var text = state == BuilderChain.State.PLACING ? placingText : breakingText;
+		var text = state == BuilderChain.BuildingState.PLACING ? placingText : breakingText;
 
 		int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
 		int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();

@@ -74,7 +74,7 @@ public class CommonConfig {
 			undoStackSize = builder
 				.comment("How many placements are remembered for the undo functionality.")
 				.worldRestart()
-				.define("undoStackSize", 10);
+				.define("undoStackSize", 50);
 
 			builder.pop();
 		}

@@ -1,9 +1,10 @@
 package nl.requios.effortlessbuilding.utilities;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+//Common
 public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<BlockEntry> {
     public static boolean logging = true;
 
@@ -35,20 +37,19 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
         }
     }
 
+    public void setStartPos(BlockEntry startPos) {
+        clear();
+        add(startPos);
+        firstPos = startPos.blockPos;
+        lastPos = startPos.blockPos;
+    }
+
     public void add(BlockEntry blockEntry) {
         if (!containsKey(blockEntry.blockPos)) {
-
-            //Limit number of blocks you can place
-            int limit = ReachHelper.getMaxBlocksPlacedAtOnce(Minecraft.getInstance().player);
-            if (size() >= limit) {
-                if (logging) EffortlessBuilding.log("BlockSet limit reached, not adding block at " + blockEntry.blockPos);
-                return;
+            if (!DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> ClientSide.isFull(this))) {
+                put(blockEntry.blockPos, blockEntry);
             }
-
-            put(blockEntry.blockPos, blockEntry);
-
         } else {
-
             if (logging) EffortlessBuilding.log("BlockSet already contains block at " + blockEntry.blockPos);
         }
     }
@@ -77,5 +78,18 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
 
     public static BlockSet decode(FriendlyByteBuf buf) {
         return new BlockSet(buf.readList(BlockEntry::decode));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static class ClientSide {
+        public static boolean isFull(BlockSet blockSet) {
+            //Limit number of blocks you can place
+            int limit = ReachHelper.getMaxBlocksPlacedAtOnce(net.minecraft.client.Minecraft.getInstance().player);
+            if (blockSet.size() >= limit) {
+                if (logging) EffortlessBuilding.log("BlockSet limit reached, not adding block.");
+                return true;
+            }
+            return false;
+        }
     }
 }
