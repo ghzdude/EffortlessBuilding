@@ -18,7 +18,7 @@ import java.util.*;
 public class BuildModes {
 	private BuildModeEnum buildMode = BuildModeEnum.DISABLED;
 
-	public void findCoordinates(BlockSet blocks, Player player, BuildModeEnum buildMode) {
+	public void findCoordinates(BlockSet blocks, Player player) {
 		buildMode.instance.findCoordinates(blocks);
 	}
 

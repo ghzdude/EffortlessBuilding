@@ -1,4 +1,4 @@
-package nl.requios.effortlessbuilding.capability;
+package nl.requios.effortlessbuilding.item;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;

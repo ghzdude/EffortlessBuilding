@@ -9,24 +9,31 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
+import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
+import nl.requios.effortlessbuilding.gui.elements.GuiCollapsibleScrollEntry;
 import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
-import nl.requios.effortlessbuilding.network.ModifierSettingsMessage;
 import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.proxy.ClientProxy;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class ModifierSettingsGui extends Screen {
+	private final Map<Class, Class> modifierPanelMap = new HashMap<Class, Class>() {{
+		put(Mirror.class, MirrorPanel.class);
+		put(Array.class, ArrayPanel.class);
+		put(RadialMirror.class, RadialMirrorPanel.class);
+	}};
 
 	private GuiScrollPane scrollPane;
+	private List<BaseModifierPanel> modifierPanels;
 	private Button buttonClose;
-
-	private MirrorSettingsGui mirrorSettingsGui;
-	private ArraySettingsGui arraySettingsGui;
-	private RadialMirrorSettingsGui radialMirrorSettingsGui;
 
 	public ModifierSettingsGui() {
 		super(Component.translatable("effortlessbuilding.screen.modifier_settings"));
@@ -38,14 +45,7 @@ public class ModifierSettingsGui extends Screen {
 
 		scrollPane = new GuiScrollPane(this, font, 8, height - 30);
 
-		mirrorSettingsGui = new MirrorSettingsGui(scrollPane);
-		scrollPane.AddListEntry(mirrorSettingsGui);
-
-		arraySettingsGui = new ArraySettingsGui(scrollPane);
-		scrollPane.AddListEntry(arraySettingsGui);
-
-		radialMirrorSettingsGui = new RadialMirrorSettingsGui(scrollPane);
-		scrollPane.AddListEntry(radialMirrorSettingsGui);
+		initScrollEntries();
 
 		scrollPane.init(renderables);
 
@@ -55,6 +55,27 @@ public class ModifierSettingsGui extends Screen {
 			Minecraft.getInstance().player.closeContainer();
 		});
 		addRenderableOnly(buttonClose);
+	}
+
+	private void initScrollEntries() {
+
+		var modifierSettingsList = EffortlessBuildingClient.BUILD_MODIFIERS.getModifierSettingsList();
+		for (BaseModifier modifier : modifierSettingsList) {
+			BaseModifierPanel modifierPanel = createModifierPanel(modifier.getClass().getSimpleName());
+			if (modifierPanel != null) {
+				modifierPanel.setModifier(modifier);
+				scrollPane.AddListEntry(modifierPanel);
+			}
+		}
+	}
+
+	private BaseModifierPanel createModifierPanel(String type) {
+		switch (type) {
+			case "Mirror": return new MirrorPanel(scrollPane);
+			case "Array": return new ArrayPanel(scrollPane);
+			case "RadialMirror": return new RadialMirrorPanel(scrollPane);
+			default: return null;
+		}
 	}
 
 	@Override
@@ -131,9 +152,9 @@ public class ModifierSettingsGui extends Screen {
 		scrollPane.onGuiClosed();
 
 		//save everything
-		Mirror.MirrorSettings m = mirrorSettingsGui.getMirrorSettings();
-		Array.ArraySettings a = arraySettingsGui.getArraySettings();
-		RadialMirror.RadialMirrorSettings r = radialMirrorSettingsGui.getRadialMirrorSettings();
+		Mirror.MirrorSettings m = mirrorPanel.getMirrorSettings();
+		Array.ArraySettings a = arrayPanel.getArraySettings();
+		RadialMirror.RadialMirrorSettings r = radialMirrorPanel.getRadialMirrorSettings();
 
 		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(minecraft.player);
 		if (modifierSettings == null) modifierSettings = new ModifierSettingsManager.ModifierSettings();

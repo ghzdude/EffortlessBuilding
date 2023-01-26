@@ -3,10 +3,8 @@ package nl.requios.effortlessbuilding;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
@@ -16,14 +14,10 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.network.PacketDistributor;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
-import nl.requios.effortlessbuilding.capability.ModifierCapabilityManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.network.PacketHandler;
 
 @EventBusSubscriber
 public class CommonEvents {
@@ -32,18 +26,7 @@ public class CommonEvents {
 	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 	public static class ModBusEvents {
 
-		@SubscribeEvent
-		public void registerCapabilities(RegisterCapabilitiesEvent event){
-			event.register(ModifierCapabilityManager.IModifierCapability.class);
-		}
-	}
 
-	@SubscribeEvent
-	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-		if (event.getObject() instanceof FakePlayer) return;
-		if (event.getObject() instanceof Player) {
-			event.addCapability(new ResourceLocation(EffortlessBuilding.MODID, "build_modifier"), new ModifierCapabilityManager.Provider());
-		}
 	}
 
 	@SubscribeEvent
@@ -98,15 +81,22 @@ public class CommonEvents {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
+		if (player.getCommandSenderWorld().isClientSide) {
+			EffortlessBuilding.log("PlayerLoggedInEvent triggers on client side");
+			return;
+		}
+
 		ServerBuildState.handleNewPlayer(player);
-		ModifierSettingsManager.handleNewPlayer(player);
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
-		if (player.getCommandSenderWorld().isClientSide) return;
+		if (player.getCommandSenderWorld().isClientSide) {
+			EffortlessBuilding.log("PlayerLoggedOutEvent triggers on client side");
+			return;
+		}
 
 		UndoRedo.clear(player);
 	}
@@ -115,37 +105,27 @@ public class CommonEvents {
 	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
+		if (player.getCommandSenderWorld().isClientSide) {
+			EffortlessBuilding.log("PlayerRespawnEvent triggers on client side");
+			return;
+		}
+
+		//TODO check if this is needed
 		ServerBuildState.handleNewPlayer(player);
-		ModifierSettingsManager.handleNewPlayer(player);
 	}
 
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
-		if (player.getCommandSenderWorld().isClientSide) return;
+		if (player.getCommandSenderWorld().isClientSide) {
+			EffortlessBuilding.log("PlayerChangedDimensionEvent triggers on client side");
+			return;
+		}
 
-		//Disable modifiers
-		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-		modifierSettings.getMirrorSettings().enabled = false;
-		modifierSettings.getRadialMirrorSettings().enabled = false;
-		modifierSettings.getArraySettings().enabled = false;
-		ModifierSettingsManager.setModifierSettings(player, modifierSettings);
-
-		ServerBuildState.handleNewPlayer(player);
-		ModifierSettingsManager.handleNewPlayer(player);
-
+		//Undo redo has no dimension data, so clear it
 		UndoRedo.clear(player);
-	}
 
-	@SubscribeEvent
-	public static void onPlayerClone(PlayerEvent.Clone event) {
-		if (event.getEntity() instanceof FakePlayer) return;
-		//Attach capabilities on death, otherwise crash
-		Player oldPlayer = event.getOriginal();
-		oldPlayer.revive();
-
-		Player newPlayer = event.getEntity();
-		ModifierSettingsManager.setModifierSettings(newPlayer, ModifierSettingsManager.getModifierSettings(oldPlayer));
+		//TODO disable build mode and modifiers?
 	}
 }

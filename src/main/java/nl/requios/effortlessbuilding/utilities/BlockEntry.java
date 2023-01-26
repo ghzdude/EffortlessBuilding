@@ -1,19 +1,23 @@
 package nl.requios.effortlessbuilding.utilities;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.BitSet;
-
+//Common
 public class BlockEntry {
     public final BlockPos blockPos;
     public boolean mirrorX;
     public boolean mirrorY;
     public boolean mirrorZ;
+    //Horizontal rotation
     public Rotation rotation;
     //BlockState that is currently in the world
     public BlockState existingBlockState;
@@ -24,22 +28,29 @@ public class BlockEntry {
         this.blockPos = blockPos;
     }
 
-    public boolean meansBreakBlock() {
-        return newBlockState == null || newBlockState.isAir();
+    public void copyRotationSettingsFrom(BlockEntry blockEntry) {
+        mirrorX = blockEntry.mirrorX;
+        mirrorY = blockEntry.mirrorY;
+        mirrorZ = blockEntry.mirrorZ;
+        rotation = blockEntry.rotation;
     }
 
-    public BitSet getMirrorBitSet() {
-        BitSet bitSet = new BitSet(3);
-        bitSet.set(0, mirrorX);
-        bitSet.set(1, mirrorY);
-        bitSet.set(2, mirrorZ);
-        return bitSet;
+    public void setItemStackAndFindNewBlockState(ItemStack itemStack, Level world, Direction originalDirection, Direction clickedFace, Vec3 relativeHitVec) {
+        this.itemStack = itemStack;
+
+        Block block = Block.byItem(itemStack.getItem());
+        var direction = rotation.rotate(originalDirection);
+        direction = applyMirror(direction);
+        //TODO mirror and rotate relativeHitVec?
+        var blockPlaceContext = new MyPlaceContext(world, blockPos, direction, itemStack, clickedFace, relativeHitVec);
+        newBlockState = block.getStateForPlacement(blockPlaceContext);
     }
 
-    public void setMirrorBitSet(BitSet bitSet) {
-        mirrorX = bitSet.get(0);
-        mirrorY = bitSet.get(1);
-        mirrorZ = bitSet.get(2);
+    private Direction applyMirror(Direction direction) {
+        if (mirrorX && direction.getAxis() == Direction.Axis.Z) direction = direction.getOpposite();
+        if (mirrorY && direction.getAxis() == Direction.Axis.Y) direction = direction.getOpposite();
+        if (mirrorZ && direction.getAxis() == Direction.Axis.X) direction = direction.getOpposite();
+        return direction;
     }
 
     public static void encode(FriendlyByteBuf buf, BlockEntry block) {

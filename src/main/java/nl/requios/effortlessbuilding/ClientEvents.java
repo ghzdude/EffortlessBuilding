@@ -66,13 +66,13 @@ public class ClientEvents {
             }
         }
 
-        @SubscribeEvent
-        public static void registerShaders(RegisterShadersEvent event) throws IOException {
-            event.registerShader(new ShaderInstance(event.getResourceManager(),
-                            new ResourceLocation(EffortlessBuilding.MODID, "dissolve"),
-                            DefaultVertexFormat.BLOCK),
-                    shaderInstance -> BuildRenderTypes.dissolveShaderInstance = shaderInstance);
-        }
+//        @SubscribeEvent
+//        public static void registerShaders(RegisterShadersEvent event) throws IOException {
+//            event.registerShader(new ShaderInstance(event.getResourceManager(),
+//                            new ResourceLocation(EffortlessBuilding.MODID, "dissolve"),
+//                            DefaultVertexFormat.BLOCK),
+//                    shaderInstance -> BuildRenderTypes.dissolveShaderInstance = shaderInstance);
+//        }
     }
 
     @SubscribeEvent
@@ -221,19 +221,6 @@ public class ClientEvents {
         return InputConstants.isKeyDown(
                 Minecraft.getInstance().getWindow().getWindow(),
                 keyBindings[keybindIndex].getKey().getValue());
-    }
-
-    public static BlockHitResult getLookingAtFar(Player player) {
-        Level world = player.level;
-
-        //base distance off of player ability (config)
-        float raytraceRange = ReachHelper.getPlacementReach(player);
-
-        Vec3 look = player.getLookAngle();
-        Vec3 start = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
-        Vec3 end = new Vec3(player.getX() + look.x * raytraceRange, player.getY() + player.getEyeHeight() + look.y * raytraceRange, player.getZ() + look.z * raytraceRange);
-
-        return world.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
     }
 
     public static boolean isGameActive() {

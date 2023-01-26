@@ -10,9 +10,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.gui.elements.GuiCheckBoxFixed;
-import nl.requios.effortlessbuilding.gui.elements.GuiCollapsibleScrollEntry;
 import nl.requios.effortlessbuilding.gui.elements.GuiNumberField;
 import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
@@ -21,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
-public class ArraySettingsGui extends GuiCollapsibleScrollEntry {
+public class ArrayPanel extends BaseModifierPanel {
 
 	protected List<GuiNumberField> arrayNumberFieldList = new ArrayList<>();
 
 	private GuiCheckBoxFixed buttonArrayEnabled;
 	private GuiNumberField textArrayOffsetX, textArrayOffsetY, textArrayOffsetZ, textArrayCount;
 
-	public ArraySettingsGui(GuiScrollPane scrollPane) {
+	public ArrayPanel(GuiScrollPane scrollPane) {
 		super(scrollPane);
 	}
 

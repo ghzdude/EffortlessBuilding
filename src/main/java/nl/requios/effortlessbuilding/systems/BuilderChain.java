@@ -18,9 +18,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.ClientEvents;
+import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.network.PacketHandler;
@@ -42,6 +42,8 @@ public class BuilderChain {
     private BlockEntry startPosForPlacing;
     private BlockPos startPosForBreaking;
     private BlockHitResult lookingAtNear;
+    //Can be near or far depending on abilities
+    private BlockHitResult lookingAt;
 
     public enum BuildingState {
         IDLE,
@@ -82,6 +84,10 @@ public class BuilderChain {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksPlaced(blocks);
                 BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), false);
                 player.swing(InteractionHand.MAIN_HAND);
+
+                //TODO place blocks delayed on server, calculate what tick they should be placed on
+                int delay = CommonConfig.visuals.appearAnimationLength.get() * 3 - 3; //DelayedBlockPlacer is 3 times faster than client tick?
+
                 PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksPacket(blocks));
             }
         }
@@ -127,6 +133,7 @@ public class BuilderChain {
         startPosForPlacing = null;
         startPosForBreaking = null;
         lookingAtNear = null;
+        lookingAt = null;
 
         var mc = Minecraft.getInstance();
         var player = mc.player;
@@ -136,7 +143,6 @@ public class BuilderChain {
         if (abilitiesState == AbilitiesState.NONE) return;
 
         var buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
-        var modifierSettings = ModifierSettingsManager.getModifierSettings(player);
 
         if (buildingState == BuildingState.IDLE) {
             //Find start position
@@ -150,8 +156,8 @@ public class BuilderChain {
             }
         }
 
-        EffortlessBuildingClient.BUILD_MODES.findCoordinates(blocks, player, buildMode);
-        EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player, modifierSettings);
+        EffortlessBuildingClient.BUILD_MODES.findCoordinates(blocks, player);
+        EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player);
         BuilderFilter.filterOnCoordinates(blocks, player);
 
         if (buildMode == BuildModeEnum.DISABLED && blocks.size() <= 1) {
@@ -196,40 +202,14 @@ public class BuilderChain {
         return AbilitiesState.CAN_PLACE_AND_BREAK;
     }
 
-    private void onBlocksChanged(Player player) {
-
-        //Renew randomness of randomizer bag
-        AbstractRandomizerBagItem.renewRandomness();
-
-        //Play sound (max once every tick)
-        if (blocks.size() > 1 && soundTime < ClientEvents.ticksInGame) {
-            soundTime = ClientEvents.ticksInGame;
-
-            if (blocks.getLastBlockEntry() != null && blocks.getLastBlockEntry().newBlockState != null) {
-                var lastBlockState = blocks.getLastBlockEntry().newBlockState;
-                SoundType soundType = lastBlockState.getBlock().getSoundType(lastBlockState, player.level, blocks.lastPos, player);
-                SoundEvent soundEvent = buildingState == BuildingState.BREAKING ? soundType.getBreakSound() : soundType.getPlaceSound();
-                player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.3f, 0.8f);
-            }
-        }
-    }
-
-    public void cancel() {
-        if (buildingState == BuildingState.IDLE) return;
-        buildingState = BuildingState.IDLE;
-        EffortlessBuildingClient.BUILD_MODES.onCancel();
-        Minecraft.getInstance().player.playSound(SoundEvents.UI_TOAST_OUT, 4, 1);
-    }
-
     private BlockEntry findStartPosition(Player player, BuildModeEnum buildMode) {
 
         //Determine if we should look far or nearby
         boolean shouldLookAtNear = buildMode == BuildModeEnum.DISABLED;
-        BlockHitResult lookingAt;
         if (shouldLookAtNear) {
             lookingAt = lookingAtNear;
         } else {
-            lookingAt = ClientEvents.getLookingAtFar(player);
+            lookingAt = BlockUtilities.getLookingAtFar(player);
         }
         if (lookingAt == null || lookingAt.getType() == HitResult.Type.MISS) return null;
 
@@ -291,10 +271,14 @@ public class BuilderChain {
     private void findNewBlockStates(Player player, ItemStack itemStack) {
         if (buildingState == BuildingState.BREAKING) return;
 
+        var originalDirection = player.getDirection();
+        var clickedFace = lookingAt.getDirection();
+        Vec3 relativeHitVec = lookingAt.getLocation().subtract(Vec3.atLowerCornerOf(lookingAt.getBlockPos()));
+
         if (itemStack.getItem() instanceof BlockItem) {
 
             for (BlockEntry blockEntry : blocks) {
-                blockEntry.newBlockState = BlockUtilities.getBlockState(player, InteractionHand.MAIN_HAND, itemStack, blockEntry);
+                blockEntry.setItemStackAndFindNewBlockState(itemStack, player.level, originalDirection, clickedFace, relativeHitVec);
             }
 
         } else if (CompatHelper.isItemBlockProxy(itemStack, false)) {
@@ -303,9 +287,34 @@ public class BuilderChain {
             for (BlockEntry blockEntry : blocks) {
                 ItemStack itemBlockStack = CompatHelper.getItemBlockFromStack(itemStack);
                 if (itemBlockStack == null || itemBlockStack.isEmpty()) continue;
-                blockEntry.newBlockState = BlockUtilities.getBlockState(player, InteractionHand.MAIN_HAND, itemBlockStack, blockEntry);
+                blockEntry.setItemStackAndFindNewBlockState(itemBlockStack, player.level, originalDirection, clickedFace, relativeHitVec);
             }
         }
+    }
+
+    private void onBlocksChanged(Player player) {
+
+        //Renew randomness of randomizer bag
+        AbstractRandomizerBagItem.renewRandomness();
+
+        //Play sound (max once every tick)
+        if (blocks.size() > 1 && soundTime < ClientEvents.ticksInGame) {
+            soundTime = ClientEvents.ticksInGame;
+
+            if (blocks.getLastBlockEntry() != null && blocks.getLastBlockEntry().newBlockState != null) {
+                var lastBlockState = blocks.getLastBlockEntry().newBlockState;
+                SoundType soundType = lastBlockState.getBlock().getSoundType(lastBlockState, player.level, blocks.lastPos, player);
+                SoundEvent soundEvent = buildingState == BuildingState.BREAKING ? soundType.getBreakSound() : soundType.getPlaceSound();
+                player.level.playSound(player, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 0.3f, 0.8f);
+            }
+        }
+    }
+
+    public void cancel() {
+        if (buildingState == BuildingState.IDLE) return;
+        buildingState = BuildingState.IDLE;
+        EffortlessBuildingClient.BUILD_MODES.onCancel();
+        Minecraft.getInstance().player.playSound(SoundEvents.UI_TOAST_OUT, 4, 1);
     }
 
     public BlockSet getBlocks() {

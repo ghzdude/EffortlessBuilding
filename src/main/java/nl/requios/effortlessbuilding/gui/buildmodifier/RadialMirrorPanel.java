@@ -11,7 +11,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
 import nl.requios.effortlessbuilding.gui.elements.*;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
@@ -22,7 +21,7 @@ import java.util.List;
 
 @SuppressWarnings("Duplicates")
 @OnlyIn(Dist.CLIENT)
-public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
+public class RadialMirrorPanel extends BaseModifierPanel {
 
 	protected static final ResourceLocation BUILDING_ICONS = new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/building_icons.png");
 
@@ -35,7 +34,7 @@ public class RadialMirrorSettingsGui extends GuiCollapsibleScrollEntry {
 	private GuiIconButton buttonCurrentPosition, buttonToggleOdd, buttonDrawPlanes, buttonDrawLines;
 	private boolean drawPlanes, drawLines, toggleOdd;
 
-	public RadialMirrorSettingsGui(GuiScrollPane scrollPane) {
+	public RadialMirrorPanel(GuiScrollPane scrollPane) {
 		super(scrollPane);
 	}
 

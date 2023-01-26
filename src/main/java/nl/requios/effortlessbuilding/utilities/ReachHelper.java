@@ -4,7 +4,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.buildmodifier.ModifierSettingsManager;
 
 //Common
 public class ReachHelper {

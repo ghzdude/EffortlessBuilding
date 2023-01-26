@@ -24,7 +24,6 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
-import nl.requios.effortlessbuilding.capability.ItemHandlerCapabilityProvider;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 import javax.annotation.Nullable;

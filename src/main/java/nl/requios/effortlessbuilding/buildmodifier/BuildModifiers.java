@@ -1,6 +1,8 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
@@ -18,9 +20,11 @@ import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
+import nl.requios.effortlessbuilding.create.foundation.utility.NBTHelper;
 import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
+import nl.requios.effortlessbuilding.utilities.ReachHelper;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.utilities.UndoRedoBlockSet;
@@ -30,201 +34,133 @@ import java.util.Collections;
 import java.util.List;
 
 public class BuildModifiers {
+	private List<BaseModifier> modifierSettingsList = new ArrayList<>();
 
-	public void findCoordinates(BlockSet blocks, LocalPlayer player, ModifierSettingsManager.ModifierSettings modifierSettings) {
-
+	public List<BaseModifier> getModifierSettingsList() {
+		return Collections.unmodifiableList(modifierSettingsList);
 	}
 
-	//Called from BuildModes
-	public static void onBlockPlaced(Player player, List<BlockPos> startCoordinates, Direction sideHit, Vec3 hitVec, boolean placeStartPos) {
-		Level world = player.level;
-		AbstractRandomizerBagItem.renewRandomness();
+	public void addModifierSettings(BaseModifier modifierSettings) {
+		modifierSettingsList.add(modifierSettings);
+	}
 
-		//Format hitvec to 0.x
-		hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
+	public void removeModifierSettings(BaseModifier modifierSettings) {
+		modifierSettingsList.remove(modifierSettings);
+	}
 
-		//find coordinates and blockstates
-		List<BlockPos> coordinates = findCoordinates(player, startCoordinates);
-		List<ItemStack> itemStacks = new ArrayList<>();
-		List<BlockState> blockStates = findBlockStates(player, startCoordinates, hitVec, sideHit, itemStacks);
+	public void removeModifierSettings(int index) {
+		modifierSettingsList.remove(index);
+	}
 
-		//check if valid blockstates
-		if (blockStates.size() == 0 || coordinates.size() != blockStates.size()) return;
+	public void moveUp(BaseModifier modifierSettings) {
+		int index = modifierSettingsList.indexOf(modifierSettings);
+		if (index == 0) return;
 
-		if (world.isClientSide) {
+		Collections.swap(modifierSettingsList, index, index - 1);
+	}
 
-//			BlockPreviews.onBlocksPlaced(blocks);
+	public void moveDown(BaseModifier modifierSettings) {
+		int index = modifierSettingsList.indexOf(modifierSettings);
+		if (index == modifierSettingsList.size() - 1) return;
 
-		} else {
+		Collections.swap(modifierSettingsList, index, index + 1);
+	}
 
-			int delay = CommonConfig.visuals.appearAnimationLength.get() * 3 - 3; //DelayedBlockPlacer is 3 times faster than client tick?
+	public void setFirst(BaseModifier modifierSettings) {
+		int index = modifierSettingsList.indexOf(modifierSettings);
+		if (index == 0) return;
 
-			//place blocks after delay
-			EffortlessBuilding.DELAYED_BLOCK_PLACER.placeBlocksDelayed(new DelayedBlockPlacer.Entry(world, player, coordinates,
-					blockStates, itemStacks, placeStartPos, delay));
+		modifierSettingsList.remove(index);
+		modifierSettingsList.add(0, modifierSettings);
+	}
+
+	public void setLast(BaseModifier modifierSettings) {
+		int index = modifierSettingsList.indexOf(modifierSettings);
+		if (index == modifierSettingsList.size() - 1) return;
+
+		modifierSettingsList.remove(index);
+		modifierSettingsList.add(modifierSettings);
+	}
+
+	public void clearAllModifierSettings() {
+		modifierSettingsList.clear();
+	}
+
+	public void findCoordinates(BlockSet blocks, Player player) {
+		for (BaseModifier modifierSettings : modifierSettingsList) {
+			modifierSettings.findCoordinates(blocks, player);
 		}
 	}
 
-	public static void onBlockBroken(Player player, List<BlockPos> startCoordinates, boolean breakStartPos) {
-		Level world = player.level;
+	private static final String DATA_KEY = EffortlessBuilding.MODID + ":buildModifiers";
 
-		List<BlockPos> coordinates = findCoordinates(player, startCoordinates);
-
-		if (coordinates.isEmpty()) return;
-
-		//remember previous blockstates for undo
-		List<BlockState> previousBlockStates = new ArrayList<>(coordinates.size());
-		List<BlockState> newBlockStates = new ArrayList<>(coordinates.size());
-		for (BlockPos coordinate : coordinates) {
-			previousBlockStates.add(world.getBlockState(coordinate));
-		}
-
-		if (world.isClientSide) {
-//			BlockPreviews.onBlocksBroken(blocks);
-
-			//list of air blockstates
-			for (int i = 0; i < coordinates.size(); i++) {
-				newBlockStates.add(Blocks.AIR.defaultBlockState());
-			}
-
-		} else {
-
-			//If the player is going to instabreak grass or a plant, only break other instabreaking things
-			boolean onlyInstaBreaking = !player.isCreative() &&
-				world.getBlockState(startCoordinates.get(0)).getDestroySpeed(world, startCoordinates.get(0)) == 0f;
-
-			//break all those blocks
-			for (int i = breakStartPos ? 0 : 1; i < coordinates.size(); i++) {
-				BlockPos coordinate = coordinates.get(i);
-				if (world.isLoaded(coordinate) && !world.isEmptyBlock(coordinate)) {
-					if (!onlyInstaBreaking || world.getBlockState(coordinate).getDestroySpeed(world, coordinate) == 0f) {
-						SurvivalHelper.breakBlock(world, player, coordinate, false);
-					}
-				}
-			}
-
-			//find actual new blockstates for undo
-			for (BlockPos coordinate : coordinates) {
-				newBlockStates.add(world.getBlockState(coordinate));
-			}
-		}
-
-		//Set first newBlockState to empty if in NORMAL mode, to make undo/redo work
-		//(Block isn't broken yet by the time it gets here, and broken after this)
-		if (!breakStartPos) newBlockStates.set(0, Blocks.AIR.defaultBlockState());
-
-		//add to undo stack
-		BlockPos firstPos = startCoordinates.get(0);
-		BlockPos secondPos = startCoordinates.get(startCoordinates.size() - 1);
-		UndoRedo.addUndo(player, new UndoRedoBlockSet(coordinates, previousBlockStates, newBlockStates, firstPos, secondPos));
-
+	public void save(Player player) {
+		var listTag = NBTHelper.writeCompoundList(modifierSettingsList, BaseModifier::serializeNBT);
+		player.getPersistentData().put(DATA_KEY, listTag);
 	}
 
-	public static List<BlockPos> findCoordinates(Player player, List<BlockPos> posList) {
-		List<BlockPos> coordinates = new ArrayList<>();
-		//Add current blocks being placed too
-		coordinates.addAll(posList);
-
-		//Find mirror/array/radial mirror coordinates for each blockpos
-		for (BlockPos blockPos : posList) {
-			List<BlockPos> arrayCoordinates = Array.findCoordinates(player, blockPos);
-			coordinates.addAll(arrayCoordinates);
-			coordinates.addAll(Mirror.findCoordinates(player, blockPos));
-			coordinates.addAll(RadialMirror.findCoordinates(player, blockPos));
-			//get mirror for each array coordinate
-			for (BlockPos coordinate : arrayCoordinates) {
-				coordinates.addAll(Mirror.findCoordinates(player, coordinate));
-				coordinates.addAll(RadialMirror.findCoordinates(player, coordinate));
-			}
-		}
-
-		return coordinates;
+	//TODO call load
+	public void load(Player player) {
+		var listTag = player.getPersistentData().getList(DATA_KEY, Tag.TAG_COMPOUND);
+		modifierSettingsList = NBTHelper.readCompoundList(listTag, compoundTag -> {
+			var modifier = createModifier(compoundTag.getString("type"));
+			modifier.deserializeNBT(compoundTag);
+			return modifier;
+		});
 	}
 
-	public static List<BlockPos> findCoordinates(Player player, BlockPos blockPos) {
-		return findCoordinates(player, new ArrayList<>(Collections.singletonList(blockPos)));
+	private BaseModifier createModifier(String type) {
+		switch (type) {
+			case "Mirror": return new Mirror();
+			case "Array": return new Array();
+			case "RadialMirror": return new RadialMirror();
+			default: throw new IllegalArgumentException("Unknown modifier type: " + type);
+		}
 	}
 
-	public static List<BlockState> findBlockStates(Player player, List<BlockPos> posList, Vec3 hitVec, Direction facing, List<ItemStack> itemStacks) {
-		List<BlockState> blockStates = new ArrayList<>();
-		itemStacks.clear();
-
-		//Get itemstack
-		ItemStack itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-		if (itemStack.isEmpty() || !CompatHelper.isItemBlockProxy(itemStack)) {
-			itemStack = player.getItemInHand(InteractionHand.OFF_HAND);
-		}
-		if (itemStack.isEmpty() || !CompatHelper.isItemBlockProxy(itemStack)) {
-			return blockStates;
-		}
-
-		//Get ItemBlock stack
-		ItemStack itemBlock = ItemStack.EMPTY;
-		if (itemStack.getItem() instanceof BlockItem) itemBlock = itemStack;
-		else itemBlock = CompatHelper.getItemBlockFromStack(itemStack);
-		AbstractRandomizerBagItem.resetRandomness();
-
-		//Add blocks in posList first
-		for (BlockPos blockPos : posList) {
-			if (!(itemStack.getItem() instanceof BlockItem)) itemBlock = CompatHelper.getItemBlockFromStack(itemStack);
-			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, InteractionHand.MAIN_HAND);
-			if (blockState == null) continue;
-
-			blockStates.add(blockState);
-			itemStacks.add(itemBlock);
-		}
-
-		for (BlockPos blockPos : posList) {
-			BlockState blockState = getBlockStateFromItem(itemBlock, player, blockPos, facing, hitVec, InteractionHand.MAIN_HAND);
-			if (blockState == null) continue;
-
-			List<BlockState> arrayBlockStates = Array.findBlockStates(player, blockPos, blockState, itemStack, itemStacks);
-			blockStates.addAll(arrayBlockStates);
-			blockStates.addAll(Mirror.findBlockStates(player, blockPos, blockState, itemStack, itemStacks));
-			blockStates.addAll(RadialMirror.findBlockStates(player, blockPos, blockState, itemStack, itemStacks));
-			//add mirror for each array coordinate
-			List<BlockPos> arrayCoordinates = Array.findCoordinates(player, blockPos);
-			for (int i = 0; i < arrayCoordinates.size(); i++) {
-				BlockPos coordinate = arrayCoordinates.get(i);
-				BlockState blockState1 = arrayBlockStates.get(i);
-				if (blockState1 == null) continue;
-
-				blockStates.addAll(Mirror.findBlockStates(player, coordinate, blockState1, itemStack, itemStacks));
-				blockStates.addAll(RadialMirror.findBlockStates(player, coordinate, blockState1, itemStack, itemStacks));
-			}
-
-			//Adjust blockstates for torches and ladders etc to place on a valid side
-			//TODO optimize findCoordinates (done twice now)
-			//TODO fix mirror
-//            List<BlockPos> coordinates = findCoordinates(player, startPos);
-//            for (int i = 0; i < blockStates.size(); i++) {
-//                blockStates.set(i, blockStates.get(i).getBlock().getStateForPlacement(player.world, coordinates.get(i), facing,
-//                        (float) hitVec.x, (float) hitVec.y, (float) hitVec.z, itemStacks.get(i).getMetadata(), player, EnumHand.MAIN_HAND));
-//            }
-		}
-
-		return blockStates;
-	}
-
-	public static BlockState getBlockStateFromItem(ItemStack itemStack, Player player, BlockPos blockPos, Direction facing, Vec3 hitVec, InteractionHand hand) {
-		return Block.byItem(itemStack.getItem()).getStateForPlacement(new BlockPlaceContext(new UseOnContext(player, hand, new BlockHitResult(hitVec, facing, blockPos, false))));
-	}
-
-	//Returns true if equal (or both null)
-	public static boolean compareCoordinates(List<BlockPos> coordinates1, List<BlockPos> coordinates2) {
-		if (coordinates1 == null && coordinates2 == null) return true;
-		if (coordinates1 == null || coordinates2 == null) return false;
-
-		//Check count, not actual values
-		if (coordinates1.size() == coordinates2.size()) {
-			if (coordinates1.size() == 1) {
-				return coordinates1.get(0).equals(coordinates2.get(0));
-			}
-			return true;
-		} else {
-			return false;
-		}
-
-//        return coordinates1.equals(coordinates2);
-	}
+//	public static String sanitize(ModifierSettingsManager.ModifierSettings modifierSettings, Player player) {
+//		int maxReach = ReachHelper.getMaxReach(player);
+//		String error = "";
+//
+//		//Mirror settings
+//		Mirror.MirrorSettings m = modifierSettings.getMirrorSettings();
+//		if (m.radius < 1) {
+//			m.radius = 1;
+//			error += "Mirror size has to be at least 1. This has been corrected. ";
+//		}
+//		if (m.getReach() > maxReach) {
+//			m.radius = maxReach / 2;
+//			error += "Mirror exceeds your maximum reach of " + (maxReach / 2) + ". Radius has been set to " + (maxReach / 2) + ". ";
+//		}
+//
+//		//Array settings
+//		Array.ArraySettings a = modifierSettings.getArraySettings();
+//		if (a.count < 0) {
+//			a.count = 0;
+//			error += "Array count may not be negative. It has been reset to 0.";
+//		}
+//
+//		if (a.getReach() > maxReach) {
+//			a.count = 0;
+//			error += "Array exceeds your maximum reach of " + maxReach + ". Array count has been reset to 0. ";
+//		}
+//
+//		//Radial mirror settings
+//		RadialMirror.RadialMirrorSettings r = modifierSettings.getRadialMirrorSettings();
+//		if (r.slices < 2) {
+//			r.slices = 2;
+//			error += "Radial mirror needs to have at least 2 slices. Slices has been set to 2.";
+//		}
+//
+//		if (r.radius < 1) {
+//			r.radius = 1;
+//			error += "Radial mirror radius has to be at least 1. This has been corrected. ";
+//		}
+//		if (r.getReach() > maxReach) {
+//			r.radius = maxReach / 2;
+//			error += "Radial mirror exceeds your maximum reach of " + (maxReach / 2) + ". Radius has been set to " + (maxReach / 2) + ". ";
+//		}
+//
+//		return error;
+//	}
 }

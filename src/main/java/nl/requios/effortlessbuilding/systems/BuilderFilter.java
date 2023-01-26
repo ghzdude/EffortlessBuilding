@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.systems;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -7,6 +8,7 @@ import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.PlaceChecker;
+import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 @OnlyIn(Dist.CLIENT)
 public class BuilderFilter {
@@ -41,6 +43,21 @@ public class BuilderFilter {
 
             if (remove) iter.remove();
         }
+
+
+        //If the player is going to instabreak grass or a plant, only break other instabreaking things
+//        boolean onlyInstaBreaking = !player.isCreative() &&
+//                                    world.getBlockState(startCoordinates.get(0)).getDestroySpeed(world, startCoordinates.get(0)) == 0f;
+//
+//        //break all those blocks
+//        for (int i = breakStartPos ? 0 : 1; i < coordinates.size(); i++) {
+//            BlockPos coordinate = coordinates.get(i);
+//            if (world.isLoaded(coordinate) && !world.isEmptyBlock(coordinate)) {
+//                if (!onlyInstaBreaking || world.getBlockState(coordinate).getDestroySpeed(world, coordinate) == 0f) {
+//                    SurvivalHelper.breakBlock(world, player, coordinate, false);
+//                }
+//            }
+//        }
     }
 
     public static void filterOnNewBlockStates(BlockSet blocks, Player player) {

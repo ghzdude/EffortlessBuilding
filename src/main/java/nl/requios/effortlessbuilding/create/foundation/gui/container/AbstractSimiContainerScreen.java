@@ -127,10 +127,10 @@ public abstract class AbstractSimiContainerScreen<T extends AbstractContainerMen
 		return leftPos - windowXOffset + (imageWidth - textureWidth) / 2;
 	}
 
-	public void renderPlayerInventory(PoseStack ms, int x, int y) {
-		AllGuiTextures.PLAYER_INVENTORY.render(ms, x, y, this);
-		font.draw(ms, playerInventoryTitle, x + 8, y + 6, 0x404040);
-	}
+//	public void renderPlayerInventory(PoseStack ms, int x, int y) {
+//		AllGuiTextures.PLAYER_INVENTORY.render(ms, x, y, this);
+//		font.draw(ms, playerInventoryTitle, x + 8, y + 6, 0x404040);
+//	}
 
 	@Override
 	public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
