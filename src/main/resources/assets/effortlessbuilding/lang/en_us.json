@@ -83,5 +83,11 @@
   "effortlessbuilding.action.thickness_3": "3 Blocks Thick",
   "effortlessbuilding.action.thickness_5": "5 Blocks Thick",
   "effortlessbuilding.action.start_center": "Middle",
-  "effortlessbuilding.action.start_corner": "Corner"
+  "effortlessbuilding.action.start_corner": "Corner",
+
+  "effortlessbuilding.gui.scrollInput.defaultTitle": "Choose an Option:",
+  "effortlessbuilding.gui.scrollInput.scrollToModify": "Scroll to Modify",
+  "effortlessbuilding.gui.scrollInput.scrollToAdjustAmount": "Scroll to Adjust Amount",
+  "effortlessbuilding.gui.scrollInput.scrollToSelect": "Scroll to Select",
+  "effortlessbuilding.gui.scrollInput.shiftScrollsFaster": "Shift to Scroll Faster"
 }

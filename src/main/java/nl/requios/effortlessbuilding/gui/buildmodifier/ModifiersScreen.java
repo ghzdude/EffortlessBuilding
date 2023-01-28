@@ -14,6 +14,9 @@ import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
 import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
+import nl.requios.effortlessbuilding.create.foundation.gui.AllIcons;
+import nl.requios.effortlessbuilding.create.foundation.gui.widget.BoxWidget;
+import nl.requios.effortlessbuilding.create.foundation.utility.Components;
 import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 
@@ -25,7 +28,10 @@ import java.util.Map;
 @OnlyIn(Dist.CLIENT)
 public class ModifiersScreen extends AbstractSimiScreen {
 	protected ModifiersScreenList list;
-	private Button buttonClose;
+	protected BoxWidget addArrayButton;
+	protected BoxWidget addMirrorButton;
+	protected BoxWidget addRadialMirrorButton;
+	protected BoxWidget closeButton;
 
 	public ModifiersScreen() {
 		super(Component.translatable("effortlessbuilding.screen.modifier_settings"));
@@ -41,23 +47,46 @@ public class ModifiersScreen extends AbstractSimiScreen {
 		int listL = this.width / 2 - listWidth / 2;
 		int listR = this.width / 2 + listWidth / 2;
 
-		list = new ModifiersScreenList(minecraft, listWidth, height - 80, 35, height - 45, 40);
+		list = new ModifiersScreenList(minecraft, listWidth, height - 80, 45, height - 45, 60);
 		list.setLeftPos(this.width / 2 - list.getWidth() / 2);
 
 		addRenderableWidget(list);
 
 		initScrollEntries();
 
-		//Close button
-		int y = height - 26;
-		buttonClose = new Button(width / 2 - 100, y, 200, 20, Component.literal("Close"), (button) -> {
-			Minecraft.getInstance().player.closeContainer();
-		});
-		addRenderableOnly(buttonClose);
+		addArrayButton = new BoxWidget(listR - 90, 10, 20, 20)
+			.withPadding(2, 2)
+			.withCallback(() -> addModifier(new Array()));
+		addArrayButton.showingElement(AllIcons.I_ADD.asStencil().withElementRenderer(BoxWidget.gradientFactory.apply(addArrayButton)));
+		addArrayButton.getToolTip().add(Components.literal("Add Array"));
+		
+		addMirrorButton = new BoxWidget(listR - 60, 10, 20, 20)
+			.withPadding(2, 2)
+			.withCallback(() -> addModifier(new Mirror()));
+		addMirrorButton.showingElement(AllIcons.I_ADD.asStencil().withElementRenderer(BoxWidget.gradientFactory.apply(addMirrorButton)));
+		addMirrorButton.getToolTip().add(Components.literal("Add Mirror"));
+		
+		addRadialMirrorButton = new BoxWidget(listR - 30, 10, 20, 20)
+			.withPadding(2, 2)
+			.withCallback(() -> addModifier(new RadialMirror()));
+		addRadialMirrorButton.showingElement(AllIcons.I_ADD.asStencil().withElementRenderer(BoxWidget.gradientFactory.apply(addRadialMirrorButton)));
+		addRadialMirrorButton.getToolTip().add(Components.literal("Add Radial Mirror"));
+
+		closeButton = new BoxWidget(listL - 30, yCenter - 10, 20, 20)
+			.withPadding(2, 2)
+			.withCallback(this::onClose);
+		closeButton.showingElement(AllIcons.I_CONFIG_BACK.asStencil().withElementRenderer(BoxWidget.gradientFactory.apply(closeButton)));
+		closeButton.getToolTip().add(Components.literal("Close"));
+
+		addRenderableWidget(addArrayButton);
+		addRenderableWidget(addMirrorButton);
+		addRenderableWidget(addRadialMirrorButton);
+		addRenderableWidget(closeButton);
 	}
 
 	private void initScrollEntries() {
 
+		list.children().clear();
 		var modifierSettingsList = EffortlessBuildingClient.BUILD_MODIFIERS.getModifierSettingsList();
 		for (BaseModifier modifier : modifierSettingsList) {
 			var entry = createModifierPanel(modifier);
@@ -67,11 +96,11 @@ public class ModifiersScreen extends AbstractSimiScreen {
 
 	private BaseModifierEntry createModifierPanel(BaseModifier modifier) {
 		if (modifier instanceof Mirror) {
-			return new MirrorEntry(modifier);
+			return new MirrorEntry(this, modifier);
 		} else if (modifier instanceof Array) {
-			return new ArrayEntry(modifier);
+			return new ArrayEntry(this, modifier);
 		} else if (modifier instanceof RadialMirror) {
-			return new RadialMirrorEntry(modifier);
+			return new RadialMirrorEntry(this, modifier);
 		} else {
 			return null;
 		}
@@ -83,7 +112,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 		EffortlessBuildingClient.BUILD_MODIFIERS.addModifierSettings(modifier);
 	}
 
-	private void removeModifier(BaseModifierEntry entry) {
+	public void removeModifier(BaseModifierEntry entry) {
 		list.children().remove(entry);
 		EffortlessBuildingClient.BUILD_MODIFIERS.removeModifierSettings(entry.modifier);
 	}
@@ -97,7 +126,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 
 	@Override
 	protected void renderWindow(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-
+	
 	}
 
 	@Override
@@ -109,7 +138,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 	@Override
 	public boolean keyPressed(int keyCode, int p_96553_, int p_96554_) {
 		if (keyCode == ClientEvents.keyBindings[1].getKey().getValue()) {
-			minecraft.player.closeContainer();
+			onClose();
 			return true;
 		}
 

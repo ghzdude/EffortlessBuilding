@@ -10,9 +10,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.AllGuiTextures;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
 import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
+import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
 import nl.requios.effortlessbuilding.gui.elements.*;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
@@ -24,8 +26,8 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class RadialMirrorEntry extends BaseModifierEntry<RadialMirror> {
 
-	public RadialMirrorEntry(BaseModifier modifier) {
-		super((RadialMirror) modifier);
+	public RadialMirrorEntry(ModifiersScreen screen, BaseModifier modifier) {
+		super(screen, (RadialMirror) modifier, Component.literal("Radial Mirror"), AllGuiTextures.RADIAL_MIRROR_ENTRY);
 	}
 
 //	protected static final ResourceLocation BUILDING_ICONS = new ResourceLocation(EffortlessBuilding.MODID, "textures/gui/building_icons.png");

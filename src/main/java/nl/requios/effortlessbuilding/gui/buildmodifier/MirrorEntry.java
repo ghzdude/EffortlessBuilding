@@ -10,9 +10,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.AllGuiTextures;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
 import nl.requios.effortlessbuilding.buildmodifier.Mirror;
+import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
 import nl.requios.effortlessbuilding.gui.elements.*;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
@@ -24,8 +26,8 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class MirrorEntry extends BaseModifierEntry<Mirror> {
 
-	public MirrorEntry(BaseModifier modifier) {
-		super((Mirror) modifier);
+	public MirrorEntry(ModifiersScreen screen, BaseModifier modifier) {
+		super(screen, (Mirror) modifier, Component.literal("Mirror"), AllGuiTextures.MIRROR_ENTRY);
 	}
 
 

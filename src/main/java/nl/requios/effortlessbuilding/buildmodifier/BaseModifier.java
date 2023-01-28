@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 
 public abstract class BaseModifier {
-    public boolean enabled = false;
+    public boolean enabled = true;
 
     public abstract void findCoordinates(BlockSet blocks, Player player);
 

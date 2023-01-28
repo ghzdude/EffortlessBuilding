@@ -106,6 +106,8 @@ public class ScrollInput extends AbstractSimiWidget {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+		if (!this.visible || !this.isHovered) return false; //Added
+		
 		if (inverted)
 			delta *= -1;
 

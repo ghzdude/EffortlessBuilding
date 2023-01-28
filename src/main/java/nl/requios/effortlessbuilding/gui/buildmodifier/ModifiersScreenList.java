@@ -7,21 +7,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
+import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
 import nl.requios.effortlessbuilding.create.foundation.gui.TickableGuiEventListener;
 import nl.requios.effortlessbuilding.create.foundation.gui.UIRenderHelper;
+import nl.requios.effortlessbuilding.create.foundation.gui.widget.AbstractSimiWidget;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 import nl.requios.effortlessbuilding.create.foundation.utility.Components;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 //Based on Create's ConfigScreenList
 public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList.Entry> implements TickableGuiEventListener {
 
-    public ModifiersScreenList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
-        super(pMinecraft, pWidth, pHeight, pY0, pY1, pItemHeight);
+    public ModifiersScreenList(Minecraft mc, int width, int height, int y0, int y1, int itemHeight) {
+        super(mc, width, height, y0, y1, itemHeight);
         setRenderBackground(false);
         setRenderTopAndBottom(false);
         setRenderSelection(false);
@@ -50,11 +50,32 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
-        children().stream().forEach(e -> e.mouseClicked(x, y, button));
-
+        if (children().stream().anyMatch(e -> e.mouseClicked(x, y, button)))
+            return true;
         return super.mouseClicked(x, y, button);
     }
-
+    
+    @Override
+    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
+        if (children().stream().anyMatch(e -> e.keyPressed(pKeyCode, pScanCode, pModifiers)))
+            return true;
+        return super.keyPressed(pKeyCode, pScanCode, pModifiers);
+    }
+    
+    @Override
+    public boolean charTyped(char pCodePoint, int pModifiers) {
+        if (children().stream().anyMatch(e -> e.charTyped(pCodePoint, pModifiers)))
+            return true;
+        return super.charTyped(pCodePoint, pModifiers);
+    }
+    
+    @Override
+    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
+        if (children().stream().anyMatch(e -> e.mouseScrolled(pMouseX, pMouseY, pDelta)))
+            return true;
+        return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+    }
+    
     @Override
     public int getRowWidth() {
         return width - 16;
@@ -71,9 +92,11 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
     }
 
     public static abstract class Entry extends ObjectSelectionList.Entry<Entry> implements TickableGuiEventListener {
+        protected final ModifiersScreen screen;
         protected List<GuiEventListener> listeners;
 
-        protected Entry() {
+        protected Entry(ModifiersScreen screen) {
+            this.screen = screen;
             listeners = new ArrayList<>();
         }
 
@@ -91,9 +114,30 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
         public boolean charTyped(char ch, int modifiers) {
             return getGuiListeners().stream().anyMatch(l -> l.charTyped(ch, modifiers));
         }
-
+    
         @Override
-        public void render(PoseStack ms, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {}
+        public boolean mouseScrolled(double x, double y, double delta) {
+            return getGuiListeners().stream().anyMatch(l -> l.mouseScrolled(x, y, delta));
+        }
+    
+        @Override
+        public void render(PoseStack ms, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
+    
+//            UIRenderHelper.streak(ms, 0, x - 10, y + height / 2, height - 6, width, 0xdd_000000);
+//            UIRenderHelper.streak(ms, 180, x + (int) (width * 1.35f) + 10, y + height / 2, height - 6, width / 8 * 7, 0xdd_000000);
+    
+            for (var listener : listeners) {
+                if (listener instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
+                    && simiWidget.visible) {
+                    List<Component> tooltip = simiWidget.getToolTip();
+                    if (tooltip.isEmpty())
+                        continue;
+                    int ttx = simiWidget.lockedTooltipX == -1 ? mouseX : simiWidget.lockedTooltipX + simiWidget.x;
+                    int tty = simiWidget.lockedTooltipY == -1 ? mouseY : simiWidget.lockedTooltipY + simiWidget.y;
+                    screen.renderComponentTooltip(ms, tooltip, ttx, tty);
+                }
+            }
+        }
 
         @Override
         public void tick() {}
