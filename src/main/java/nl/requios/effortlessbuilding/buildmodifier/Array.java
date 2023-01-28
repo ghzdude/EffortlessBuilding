@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Array extends BaseModifier {
 
-	public BlockPos offset = BlockPos.ZERO;
+	public Vec3i offset = BlockPos.ZERO;
 	public int count = 5;
 
 	@Override
@@ -54,7 +54,7 @@ public class Array extends BaseModifier {
 	@Override
 	public CompoundTag serializeNBT() {
 		var compound = super.serializeNBT();
-		compound.getCompound("offset").merge(NbtUtils.writeBlockPos(offset));
+		compound.putIntArray("offset", new int[]{offset.getX(), offset.getY(), offset.getZ()});
 		compound.putInt("count", count);
 		return compound;
 	}
@@ -62,7 +62,8 @@ public class Array extends BaseModifier {
 	@Override
 	public void deserializeNBT(CompoundTag compound) {
 		super.deserializeNBT(compound);
-		offset = NbtUtils.readBlockPos(compound.getCompound("offset"));
+		int[] offsetArray = compound.getIntArray("offset");
+		offset = new Vec3i(offsetArray[0], offsetArray[1], offsetArray[2]);
 		count = compound.getInt("count");
 	}
 }

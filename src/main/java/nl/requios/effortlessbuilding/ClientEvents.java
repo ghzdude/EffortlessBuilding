@@ -1,22 +1,14 @@
 package nl.requios.effortlessbuilding;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
@@ -27,13 +19,9 @@ import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
-import nl.requios.effortlessbuilding.gui.buildmodifier.ModifierSettingsGui;
+import nl.requios.effortlessbuilding.gui.buildmodifier.ModifiersScreen;
 import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.network.*;
-import nl.requios.effortlessbuilding.render.BuildRenderTypes;
 import org.lwjgl.glfw.GLFW;
-
-import java.io.IOException;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientEvents {
@@ -200,7 +188,7 @@ public class ClientEvents {
         if (ReachHelper.getMaxReach(player) == 0) {
             EffortlessBuilding.log(player, "Build modifiers are disabled until your reach has increased. Increase your reach with craftable reach upgrades.");
         } else {
-            mc.setScreen(new ModifierSettingsGui());
+            mc.setScreen(new ModifiersScreen());
         }
     }
 

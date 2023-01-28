@@ -18,7 +18,6 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-@SuppressWarnings("deprecation")
 public abstract class SlotGui extends AbstractContainerEventHandler implements Widget {
 	protected final Minecraft minecraft;
 	protected final int itemHeight;
