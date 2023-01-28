@@ -291,7 +291,7 @@ public class RadialMenu extends Screen {
 			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 
-			RenderSystem.setShaderTexture(0, new ResourceLocation(EffortlessBuilding.MODID, "textures/icons/" + menuRegion.mode.name().toLowerCase() + ".png"));
+			RenderSystem.setShaderTexture(0, new ResourceLocation(EffortlessBuilding.MODID, "textures/icons/" + menuRegion.mode.getName() + ".png"));
 			blit(ms, (int) (middleX + x - 8), (int) (middleY + y - 8), 16, 16, 0, 0, 18, 18, 18, 18);
 		}
 
