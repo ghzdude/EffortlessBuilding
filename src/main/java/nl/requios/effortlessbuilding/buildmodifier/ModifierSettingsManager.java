@@ -33,7 +33,7 @@ public class ModifierSettingsManager {
 			return capability.getModifierData();
 		}
 
-		EffortlessBuilding.logger.warn("Player does not have modifierCapability: " + player);
+//		EffortlessBuilding.logger.warn("Player does not have modifierCapability: " + player);
 		//Return dummy settings
 		return new ModifierSettings();
 	}
