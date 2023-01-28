@@ -273,6 +273,10 @@ public class BuildModes {
 			this.category = category;
 			this.options = options;
 		}
+		
+		public String getName() {
+			return name;
+		}
 
 		public String getNameKey() {
 			return "effortlessbuilding.mode." + name;

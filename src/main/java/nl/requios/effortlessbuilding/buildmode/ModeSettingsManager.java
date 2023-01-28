@@ -31,7 +31,7 @@ public class ModeSettingsManager {
 			return capability.getModeData();
 		}
 
-		EffortlessBuilding.logger.warn("Player does not have modeCapability: " + player);
+//		EffortlessBuilding.logger.warn("Player does not have modeCapability: " + player);
 		//Return dummy settings
 		return new ModeSettings();
 	}
