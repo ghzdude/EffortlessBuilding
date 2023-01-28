@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
@@ -149,6 +150,10 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
         @Override
         public Component getNarration() {
             return Components.immutableEmpty();
+        }
+        
+        public Font getFont() {
+            return Minecraft.getInstance().font;
         }
     }
 }

@@ -19,7 +19,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class AllIcons implements ScreenElement {
 
-	public static final ResourceLocation ICON_ATLAS = Create.asResource("textures/gui/icons.png");
+	public static final ResourceLocation ICON_ATLAS = Create.asResource("textures/gui/create_icons.png");
 	public static final int ICON_ATLAS_SIZE = 256;
 
 	private static int x = 0, y = -1;

@@ -17,6 +17,7 @@ import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.Label;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.ScrollInput;
 import nl.requios.effortlessbuilding.create.foundation.utility.Components;
+import nl.requios.effortlessbuilding.create.foundation.utility.FontHelper;
 import nl.requios.effortlessbuilding.gui.elements.GuiCheckBoxFixed;
 import nl.requios.effortlessbuilding.gui.elements.GuiNumberField;
 import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
@@ -100,31 +101,31 @@ public class ArrayEntry extends BaseModifierEntry<Array> {
 
 		//draw offset labels
 		for (int i = 0; i < 3; i++) {
-			offsetLabels.get(i).x = x + 75 + 20 * i;
-			offsetLabels.get(i).y = y + 24;
+			offsetLabels.get(i).x = x + 65 + 20 * i - getFont().width(offsetLabels.get(i).text) / 2;
+			offsetLabels.get(i).y = y + 23;
 			offsetLabels.get(i).render(ms, mouseX, mouseY, partialTicks);
 		}
 		
 		//draw offset inputs
 		for (int i = 0; i < 3; i++) {
-			offsetInputs.get(i).x = x + 75 + 20 * i;
-			offsetInputs.get(i).y = y + 24;
+			offsetInputs.get(i).x = x + 65 + 20 * i;
+			offsetInputs.get(i).y = y + 23;
 			offsetInputs.get(i).render(ms, mouseX, mouseY, partialTicks);
 		}
 		
 		//draw count label
-		countLabel.x = x + 140;
-		countLabel.y = y + 24;
+		countLabel.x = x + 65;
+		countLabel.y = y + 45;
 		countLabel.render(ms, mouseX, mouseY, partialTicks);
 		
 		//draw count input
-		countInput.x = x + 140;
-		countInput.y = y + 24;
+		countInput.x = x + 65;
+		countInput.y = y + 45;
 		countInput.render(ms, mouseX, mouseY, partialTicks);
 		
 		//draw reach label
 		reachLabel.x = x + width - 125;
-		reachLabel.y = y + 40;
+		reachLabel.y = y + 23;
 		reachLabel.render(ms, mouseX, mouseY, partialTicks);
 	}
 
@@ -135,7 +136,7 @@ public class ArrayEntry extends BaseModifierEntry<Array> {
 		int currentReach = Math.max(-1, getArrayReach());
 		int maxReach = ReachHelper.getMaxReach(Minecraft.getInstance().player);
 		ChatFormatting reachColor = isCurrentReachValid(currentReach, maxReach) ? ChatFormatting.GRAY : ChatFormatting.RED;
-		var reachText = "Reach: " + reachColor + currentReach + ChatFormatting.GRAY + "/" + ChatFormatting.GRAY + maxReach;
+		var reachText = "" + reachColor + currentReach + ChatFormatting.GRAY + "/" + ChatFormatting.GRAY + maxReach;
 		reachLabel.text = Component.literal(reachText);
 	}
 
