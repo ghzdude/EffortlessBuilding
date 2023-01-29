@@ -58,6 +58,10 @@ public class ReachHelper {
 			default -> CommonConfig.reach.maxReachLevel0.get();
 		};
 	}
+	
+	public static int getMaxMirrorRadius(Player player) {
+		return getMaxReach(player) / 2;
+	}
 
 	public static int getPlacementReach(Player player) {
 		return getMaxReach(player) / 4;

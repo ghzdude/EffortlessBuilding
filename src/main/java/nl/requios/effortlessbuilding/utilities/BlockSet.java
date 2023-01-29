@@ -19,6 +19,7 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
 
     public BlockPos firstPos;
     public BlockPos lastPos;
+    public boolean skipFirst;
 
     public BlockSet() {
         super();
@@ -28,13 +29,17 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
         super(blockSet);
         this.firstPos = blockSet.firstPos;
         this.lastPos = blockSet.lastPos;
+        this.skipFirst = blockSet.skipFirst;
     }
 
-    public BlockSet(List<BlockEntry> blockEntries) {
+    public BlockSet(List<BlockEntry> blockEntries, BlockPos firstPos, BlockPos lastPos, boolean skipFirst) {
         super();
         for (BlockEntry blockEntry : blockEntries) {
             add(blockEntry);
         }
+        this.firstPos = firstPos;
+        this.lastPos = lastPos;
+        this.skipFirst = skipFirst;
     }
 
     public void setStartPos(BlockEntry startPos) {
@@ -74,10 +79,17 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
 
     public static void encode(FriendlyByteBuf buf, BlockSet block) {
         buf.writeCollection(block.values(), BlockEntry::encode);
+        buf.writeBlockPos(block.firstPos);
+        buf.writeBlockPos(block.lastPos);
+        buf.writeBoolean(block.skipFirst);
     }
 
     public static BlockSet decode(FriendlyByteBuf buf) {
-        return new BlockSet(buf.readList(BlockEntry::decode));
+        return new BlockSet(
+            buf.readList(BlockEntry::decode),
+            buf.readBlockPos(),
+            buf.readBlockPos(),
+            buf.readBoolean());
     }
 
     @OnlyIn(Dist.CLIENT)

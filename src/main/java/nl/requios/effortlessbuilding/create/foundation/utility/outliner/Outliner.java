@@ -154,7 +154,7 @@ public class Outliner {
 
 	public static class OutlineEntry {
 
-		static final int fadeTicks = 8;
+		static final int fadeTicks = 4;
 		private Outline outline;
 		private int ticksTillRemoval;
 

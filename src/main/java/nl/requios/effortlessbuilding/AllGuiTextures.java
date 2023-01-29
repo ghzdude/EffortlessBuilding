@@ -11,9 +11,14 @@ import nl.requios.effortlessbuilding.create.foundation.gui.element.ScreenElement
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 
 public enum AllGuiTextures implements ScreenElement {
-    ARRAY_ENTRY("modifiers", 256, 60),
-    MIRROR_ENTRY("modifiers", 0, 60, 256, 60),
-    RADIAL_MIRROR_ENTRY("modifiers", 0, 120, 256, 60),
+    ARRAY_ENTRY("modifiers", 226, 60),
+    MIRROR_ENTRY("modifiers", 0, 60, 226, 60),
+    RADIAL_MIRROR_ENTRY("modifiers", 0, 120, 226, 60),
+    ENABLE_BUTTON_BACKGROUND("modifiers", 234, 0, 9, 9),
+    CHECKMARK("modifiers", 243, 0, 10, 9),
+    ARROW_UP("modifiers", 234, 9, 9, 9),
+    ARROW_DOWN("modifiers", 243, 9, 9, 9),
+    TRASH("modifiers", 234, 18, 9, 9),
     ;
     public final ResourceLocation location;
     public int width, height;

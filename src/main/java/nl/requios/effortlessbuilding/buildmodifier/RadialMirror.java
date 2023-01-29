@@ -73,6 +73,8 @@ public class RadialMirror extends BaseModifier {
 			//rotate block
 			double angleToCenter = Mth.atan2(relNewVec.x, relNewVec.z); //between -PI and PI
 			rotateBlockEntry(newBlockEntry, angleToCenter, doAlternate);
+			
+			blocks.add(newBlockEntry);
 		}
 	}
 

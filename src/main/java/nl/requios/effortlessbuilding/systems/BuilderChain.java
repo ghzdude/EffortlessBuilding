@@ -43,6 +43,7 @@ public class BuilderChain {
     private BlockPos startPosForBreaking;
     private BlockHitResult lookingAtNear;
     //Can be near or far depending on abilities
+    //Only updated when we are in IDLE state
     private BlockHitResult lookingAt;
 
     public enum BuildingState {
@@ -85,10 +86,9 @@ public class BuilderChain {
                 BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), false);
                 player.swing(InteractionHand.MAIN_HAND);
 
-                //TODO place blocks delayed on server, calculate what tick they should be placed on
-                int delay = CommonConfig.visuals.appearAnimationLength.get() * 3 - 3; //DelayedBlockPlacer is 3 times faster than client tick?
-
-                PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksPacket(blocks));
+                blocks.skipFirst = buildMode == BuildModeEnum.DISABLED;
+                long placeTime = player.level.getGameTime() + CommonConfig.visuals.appearAnimationLength.get() - 3;
+                PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksPacket(blocks, placeTime));
             }
         }
     }
@@ -107,6 +107,7 @@ public class BuilderChain {
 
             //Use new start position for breaking, because we assumed the player was gonna place
             blocks.setStartPos(new BlockEntry(startPosForBreaking));
+            EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player);
             BuilderFilter.filterOnCoordinates(blocks, player);
             findExistingBlockStates(player.level);
             BuilderFilter.filterOnExistingBlockStates(blocks, player);
@@ -122,6 +123,7 @@ public class BuilderChain {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksBroken(blocks);
                 BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), true);
                 player.swing(InteractionHand.MAIN_HAND);
+                blocks.skipFirst = buildMode == BuildModeEnum.DISABLED;
                 PacketHandler.INSTANCE.sendToServer(new ServerBreakBlocksPacket(blocks));
             }
         }
@@ -133,7 +135,6 @@ public class BuilderChain {
         startPosForPlacing = null;
         startPosForBreaking = null;
         lookingAtNear = null;
-        lookingAt = null;
 
         var mc = Minecraft.getInstance();
         var player = mc.player;

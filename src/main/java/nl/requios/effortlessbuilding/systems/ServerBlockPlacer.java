@@ -18,25 +18,42 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.items.ItemHandlerHelper;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.create.foundation.utility.BlockHelper;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 
-import java.util.List;
+import java.util.*;
 
 // Receives block placement requests from the client and places them
 public class ServerBlockPlacer {
+    private final Set<DelayedEntry> delayedEntries = Collections.synchronizedSet(new HashSet<>());
+    private final Set<DelayedEntry> delayedEntriesView = Collections.unmodifiableSet(delayedEntries);
     private boolean isPlacingOrBreakingBlocks = false;
 
+    public void placeBlocksDelayed(Player player, BlockSet blocks, long placeTime) {
+    
+        delayedEntries.add(new DelayedEntry(player, blocks, placeTime));
+    }
+    
+    public void tick() {
+        for (DelayedEntry entry : delayedEntries) {
+            long gameTime = entry.player.level.getGameTime();
+            if (gameTime >= entry.placeTime) {
+                placeBlocks(entry.player, entry.blocks);
+                delayedEntries.remove(entry);
+            }
+        }
+    }
+    
     public void placeBlocks(Player player, BlockSet blocks) {
 //        EffortlessBuilding.log(player, "Placing " + blocks.size() + " blocks");
-
+        
         for (BlockEntry block : blocks) {
+            if (blocks.skipFirst && block.blockPos == blocks.firstPos) continue;
             placeBlock(player, block);
         }
     }
-
+    
     public void placeBlock(Player player, BlockEntry block) {
         Level world = player.level;
         if (!world.isLoaded(block.blockPos)) return;
@@ -45,15 +62,16 @@ public class ServerBlockPlacer {
         boolean placedBlock = onPlaceItemIntoWorld(player, block) == InteractionResult.SUCCESS;
         isPlacingOrBreakingBlocks = false;
     }
-
+    
     public void breakBlocks(Player player, BlockSet blocks) {
 //        EffortlessBuilding.log(player, "Breaking " + blocks.size() + " blocks");
 
         for (BlockEntry block : blocks) {
+            if (blocks.skipFirst && block.blockPos == blocks.firstPos) continue;
             breakBlock(player, block);
         }
     }
-
+    
     public void breakBlock(Player player, BlockEntry block) {
         ServerLevel world = (ServerLevel) player.level;
         if (!world.isLoaded(block.blockPos) || world.isEmptyBlock(block.blockPos)) return;
@@ -66,10 +84,16 @@ public class ServerBlockPlacer {
         });
         isPlacingOrBreakingBlocks = false;
     }
-
+    
+    public Set<DelayedEntry> getDelayedEntries() {
+        return delayedEntriesView;
+    }
+    
     public boolean isPlacingOrBreakingBlocks() {
         return isPlacingOrBreakingBlocks;
     }
+    
+    public record DelayedEntry(Player player, BlockSet blocks, long placeTime) {}
 
     //ForgeHooks::onPlaceItemIntoWorld
     private InteractionResult onPlaceItemIntoWorld(Player player, BlockEntry block) {
@@ -91,7 +115,9 @@ public class ServerBlockPlacer {
             level.captureBlockSnapshots = true;
 
         ItemStack copy = itemstack.copy();
+        ////
         BlockHelper.placeSchematicBlock(level, player, block.newBlockState, block.blockPos, block.itemStack, null);
+        ////
         InteractionResult ret = InteractionResult.SUCCESS;
         if (itemstack.isEmpty())
             ForgeEventFactory.onPlayerDestroyItem(player, copy, InteractionHand.MAIN_HAND);

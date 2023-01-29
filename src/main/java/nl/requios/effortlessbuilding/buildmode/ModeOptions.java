@@ -3,6 +3,7 @@ package nl.requios.effortlessbuilding.buildmode;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.AllIcons;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
@@ -104,46 +105,60 @@ public class ModeOptions {
 			action != ActionEnum.OPEN_MODIFIER_SETTINGS &&
 			action != ActionEnum.OPEN_PLAYER_SETTINGS) {
 
-			EffortlessBuilding.logTranslate(player, "", action.name, "", true);
+			EffortlessBuilding.logTranslate(player, "", action.getNameKey(), "", true);
 		}
 	}
 
 	public enum ActionEnum {
-		UNDO("effortlessbuilding.action.undo"),
-		REDO("effortlessbuilding.action.redo"),
-		OPEN_MODIFIER_SETTINGS("effortlessbuilding.action.open_modifier_settings"),
-		OPEN_PLAYER_SETTINGS("effortlessbuilding.action.open_player_settings"),
+		UNDO("undo", AllIcons.I_UNDO),
+		REDO("redo", AllIcons.I_REDO),
+		OPEN_MODIFIER_SETTINGS("open_modifier_settings", AllIcons.I_SETTINGS),
+		OPEN_PLAYER_SETTINGS("open_player_settings", AllIcons.I_SETTINGS),
 
-		REPLACE_ONLY_AIR("effortlessbuilding.action.replace_only_air"),
-		REPLACE_BLOCKS_AND_AIR("effortlessbuilding.action.replace_blocks_and_air"),
-		REPLACE_ONLY_BLOCKS("effortlessbuilding.action.replace_only_blocks"),
-		REPLACE_FILTERED_BY_OFFHAND("effortlessbuilding.action.replace_filtered_by_offhand"),
-		TOGGLE_PROTECT_TILE_ENTITIES("effortlessbuilding.action.toggle_protect_tile_entities"),
+		REPLACE_ONLY_AIR("replace_only_air", AllIcons.I_REPLACE),
+		REPLACE_BLOCKS_AND_AIR("replace_blocks_and_air", AllIcons.I_REPLACE),
+		REPLACE_ONLY_BLOCKS("replace_only_blocks", AllIcons.I_REPLACE),
+		REPLACE_FILTERED_BY_OFFHAND("replace_filtered_by_offhand", AllIcons.I_REPLACE),
+		TOGGLE_PROTECT_TILE_ENTITIES("toggle_protect_tile_entities", AllIcons.I_REPLACE),
 
-		NORMAL_SPEED("effortlessbuilding.action.normal_speed"),
-		FAST_SPEED("effortlessbuilding.action.fast_speed"),
+		NORMAL_SPEED("normal_speed", AllIcons.I_NORMAL_SPEED),
+		FAST_SPEED("fast_speed", AllIcons.I_FAST_SPEED),
 
-		FULL("effortlessbuilding.action.full"),
-		HOLLOW("effortlessbuilding.action.hollow"),
+		FULL("full", AllIcons.I_FILLED),
+		HOLLOW("hollow", AllIcons.I_HOLLOW),
 
-		CUBE_FULL("effortlessbuilding.action.full"),
-		CUBE_HOLLOW("effortlessbuilding.action.hollow"),
-		CUBE_SKELETON("effortlessbuilding.action.skeleton"),
+		CUBE_FULL("full", AllIcons.I_CUBE_FILLED),
+		CUBE_HOLLOW("hollow", AllIcons.I_CUBE_HOLLOW),
+		CUBE_SKELETON("skeleton", AllIcons.I_CUBE_SKELETON),
 
-		SHORT_EDGE("effortlessbuilding.action.short_edge"),
-		LONG_EDGE("effortlessbuilding.action.long_edge"),
+		SHORT_EDGE("short_edge", AllIcons.I_SHORT_EDGE),
+		LONG_EDGE("long_edge", AllIcons.I_LONG_EDGE),
 
-		THICKNESS_1("effortlessbuilding.action.thickness_1"),
-		THICKNESS_3("effortlessbuilding.action.thickness_3"),
-		THICKNESS_5("effortlessbuilding.action.thickness_5"),
+		THICKNESS_1("thickness_1", AllIcons.I_THICKNESS_1),
+		THICKNESS_3("thickness_3", AllIcons.I_THICKNESS_3),
+		THICKNESS_5("thickness_5", AllIcons.I_THICKNESS_5),
 
-		CIRCLE_START_CORNER("effortlessbuilding.action.start_corner"),
-		CIRCLE_START_CENTER("effortlessbuilding.action.start_center");
+		CIRCLE_START_CORNER("start_corner", AllIcons.I_CIRCLE_START_CORNER),
+		CIRCLE_START_CENTER("start_center", AllIcons.I_CIRCLE_START_CENTER);
 
 		public String name;
+		public AllIcons icon;
 
-		ActionEnum(String name) {
+		ActionEnum(String name, AllIcons icon) {
 			this.name = name;
+			this.icon = icon;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public String getNameKey() {
+			return "effortlessbuilding.action." + name;
+		}
+		
+		public String getDescriptionKey() {
+			return "effortlessbuilding.action." + name + ".description";
 		}
 	}
 

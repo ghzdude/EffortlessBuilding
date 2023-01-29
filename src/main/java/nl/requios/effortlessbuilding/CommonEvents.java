@@ -13,6 +13,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
@@ -32,8 +33,9 @@ public class CommonEvents {
 	@SubscribeEvent
 	public static void onTick(TickEvent.LevelTickEvent event) {
 		if (event.phase != TickEvent.Phase.START) return;
+		if (event.side == LogicalSide.CLIENT) return;
 
-		EffortlessBuilding.DELAYED_BLOCK_PLACER.tick();
+		EffortlessBuilding.SERVER_BLOCK_PLACER.tick();
 	}
 
 	//Cancel event if necessary. Nothing more, rest is handled on mouseclick

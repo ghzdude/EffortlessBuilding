@@ -8,7 +8,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
-import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
 import nl.requios.effortlessbuilding.create.foundation.gui.TickableGuiEventListener;
 import nl.requios.effortlessbuilding.create.foundation.gui.UIRenderHelper;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.AbstractSimiWidget;
@@ -17,6 +16,7 @@ import nl.requios.effortlessbuilding.create.foundation.utility.Components;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 //Based on Create's ConfigScreenList
 public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList.Entry> implements TickableGuiEventListener {
@@ -47,6 +47,30 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
         RenderSystem.enableScissor((int) (this.x0 * d0), (int) (window.getHeight() - (this.y1 * d0)), (int) (this.width * d0), (int) (this.height * d0));
         super.renderList(p_239228_, p_239229_, p_239230_, p_239231_);
         RenderSystem.disableScissor();
+    }
+    
+    public void renderWindowForeground(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+        renderListForeground(ms, mouseX, mouseY, partialTicks);
+    }
+    
+    protected void renderListForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        int i = this.getRowLeft();
+        int j = this.getRowWidth();
+        int k = this.itemHeight - 4;
+        int l = this.getItemCount();
+        
+        for(int i1 = 0; i1 < l; ++i1) {
+            int j1 = this.getRowTop(i1);
+            int k1 = j1 + itemHeight;
+            if (k1 >= this.y0 && j1 <= this.y1) {
+                renderItemForeground(pPoseStack, pMouseX, pMouseY, pPartialTick, i1, i, j1, j, k);
+            }
+        }
+    }
+    
+    protected void renderItemForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
+        Entry e = this.getEntry(pIndex);
+        e.renderForeground(pPoseStack, pIndex, pTop, pLeft, pWidth, pHeight, pMouseX, pMouseY, Objects.equals(this.getHovered(), e), pPartialTick);
     }
 
     @Override
@@ -126,6 +150,10 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
     
 //            UIRenderHelper.streak(ms, 0, x - 10, y + height / 2, height - 6, width, 0xdd_000000);
 //            UIRenderHelper.streak(ms, 180, x + (int) (width * 1.35f) + 10, y + height / 2, height - 6, width / 8 * 7, 0xdd_000000);
+    
+        }
+        
+        public void renderForeground(PoseStack ms, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
     
             for (var listener : listeners) {
                 if (listener instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()

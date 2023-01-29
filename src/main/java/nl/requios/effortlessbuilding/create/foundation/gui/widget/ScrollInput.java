@@ -132,7 +132,8 @@ public class ScrollInput extends AbstractSimiWidget {
 			onChanged();
 		}
 
-		return priorState != state;
+//		return priorState != state;
+		return true; //Changed
 	}
 
 	protected void clampState() {

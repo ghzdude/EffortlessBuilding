@@ -22,7 +22,6 @@ import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.gui.DiamondRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.GoldenRandomizerBagContainer;
 import nl.requios.effortlessbuilding.gui.RandomizerBagContainer;
-import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
 import nl.requios.effortlessbuilding.item.*;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
@@ -42,7 +41,6 @@ public class EffortlessBuilding {
 	public static IProxy proxy = DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
 	public static final ServerBlockPlacer SERVER_BLOCK_PLACER = new ServerBlockPlacer();
-	public static final DelayedBlockPlacer DELAYED_BLOCK_PLACER = new DelayedBlockPlacer();
 
 	//Registration
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);

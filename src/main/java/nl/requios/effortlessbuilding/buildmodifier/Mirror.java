@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -18,6 +19,13 @@ public class Mirror extends BaseModifier {
 	public int radius = 10;
 	public boolean drawLines = true;
 	public boolean drawPlanes = true;
+	
+	public Mirror() {
+		super();
+		var player = Minecraft.getInstance().player;
+		if (player != null)
+			position = Vec3.atLowerCornerOf(Minecraft.getInstance().player.blockPosition());
+	}
 	
 	@Override
 	public void findCoordinates(BlockSet blocks, Player player) {
@@ -43,6 +51,7 @@ public class Mirror extends BaseModifier {
 		var newBlockEntry = new BlockEntry(newBlockPos);
 		newBlockEntry.copyRotationSettingsFrom(blockEntry);
 		newBlockEntry.mirrorX = !newBlockEntry.mirrorX;
+		blocks.add(newBlockEntry);
 
 		if (mirrorY) performMirrorY(blocks, newBlockEntry);
 		if (mirrorZ) performMirrorZ(blocks, newBlockEntry);
@@ -58,6 +67,7 @@ public class Mirror extends BaseModifier {
 		var newBlockEntry = new BlockEntry(newBlockPos);
 		newBlockEntry.copyRotationSettingsFrom(blockEntry);
 		newBlockEntry.mirrorY = !newBlockEntry.mirrorY;
+		blocks.add(newBlockEntry);
 
 		if (mirrorZ) performMirrorZ(blocks, newBlockEntry);
 	}
@@ -72,6 +82,7 @@ public class Mirror extends BaseModifier {
 		var newBlockEntry = new BlockEntry(newBlockPos);
 		newBlockEntry.copyRotationSettingsFrom(blockEntry);
 		newBlockEntry.mirrorZ = !newBlockEntry.mirrorZ;
+		blocks.add(newBlockEntry);
 	}
 
 	public boolean isWithinRange(BlockPos blockPos) {
@@ -82,6 +93,29 @@ public class Mirror extends BaseModifier {
 	
 	public int getReach() {
 		return radius * 2; //Change ModifierSettings#setReachUpgrade too
+	}
+	
+	public void toggleMirrorAxis(int index) {
+		switch (index) {
+			case 0 -> mirrorX = !mirrorX;
+			case 1 -> mirrorY = !mirrorY;
+			case 2 -> mirrorZ = !mirrorZ;
+		}
+	}
+	
+	public boolean getMirrorAxis(int index) {
+		switch (index) {
+			case 0 -> {
+				return mirrorX;
+			}
+			case 1 -> {
+				return mirrorY;
+			}
+			case 2 -> {
+				return mirrorZ;
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -1,33 +1,10 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.Level;
-import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.create.foundation.utility.NBTHelper;
-import nl.requios.effortlessbuilding.systems.DelayedBlockPlacer;
-import nl.requios.effortlessbuilding.systems.UndoRedo;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
-import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
-import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
-import nl.requios.effortlessbuilding.utilities.UndoRedoBlockSet;
 
 import java.util.ArrayList;
 import java.util.Collections;

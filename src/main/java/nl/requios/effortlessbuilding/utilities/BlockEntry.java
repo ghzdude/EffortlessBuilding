@@ -39,7 +39,8 @@ public class BlockEntry {
         this.itemStack = itemStack;
 
         Block block = Block.byItem(itemStack.getItem());
-        var direction = rotation.rotate(originalDirection);
+        var direction = originalDirection;
+        if (rotation != null) direction = rotation.rotate(direction);
         direction = applyMirror(direction);
         //TODO mirror and rotate relativeHitVec?
         var blockPlaceContext = new MyPlaceContext(world, blockPos, direction, itemStack, clickedFace, relativeHitVec);
@@ -47,9 +48,9 @@ public class BlockEntry {
     }
 
     private Direction applyMirror(Direction direction) {
-        if (mirrorX && direction.getAxis() == Direction.Axis.Z) direction = direction.getOpposite();
+        if (mirrorX && direction.getAxis() == Direction.Axis.X) direction = direction.getOpposite();
         if (mirrorY && direction.getAxis() == Direction.Axis.Y) direction = direction.getOpposite();
-        if (mirrorZ && direction.getAxis() == Direction.Axis.X) direction = direction.getOpposite();
+        if (mirrorZ && direction.getAxis() == Direction.Axis.Z) direction = direction.getOpposite();
         return direction;
     }
 

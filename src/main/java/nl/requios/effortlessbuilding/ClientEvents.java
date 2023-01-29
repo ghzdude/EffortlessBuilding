@@ -91,7 +91,6 @@ public class ClientEvents {
         BuildModeEnum buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
 
         if (mc.screen != null ||
-            buildMode == BuildModeEnum.DISABLED ||
             RadialMenu.instance.isVisible()) {
             return;
         }

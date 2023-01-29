@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import nl.requios.effortlessbuilding.AllIcons;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
@@ -296,9 +297,8 @@ public class RadialMenu extends Screen {
 
 			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
-
-			RenderSystem.setShaderTexture(0, new ResourceLocation(EffortlessBuilding.MODID, "textures/icons/" + menuRegion.mode.name().toLowerCase() + ".png"));
-			blit(ms, (int) (middleX + x - 8), (int) (middleY + y - 8), 16, 16, 0, 0, 18, 18, 18, 18);
+			
+			menuRegion.mode.icon.render(ms, (int) (middleX + x - 8), (int) (middleY + y - 8));
 		}
 
 		//Draw action icons
@@ -307,8 +307,7 @@ public class RadialMenu extends Screen {
 			final double x = (button.x1 + button.x2) / 2 + 0.01;
 			final double y = (button.y1 + button.y2) / 2 + 0.01;
 
-			RenderSystem.setShaderTexture(0, new ResourceLocation(EffortlessBuilding.MODID, "textures/icons/" + button.action.name().toLowerCase() + ".png"));
-			blit(ms, (int) (middleX + x - 8), (int) (middleY + y - 8), 16, 16, 0, 0, 18, 18, 18, 18);
+			button.action.icon.render(ms, (int) (middleX + x - 8), (int) (middleY + y - 8));
 		}
 
 		ms.popPose();
@@ -512,10 +511,10 @@ public class RadialMenu extends Screen {
 
 		public MenuButton(final ActionEnum action, final double x, final double y,
 						  final Direction textSide) {
-			this.name = I18n.get(action.name);
+			this.name = I18n.get(action.getNameKey());
 
-			if (I18n.exists(action.name + ".description")) {
-				this.description = I18n.get(action.name + ".description");
+			if (I18n.exists(action.getDescriptionKey())) {
+				this.description = I18n.get(action.getDescriptionKey());
 			}
 
 			this.action = action;

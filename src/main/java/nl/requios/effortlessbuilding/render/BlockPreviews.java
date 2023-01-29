@@ -56,12 +56,14 @@ public class BlockPreviews {
 	}
 
 	public void drawLookAtPreview(Player player) {
-		if (EffortlessBuildingClient.BUILD_MODES.getBuildMode() == BuildModeEnum.DISABLED) return;
-		if (EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState() == BuilderChain.BuildingState.IDLE &&
-			ClientConfig.visuals.onlyShowBlockPreviewsWhenBuilding.get()) return;
-
 		var blocks = EffortlessBuildingClient.BUILDER_CHAIN.getBlocks();
 		if (blocks.size() == 0) return;
+		
+		if (EffortlessBuildingClient.BUILD_MODES.getBuildMode() == BuildModeEnum.DISABLED &&
+			blocks.size() == 1) return;
+		if (EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState() == BuilderChain.BuildingState.IDLE &&
+			ClientConfig.visuals.onlyShowBlockPreviewsWhenBuilding.get() &&
+			blocks.size() == 1) return;
 
 		var coordinates = blocks.getCoordinates();
 		var state = EffortlessBuildingClient.BUILDER_CHAIN.getPretendBuildingState();

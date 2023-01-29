@@ -37,6 +37,7 @@ public class Array extends BaseModifier {
 
 				var newBlockEntry = new BlockEntry(pos);
 				newBlockEntry.copyRotationSettingsFrom(blockEntry);
+				blocks.add(newBlockEntry);
 			}
 		}
 	}

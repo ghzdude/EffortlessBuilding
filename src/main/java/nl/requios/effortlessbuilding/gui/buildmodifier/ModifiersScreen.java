@@ -21,6 +21,7 @@ import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 		int listL = this.width / 2 - listWidth / 2;
 		int listR = this.width / 2 + listWidth / 2;
 
-		list = new ModifiersScreenList(minecraft, listWidth, height - 80, 45, height - 45, 60);
+		list = new ModifiersScreenList(minecraft, listWidth, height - 80, 45, height - 45, 65);
 		list.setLeftPos(this.width / 2 - list.getWidth() / 2);
 
 		addRenderableWidget(list);
@@ -111,30 +112,56 @@ public class ModifiersScreen extends AbstractSimiScreen {
 		list.children().add(entry);
 		EffortlessBuildingClient.BUILD_MODIFIERS.addModifierSettings(modifier);
 	}
-
+	
 	public void removeModifier(BaseModifierEntry entry) {
 		list.children().remove(entry);
 		EffortlessBuildingClient.BUILD_MODIFIERS.removeModifierSettings(entry.modifier);
 	}
-
+	
+	public boolean canMoveUp(BaseModifierEntry modifierEntry) {
+		int index = list.children().indexOf(modifierEntry);
+		return index > 0;
+	}
+	
+	public boolean canMoveDown(BaseModifierEntry modifierEntry) {
+		int index = list.children().indexOf(modifierEntry);
+		return index < list.children().size() - 1;
+	}
+	
+	public void moveModifierUp(BaseModifierEntry modifierEntry) {
+		int index = list.children().indexOf(modifierEntry);
+		if (index == 0) return;
+		
+		Collections.swap(list.children(), index, index - 1);
+		EffortlessBuildingClient.BUILD_MODIFIERS.moveUp(modifierEntry.modifier);
+	}
+	
+	public void moveModifierDown(BaseModifierEntry modifierEntry) {
+		int index = list.children().indexOf(modifierEntry);
+		if (index == list.children().size() - 1) return;
+		
+		Collections.swap(list.children(), index, index + 1);
+		EffortlessBuildingClient.BUILD_MODIFIERS.moveDown(modifierEntry.modifier);
+	}
+	
 	@Override
 	public void resize(@Nonnull Minecraft client, int width, int height) {
 		double scroll = list.getScrollAmount();
 		init(client, width, height);
 		list.setScrollAmount(scroll);
 	}
-
+	
 	@Override
 	protected void renderWindow(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
 	
 	}
-
+	
 	@Override
 	public void onClose() {
 		super.onClose();
 		EffortlessBuildingClient.BUILD_MODIFIERS.save(minecraft.player);
 	}
-
+	
 	@Override
 	public boolean keyPressed(int keyCode, int p_96553_, int p_96554_) {
 		if (keyCode == ClientEvents.keyBindings[1].getKey().getValue()) {
@@ -144,5 +171,4 @@ public class ModifiersScreen extends AbstractSimiScreen {
 
 		return super.keyPressed(keyCode, p_96553_, p_96554_);
 	}
-
 }

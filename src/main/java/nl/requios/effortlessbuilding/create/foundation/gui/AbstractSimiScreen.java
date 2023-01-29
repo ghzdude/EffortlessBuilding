@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.gui.buildmodifier.ModifiersScreenList;
 
 import java.util.Collection;
 import java.util.List;
@@ -146,7 +147,13 @@ public abstract class AbstractSimiScreen extends Screen {
 				int tty = simiWidget.lockedTooltipY == -1 ? mouseY : simiWidget.lockedTooltipY + simiWidget.y;
 				renderComponentTooltip(ms, tooltip, ttx, tty);
 			}
+			
+			//Added
+			if (widget instanceof ModifiersScreenList list) {
+				list.renderWindowForeground(ms, mouseX, mouseY, partialTicks);
+			}
 		}
+		
 	}
 
 	protected void endFrame() {}

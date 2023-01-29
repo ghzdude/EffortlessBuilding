@@ -89,5 +89,6 @@
   "effortlessbuilding.gui.scrollInput.scrollToModify": "Scroll to Modify",
   "effortlessbuilding.gui.scrollInput.scrollToAdjustAmount": "Scroll to Adjust Amount",
   "effortlessbuilding.gui.scrollInput.scrollToSelect": "Scroll to Select",
-  "effortlessbuilding.gui.scrollInput.shiftScrollsFaster": "Shift to Scroll Faster"
+  "effortlessbuilding.gui.scrollInput.shiftScrollsFaster": "Shift to Scroll Faster",
+  "effortlessbuilding.gui.scrollInput.controlScrollsSlower": "Control to Scroll Slower"
 }
