@@ -24,14 +24,6 @@ public class MyPlaceContext extends BlockPlaceContext {
         return this.getHitResult().getBlockPos();
     }
 
-    public boolean canPlace() {
-        return this.getLevel().getBlockState(this.getHitResult().getBlockPos()).canBeReplaced(this);
-    }
-
-    public boolean replacingClickedOnBlock() {
-        return this.canPlace();
-    }
-
     public Direction getNearestLookingDirection() {
         return Direction.DOWN;
     }

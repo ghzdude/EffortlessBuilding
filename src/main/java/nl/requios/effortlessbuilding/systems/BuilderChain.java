@@ -249,17 +249,7 @@ public class BuilderChain {
         }
 
         var blockEntry = new BlockEntry(startPos);
-
-        //Place upside-down stairs if we aim high at block
-        var hitVec = lookingAt.getLocation();
-        //Format hitvec to 0.x
-        hitVec = new Vec3(Math.abs(hitVec.x - ((int) hitVec.x)), Math.abs(hitVec.y - ((int) hitVec.y)), Math.abs(hitVec.z - ((int) hitVec.z)));
-        if (hitVec.y > 0.5) {
-            blockEntry.mirrorY = true;
-        }
-
         startPosForPlacing = blockEntry;
-
         return blockEntry;
     }
 

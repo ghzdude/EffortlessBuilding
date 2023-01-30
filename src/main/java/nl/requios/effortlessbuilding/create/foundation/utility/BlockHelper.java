@@ -261,7 +261,7 @@ public class BlockHelper {
 		if (state.getBlock() instanceof BaseRailBlock) {
 			placeRailWithoutUpdate(world, state, target);
 		} else {
-			world.setBlock(target, state, 18);
+			world.setBlock(target, state, 2); //Changed flag from 18 to 3
 		}
 
 		if (data != null) {

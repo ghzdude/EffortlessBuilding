@@ -45,6 +45,7 @@ public class BlockEntry {
         //TODO mirror and rotate relativeHitVec?
         var blockPlaceContext = new MyPlaceContext(world, blockPos, direction, itemStack, clickedFace, relativeHitVec);
         newBlockState = block.getStateForPlacement(blockPlaceContext);
+        applyMirrorToBlockState();
     }
 
     private Direction applyMirror(Direction direction) {
@@ -52,6 +53,10 @@ public class BlockEntry {
         if (mirrorY && direction.getAxis() == Direction.Axis.Y) direction = direction.getOpposite();
         if (mirrorZ && direction.getAxis() == Direction.Axis.Z) direction = direction.getOpposite();
         return direction;
+    }
+    
+    private void applyMirrorToBlockState() {
+        if (mirrorY) newBlockState = BlockUtilities.getVerticalMirror(newBlockState);
     }
 
     public static void encode(FriendlyByteBuf buf, BlockEntry block) {

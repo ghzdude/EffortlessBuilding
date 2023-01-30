@@ -105,6 +105,9 @@ public abstract class BaseModifierEntry<T extends BaseModifier> extends Modifier
         nameLabel.x = left + 18;
         nameLabel.y = top + 4;
         nameLabel.render(ms, mouseX, mouseY, partialTicks);
+    
+        moveUpButton.visible = screen.canMoveUp(this);
+        moveDownButton.visible = screen.canMoveDown(this);
         
         moveUpButton.x = right - 31;
         moveUpButton.y = top + 3;
@@ -126,8 +129,5 @@ public abstract class BaseModifierEntry<T extends BaseModifier> extends Modifier
             enableButton.setToolTip(Components.literal("Disable this modifier"));
         else
             enableButton.setToolTip(Components.literal("Enable this modifier"));
-        
-        moveUpButton.visible = screen.canMoveUp(this);
-        moveDownButton.visible = screen.canMoveDown(this);
     }
 }
