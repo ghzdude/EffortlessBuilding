@@ -64,19 +64,19 @@ public class ArrayEntry extends BaseModifierEntry<Array> {
 
 		//draw offset inputs
 		for (int i = 0; i < 3; i++) {
-			offsetInputs.get(i).x = left + 47 + 20 * i;
-			offsetInputs.get(i).y = top + 18;
+			offsetInputs.get(i).x = left + 49 + 20 * i;
+			offsetInputs.get(i).y = top + 19;
 			offsetInputs.get(i).render(ms, mouseX, mouseY, partialTicks);
 		}
 		
 		//draw count input
-		countInput.x = left + 47;
-		countInput.y = top + 38;
+		countInput.x = left + 49;
+		countInput.y = top + 41;
 		countInput.render(ms, mouseX, mouseY, partialTicks);
 		
 		//draw reach label
 		reachLabel.x = right - 8 - getFont().width(reachLabel.text);
-		reachLabel.y = top + 23;
+		reachLabel.y = top + 24;
 		reachLabel.render(ms, mouseX, mouseY, partialTicks);
 	}
 

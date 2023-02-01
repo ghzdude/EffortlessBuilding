@@ -18,7 +18,7 @@ public class BlockEntry {
     public boolean mirrorY;
     public boolean mirrorZ;
     //Horizontal rotation
-    public Rotation rotation;
+    public Rotation rotation = Rotation.NONE;
     //BlockState that is currently in the world
     public BlockState existingBlockState;
     public BlockState newBlockState;

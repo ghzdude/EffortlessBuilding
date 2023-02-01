@@ -48,7 +48,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 		int listL = this.width / 2 - listWidth / 2;
 		int listR = this.width / 2 + listWidth / 2;
 
-		list = new ModifiersScreenList(minecraft, listWidth, height - 80, 45, height - 45, 65);
+		list = new ModifiersScreenList(minecraft, listWidth, height - 80, 45, height - 45, 68);
 		list.setLeftPos(this.width / 2 - list.getWidth() / 2);
 
 		addRenderableWidget(list);
@@ -159,7 +159,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 	@Override
 	public void onClose() {
 		super.onClose();
-		EffortlessBuildingClient.BUILD_MODIFIERS.save(minecraft.player);
+		EffortlessBuildingClient.BUILD_MODIFIERS.save();
 	}
 	
 	@Override

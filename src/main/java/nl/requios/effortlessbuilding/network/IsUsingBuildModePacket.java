@@ -7,9 +7,6 @@ import java.util.function.Supplier;
 
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 
-/**
- * Shares mode settings (see ModeSettingsManager) between server and client
- */
 public class IsUsingBuildModePacket {
 	private boolean isUsingBuildMode;
 

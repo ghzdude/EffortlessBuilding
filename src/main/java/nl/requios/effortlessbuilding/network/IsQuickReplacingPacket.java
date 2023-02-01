@@ -7,9 +7,6 @@ import nl.requios.effortlessbuilding.systems.ServerBuildState;
 
 import java.util.function.Supplier;
 
-/**
- * Shares mode settings (see ModeSettingsManager) between server and client
- */
 public class IsQuickReplacingPacket {
 	private boolean isQuickReplacing;
 

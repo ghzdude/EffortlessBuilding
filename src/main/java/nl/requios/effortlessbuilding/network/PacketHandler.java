@@ -32,6 +32,8 @@ public class PacketHandler {
 				PerformUndoPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 		INSTANCE.registerMessage(id++, PerformRedoPacket.class, PerformRedoPacket::encode, PerformRedoPacket::decode,
 				PerformRedoPacket.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+		INSTANCE.registerMessage(id++, ModifierSettingsPacket.class, ModifierSettingsPacket::encode, ModifierSettingsPacket::decode,
+				ModifierSettingsPacket.Handler::handle);
 	}
 
 }

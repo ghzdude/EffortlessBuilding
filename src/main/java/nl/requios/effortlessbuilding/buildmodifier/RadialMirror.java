@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +28,13 @@ public class RadialMirror extends BaseModifier {
 	public int radius = 20;
 	public boolean drawLines = true;
 	public boolean drawPlanes = false;
+
+	public RadialMirror() {
+		super();
+		var player = Minecraft.getInstance().player;
+		if (player != null)
+			position = Vec3.atLowerCornerOf(Minecraft.getInstance().player.blockPosition());
+	}
 
 	@Override
 	public void findCoordinates(BlockSet blocks, Player player) {

@@ -1,9 +1,13 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.create.foundation.utility.NBTHelper;
+import nl.requios.effortlessbuilding.network.ModifierSettingsPacket;
+import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 
 import java.util.ArrayList;
@@ -69,21 +73,27 @@ public class BuildModifiers {
 		}
 	}
 
-	private static final String DATA_KEY = EffortlessBuilding.MODID + ":buildModifiers";
-
-	public void save(Player player) {
-		var listTag = NBTHelper.writeCompoundList(modifierSettingsList, BaseModifier::serializeNBT);
-		player.getPersistentData().put(DATA_KEY, listTag);
+	public CompoundTag serializeNBT() {
+		var compoundTag = new CompoundTag();
+		compoundTag.put("modifierSettingsList", NBTHelper.writeCompoundList(modifierSettingsList, BaseModifier::serializeNBT));
+		return compoundTag;
 	}
 
-	//TODO call load
-	public void load(Player player) {
-		var listTag = player.getPersistentData().getList(DATA_KEY, Tag.TAG_COMPOUND);
-		modifierSettingsList = NBTHelper.readCompoundList(listTag, compoundTag -> {
-			var modifier = createModifier(compoundTag.getString("type"));
-			modifier.deserializeNBT(compoundTag);
+	public void deserializeNBT(CompoundTag compoundTag) {
+		var listTag = compoundTag.getList("modifierSettingsList", Tag.TAG_COMPOUND);
+		modifierSettingsList = NBTHelper.readCompoundList(listTag, tag -> {
+			var modifier = createModifier(tag.getString("type"));
+			modifier.deserializeNBT(tag);
 			return modifier;
 		});
+	}
+
+	public void save() {
+		PacketHandler.INSTANCE.sendToServer(new ModifierSettingsPacket(serializeNBT()));
+
+		//Save locally as well?
+//		var listTag = NBTHelper.writeCompoundList(modifierSettingsList, BaseModifier::serializeNBT);
+//		player.getPersistentData().put(DATA_KEY, listTag);
 	}
 
 	private BaseModifier createModifier(String type) {

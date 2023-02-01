@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +16,9 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.network.PacketDistributor;
+import nl.requios.effortlessbuilding.network.ModifierSettingsPacket;
+import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
@@ -83,12 +87,11 @@ public class CommonEvents {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		if (event.getEntity() instanceof FakePlayer) return;
 		Player player = event.getEntity();
-		if (player.getCommandSenderWorld().isClientSide) {
-			EffortlessBuilding.log("PlayerLoggedInEvent triggers on client side");
-			return;
-		}
+		if (player.getCommandSenderWorld().isClientSide) return;
 
 		ServerBuildState.handleNewPlayer(player);
+
+		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ModifierSettingsPacket(player));
 	}
 
 	@SubscribeEvent

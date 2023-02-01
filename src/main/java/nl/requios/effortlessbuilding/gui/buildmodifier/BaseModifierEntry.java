@@ -100,7 +100,7 @@ public abstract class BaseModifierEntry<T extends BaseModifier> extends Modifier
         enableButton.y = top + 3;
         enableButton.render(ms, mouseX, mouseY, partialTicks);
         if (modifier.enabled)
-            AllGuiTextures.CHECKMARK.render(ms, left + 5, top + 1, screen);
+            AllGuiTextures.CHECKMARK.render(ms, left + 5, top + 3, screen);
         
         nameLabel.x = left + 18;
         nameLabel.y = top + 4;
