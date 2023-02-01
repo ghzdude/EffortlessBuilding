@@ -29,24 +29,21 @@ public class RenderHandler {
 	public static void onRender(RenderLevelStageEvent event) {
 		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
 
-//		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-//
-		PoseStack ms = event.getPoseStack();
-//		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-//		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(bufferBuilder);
-//
-//		Player player = Minecraft.getInstance().player;
-//		ModifierSettingsManager.ModifierSettings modifierSettings = ModifierSettingsManager.getModifierSettings(player);
-//
-//		ms.pushPose();
-//		ms.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-//
-//		//Mirror and radial mirror lines and areas
-//		ModifierRenderer.render(ms, buffer, modifierSettings);
-//
-//		ms.popPose();
+		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
-		renderSubText(ms);
+		PoseStack ms = event.getPoseStack();
+		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(bufferBuilder);
+
+		ms.pushPose();
+		ms.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+
+		//Mirror and radial mirror lines and areas
+		ModifierRenderer.render(ms, buffer);
+
+		ms.popPose();
+
+//		renderSubText(ms);
 	}
 
 	@SubscribeEvent

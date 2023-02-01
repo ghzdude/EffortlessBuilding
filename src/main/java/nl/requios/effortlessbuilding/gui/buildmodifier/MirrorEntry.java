@@ -89,7 +89,7 @@ public class MirrorEntry extends BaseModifierEntry<Mirror> {
 		//Axis buttons
 		for (int i = 0; i < 3; i++) {
 			final int index = i;
-			IconButton button = new IconButton(0, 0, AllIcons.I_SHOW_LINES)
+			IconButton button = new IconButton(0, 0, i == 0 ? AllIcons.I_X_ON : i == 1 ? AllIcons.I_Y_OFF : AllIcons.I_Z_OFF)
 				.withCallback(() -> {
 					modifier.toggleMirrorAxis(index);
 					onValueChanged();
@@ -191,42 +191,42 @@ public class MirrorEntry extends BaseModifierEntry<Mirror> {
 		//Toggle offset button
 		if (modifier.position.x == Math.floor(modifier.position.x)) {
 			toggleOffsetButton.setIcon(AllIcons.I_BLOCK_CENTER);
-			toggleOffsetButton.setToolTip(Components.literal("Set mirror position to center of block, for uneven numbered builds."));
+			toggleOffsetButton.setToolTip(Components.literal("Set position to center of block, for uneven numbered builds."));
 		}
 		else {
 			toggleOffsetButton.setIcon(AllIcons.I_BLOCK_CORNER);
-			toggleOffsetButton.setToolTip(Components.literal("Set mirror position to corner of block, for even numbered builds."));
+			toggleOffsetButton.setToolTip(Components.literal("Set position to corner of block, for even numbered builds."));
 		}
 		
 		//Axis buttons
 		for (int i = 0; i < 3; i++) {
 			IconButton button = axisButtons.get(i);
 			if (modifier.getMirrorAxis(i)) {
-				button.setIcon(AllIcons.I_SHOW_LINES);
+				button.setIcon(i == 0 ? AllIcons.I_X_ON : i == 1 ? AllIcons.I_Y_ON : AllIcons.I_Z_ON);
 			}
 			else {
-				button.setIcon(AllIcons.I_HIDE_LINES);
+				button.setIcon(i == 0 ? AllIcons.I_X_OFF : i == 1 ? AllIcons.I_Y_OFF : AllIcons.I_Z_OFF);
 			}
 		}
 		
 		//Show lines button
 		if (modifier.drawLines) {
 			showLinesButton.setIcon(AllIcons.I_SHOW_LINES);
-			showLinesButton.setToolTip(Components.literal("Hide mirror lines"));
+			showLinesButton.setToolTip(Components.literal("Showing mirror lines"));
 		}
 		else {
 			showLinesButton.setIcon(AllIcons.I_HIDE_LINES);
-			showLinesButton.setToolTip(Components.literal("Show mirror lines"));
+			showLinesButton.setToolTip(Components.literal("Not showing mirror lines"));
 		}
 		
 		//Show areas button
 		if (modifier.drawPlanes) {
 			showAreasButton.setIcon(AllIcons.I_SHOW_AREAS);
-			showAreasButton.setToolTip(Components.literal("Hide mirror areas"));
+			showAreasButton.setToolTip(Components.literal("Showing mirror areas"));
 		}
 		else {
 			showAreasButton.setIcon(AllIcons.I_HIDE_AREAS);
-			showAreasButton.setToolTip(Components.literal("Show mirror areas"));
+			showAreasButton.setToolTip(Components.literal("Not showing mirror areas"));
 		}
 	}
 }

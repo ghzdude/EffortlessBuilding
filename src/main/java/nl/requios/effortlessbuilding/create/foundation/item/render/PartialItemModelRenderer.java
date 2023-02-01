@@ -47,13 +47,13 @@ public class PartialItemModelRenderer {
 		render(model, RenderTypes.getItemPartialSolid(), light);
 	}
 
-	public void renderSolidGlowing(BakedModel model, int light) {
-		render(model, RenderTypes.getGlowingSolid(), light);
-	}
-
-	public void renderGlowing(BakedModel model, int light) {
-		render(model, RenderTypes.getGlowingTranslucent(), light);
-	}
+//	public void renderSolidGlowing(BakedModel model, int light) {
+//		render(model, RenderTypes.getGlowingSolid(), light);
+//	}
+//
+//	public void renderGlowing(BakedModel model, int light) {
+//		render(model, RenderTypes.getGlowingTranslucent(), light);
+//	}
 
 	public void render(BakedModel model, RenderType type, int light) {
 		if (stack.isEmpty())

@@ -98,7 +98,7 @@ public class RadialMirrorEntry extends BaseModifierEntry<RadialMirror> {
 		listeners.add(slicesInput);
 
 		//Alternate
-		alternateButton = new IconButton(0, 0, AllIcons.I_SHOW_AREAS)
+		alternateButton = new IconButton(0, 0, AllIcons.I_ALTERNATE_OFF)
 				.withCallback(() -> {
 					modifier.alternate = !modifier.alternate;
 					onValueChanged();
@@ -108,7 +108,9 @@ public class RadialMirrorEntry extends BaseModifierEntry<RadialMirror> {
 		//Radius
 		radiusInput = new LabeledScrollInput(0, 0, 27, 18)
 				.withRange(0, ReachHelper.getMaxMirrorRadius(Minecraft.getInstance().player))
-				.titled(Component.literal("Radius. Use Reach Upgrade items to increase maximum."))
+				.titled(Minecraft.getInstance().player.isCreative() ?
+						Component.literal("Radius") :
+						Component.literal("Radius. Use Reach Upgrade items to increase maximum."))
 				.calling(value -> {
 					modifier.radius = value;
 					onValueChanged();
@@ -199,41 +201,41 @@ public class RadialMirrorEntry extends BaseModifierEntry<RadialMirror> {
 		//Toggle offset button
 		if (modifier.position.x == Math.floor(modifier.position.x)) {
 			toggleOffsetButton.setIcon(AllIcons.I_BLOCK_CENTER);
-			toggleOffsetButton.setToolTip(Components.literal("Set radialMirror position to center of block, for uneven numbered builds."));
+			toggleOffsetButton.setToolTip(Components.literal("Set position to center of block, for uneven numbered builds."));
 		}
 		else {
 			toggleOffsetButton.setIcon(AllIcons.I_BLOCK_CORNER);
-			toggleOffsetButton.setToolTip(Components.literal("Set radialMirror position to corner of block, for even numbered builds."));
+			toggleOffsetButton.setToolTip(Components.literal("Set position to corner of block, for even numbered builds."));
 		}
 
 		//Toggle alternate button
 		if (modifier.alternate) {
-			alternateButton.setIcon(AllIcons.I_SHOW_AREAS);
-			alternateButton.setToolTip(Components.literal("Alternate the direction of every other slice: Currently ON"));
+			alternateButton.setIcon(AllIcons.I_ALTERNATE_ON);
+			alternateButton.setToolTip(Components.literal("Alternating the direction of every other slice."));
 		}
 		else {
-			alternateButton.setIcon(AllIcons.I_HIDE_AREAS);
-			alternateButton.setToolTip(Components.literal("Alternate the direction of every other slice. Currently OFF"));
+			alternateButton.setIcon(AllIcons.I_ALTERNATE_OFF);
+			alternateButton.setToolTip(Components.literal("Alternate the direction of every other slice. Currently off."));
 		}
 
 		//Show lines button
 		if (modifier.drawLines) {
 			showLinesButton.setIcon(AllIcons.I_SHOW_LINES);
-			showLinesButton.setToolTip(Components.literal("Hide radial mirror lines"));
+			showLinesButton.setToolTip(Components.literal("Showing mirror lines"));
 		}
 		else {
 			showLinesButton.setIcon(AllIcons.I_HIDE_LINES);
-			showLinesButton.setToolTip(Components.literal("Show radial mirror lines"));
+			showLinesButton.setToolTip(Components.literal("Not showing mirror lines"));
 		}
 
 		//Show areas button
 		if (modifier.drawPlanes) {
 			showAreasButton.setIcon(AllIcons.I_SHOW_AREAS);
-			showAreasButton.setToolTip(Components.literal("Hide radial mirror areas"));
+			showAreasButton.setToolTip(Components.literal("Showing mirror areas"));
 		}
 		else {
 			showAreasButton.setIcon(AllIcons.I_HIDE_AREAS);
-			showAreasButton.setToolTip(Components.literal("Show radial mirror areas"));
+			showAreasButton.setToolTip(Components.literal("Not showing mirror areas"));
 		}
 	}
 }

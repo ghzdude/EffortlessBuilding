@@ -115,11 +115,11 @@ public class ModeOptions {
 		OPEN_MODIFIER_SETTINGS("open_modifier_settings", AllIcons.I_SETTINGS),
 		OPEN_PLAYER_SETTINGS("open_player_settings", AllIcons.I_SETTINGS),
 
-		REPLACE_ONLY_AIR("replace_only_air", AllIcons.I_REPLACE),
-		REPLACE_BLOCKS_AND_AIR("replace_blocks_and_air", AllIcons.I_REPLACE),
-		REPLACE_ONLY_BLOCKS("replace_only_blocks", AllIcons.I_REPLACE),
-		REPLACE_FILTERED_BY_OFFHAND("replace_filtered_by_offhand", AllIcons.I_REPLACE),
-		TOGGLE_PROTECT_TILE_ENTITIES("toggle_protect_tile_entities", AllIcons.I_REPLACE),
+		REPLACE_ONLY_AIR("replace_only_air", AllIcons.I_REPLACE_AIR),
+		REPLACE_BLOCKS_AND_AIR("replace_blocks_and_air", AllIcons.I_REPLACE_BLOCKS_AND_AIR),
+		REPLACE_ONLY_BLOCKS("replace_only_blocks", AllIcons.I_REPLACE_BLOCKS),
+		REPLACE_FILTERED_BY_OFFHAND("replace_filtered_by_offhand", AllIcons.I_REPLACE_OFFHAND_FILTERED),
+		TOGGLE_PROTECT_TILE_ENTITIES("toggle_protect_tile_entities", AllIcons.I_PROTECT_TILE_ENTITIES),
 
 		NORMAL_SPEED("normal_speed", AllIcons.I_NORMAL_SPEED),
 		FAST_SPEED("fast_speed", AllIcons.I_FAST_SPEED),

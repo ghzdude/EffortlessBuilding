@@ -91,21 +91,21 @@ public class RadialMirror extends BaseModifier {
 		if (angleToCenter < -0.751 * Math.PI || angleToCenter > 0.749 * Math.PI) {
 			blockEntry.rotation = blockEntry.rotation.getRotated(Rotation.CLOCKWISE_180);
 			if (alternate) {
-				blockEntry.mirrorZ = !blockEntry.mirrorZ;
+//				blockEntry.mirrorX = !blockEntry.mirrorX;
 			}
 		} else if (angleToCenter < -0.251 * Math.PI) {
 			blockEntry.rotation = blockEntry.rotation.getRotated(Rotation.CLOCKWISE_90);
 			if (alternate) {
-				blockEntry.mirrorX = !blockEntry.mirrorX;
+//				blockEntry.mirrorZ = !blockEntry.mirrorZ;
 			}
 		} else if (angleToCenter > 0.249 * Math.PI) {
 			blockEntry.rotation = blockEntry.rotation.getRotated(Rotation.COUNTERCLOCKWISE_90);
 			if (alternate) {
-				blockEntry.mirrorX = !blockEntry.mirrorX;
+//				blockEntry.mirrorZ = !blockEntry.mirrorZ;
 			}
 		} else {
 			if (alternate) {
-				blockEntry.mirrorZ = !blockEntry.mirrorZ;
+//				blockEntry.mirrorX = !blockEntry.mirrorX;
 			}
 		}
 	}

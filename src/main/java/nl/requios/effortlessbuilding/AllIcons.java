@@ -26,15 +26,21 @@ public class AllIcons implements ScreenElement {
     private int iconY;
     
     public static final AllIcons
-        I_SETTINGS = newRow(),
-        I_UNDO = next(),
-        I_REDO = next(),
-        I_REPLACE = next();
+    I_SETTINGS = newRow(),
+    I_UNDO = next(),
+    I_REDO = next(),
+    I_REPLACE = next(),
+    I_REPLACE_AIR = next(),
+    I_REPLACE_BLOCKS_AND_AIR = next(),
+    I_REPLACE_BLOCKS = next(),
+    I_REPLACE_OFFHAND_FILTERED = next(),
+    I_PROTECT_TILE_ENTITIES = next();
+
     
     public static final AllIcons
-        I_DISABLE = newRow(),
-        I_SINGLE = next(),
-        I_LINE = next(),
+    I_DISABLE = newRow(),
+    I_SINGLE = next(),
+    I_LINE = next(),
     I_WALL = next(),
     I_FLOOR = next(),
     I_CUBE = next(),
@@ -71,7 +77,15 @@ public class AllIcons implements ScreenElement {
     I_HIDE_LINES = next(),
     I_SHOW_LINES = next(),
     I_HIDE_AREAS = next(),
-    I_SHOW_AREAS = next();
+    I_SHOW_AREAS = next(),
+    I_X_OFF = next(),
+    I_X_ON = next(),
+    I_Y_OFF = next(),
+    I_Y_ON = next(),
+    I_Z_OFF = next(),
+    I_Z_ON = next(),
+    I_ALTERNATE_OFF = next(),
+    I_ALTERNATE_ON = next();
     
     
     public AllIcons(int x, int y) {

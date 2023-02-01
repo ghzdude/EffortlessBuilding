@@ -20,7 +20,7 @@ import java.io.IOException;
 // TODO 1.17: use custom shaders instead of vanilla ones
 public class RenderTypes extends RenderStateShard {
 
-	public static final ShaderStateShard GLOWING_SHADER = new ShaderStateShard(() -> Shaders.glowingShader);
+//	public static final ShaderStateShard GLOWING_SHADER = new ShaderStateShard(() -> Shaders.glowingShader);
 
 	private static final RenderType OUTLINE_SOLID =
 		RenderType.create(createLayerName("outline_solid"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false,
@@ -49,33 +49,33 @@ public class RenderTypes extends RenderStateShard {
 				.createCompositeState(false));
 	}
 
-	public static RenderType getGlowingSolid(ResourceLocation texture) {
-		return RenderType.create(createLayerName("glowing_solid"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256,
-			true, false, RenderType.CompositeState.builder()
-				.setShaderState(GLOWING_SHADER)
-				.setTextureState(new TextureStateShard(texture, false, false))
-				.setCullState(CULL)
-				.setLightmapState(LIGHTMAP)
-				.setOverlayState(OVERLAY)
-				.createCompositeState(true));
-	}
+//	public static RenderType getGlowingSolid(ResourceLocation texture) {
+//		return RenderType.create(createLayerName("glowing_solid"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256,
+//			true, false, RenderType.CompositeState.builder()
+//				.setShaderState(GLOWING_SHADER)
+//				.setTextureState(new TextureStateShard(texture, false, false))
+//				.setCullState(CULL)
+//				.setLightmapState(LIGHTMAP)
+//				.setOverlayState(OVERLAY)
+//				.createCompositeState(true));
+//	}
+//
+//	private static final RenderType GLOWING_SOLID_DEFAULT = getGlowingSolid(InventoryMenu.BLOCK_ATLAS);
+//
+//	public static RenderType getGlowingSolid() {
+//		return GLOWING_SOLID_DEFAULT;
+//	}
 
-	private static final RenderType GLOWING_SOLID_DEFAULT = getGlowingSolid(InventoryMenu.BLOCK_ATLAS);
-
-	public static RenderType getGlowingSolid() {
-		return GLOWING_SOLID_DEFAULT;
-	}
-
-	public static RenderType getGlowingTranslucent(ResourceLocation texture) {
-		return RenderType.create(createLayerName("glowing_translucent"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
-			256, true, true, RenderType.CompositeState.builder()
-				.setShaderState(GLOWING_SHADER)
-				.setTextureState(new TextureStateShard(texture, false, false))
-				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-				.setLightmapState(LIGHTMAP)
-				.setOverlayState(OVERLAY)
-				.createCompositeState(true));
-	}
+//	public static RenderType getGlowingTranslucent(ResourceLocation texture) {
+//		return RenderType.create(createLayerName("glowing_translucent"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
+//			256, true, true, RenderType.CompositeState.builder()
+//				.setShaderState(GLOWING_SHADER)
+//				.setTextureState(new TextureStateShard(texture, false, false))
+//				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+//				.setLightmapState(LIGHTMAP)
+//				.setOverlayState(OVERLAY)
+//				.createCompositeState(true));
+//	}
 
 	private static final RenderType ADDITIVE = RenderType.create(createLayerName("additive"), DefaultVertexFormat.BLOCK,
 		VertexFormat.Mode.QUADS, 256, true, true, RenderType.CompositeState.builder()
@@ -91,11 +91,11 @@ public class RenderTypes extends RenderStateShard {
 		return ADDITIVE;
 	}
 
-	private static final RenderType GLOWING_TRANSLUCENT_DEFAULT = getGlowingTranslucent(InventoryMenu.BLOCK_ATLAS);
+//	private static final RenderType GLOWING_TRANSLUCENT_DEFAULT = getGlowingTranslucent(InventoryMenu.BLOCK_ATLAS);
 
-	public static RenderType getGlowingTranslucent() {
-		return GLOWING_TRANSLUCENT_DEFAULT;
-	}
+//	public static RenderType getGlowingTranslucent() {
+//		return GLOWING_TRANSLUCENT_DEFAULT;
+//	}
 
 	private static final RenderType ITEM_PARTIAL_SOLID =
 		RenderType.create(createLayerName("item_partial_solid"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true,
@@ -146,15 +146,15 @@ public class RenderTypes extends RenderStateShard {
 		super(null, null, null);
 	}
 
-	@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-	private static class Shaders {
-		private static ShaderInstance glowingShader;
-
-		@SubscribeEvent
-		public static void onRegisterShaders(RegisterShadersEvent event) throws IOException {
-			ResourceManager resourceManager = event.getResourceManager();
-			event.registerShader(new ShaderInstance(resourceManager, Create.asResource("glowing_shader"), DefaultVertexFormat.NEW_ENTITY), shader -> glowingShader = shader);
-		}
-	}
+//	@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+//	private static class Shaders {
+//		private static ShaderInstance glowingShader;
+//
+//		@SubscribeEvent
+//		public static void onRegisterShaders(RegisterShadersEvent event) throws IOException {
+//			ResourceManager resourceManager = event.getResourceManager();
+//			event.registerShader(new ShaderInstance(resourceManager, Create.asResource("glowing_shader"), DefaultVertexFormat.NEW_ENTITY), shader -> glowingShader = shader);
+//		}
+//	}
 
 }
