@@ -40,7 +40,7 @@ public class BlockPreviews {
 		if (ClientConfig.visuals.showBlockPreviews.get()) {
 			for (PlacedBlocksEntry placed : placedBlocksList) {
 
-				int totalTime = placed.breaking ? CommonConfig.visuals.breakAnimationLength.get() : CommonConfig.visuals.appearAnimationLength.get();
+				int totalTime = placed.breaking ? ClientConfig.visuals.breakAnimationLength.get() : ClientConfig.visuals.appearAnimationLength.get();
 				if (totalTime <= 0) continue;
 
 				float dissolve = (ClientEvents.ticksInGame - placed.time) / (float) totalTime;
@@ -50,7 +50,7 @@ public class BlockPreviews {
 
 		//Expire
 		placedBlocksList.removeIf(placed -> {
-			int totalTime = placed.breaking ? CommonConfig.visuals.breakAnimationLength.get() : CommonConfig.visuals.appearAnimationLength.get();
+			int totalTime = placed.breaking ? ClientConfig.visuals.breakAnimationLength.get() : ClientConfig.visuals.appearAnimationLength.get();
 			return placed.time + totalTime < ClientEvents.ticksInGame;
 		});
 	}
@@ -228,7 +228,7 @@ public class BlockPreviews {
 
 		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, false, new BlockSet(blocks)));
 
-		CreateClient.OUTLINER.keep(blocks.firstPos, CommonConfig.visuals.appearAnimationLength.get());
+		CreateClient.OUTLINER.keep(blocks.firstPos, ClientConfig.visuals.appearAnimationLength.get());
 	}
 
 	public void onBlocksBroken(BlockSet blocks) {
@@ -237,7 +237,7 @@ public class BlockPreviews {
 
 		placedBlocksList.add(new PlacedBlocksEntry(ClientEvents.ticksInGame, true, new BlockSet(blocks)));
 
-		CreateClient.OUTLINER.keep(blocks.firstPos, CommonConfig.visuals.breakAnimationLength.get());
+		CreateClient.OUTLINER.keep(blocks.firstPos, ClientConfig.visuals.breakAnimationLength.get());
 	}
 
 	private void sortOnDistanceToPlayer(List<BlockPos> coordinates, Player player) {

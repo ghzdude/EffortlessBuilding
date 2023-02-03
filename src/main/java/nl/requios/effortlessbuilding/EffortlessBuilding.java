@@ -74,6 +74,7 @@ public class EffortlessBuilding {
 		//Register config
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.spec);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.spec);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.spec);
 	}
 
 	public static void setup(final FMLCommonSetupEvent event) {

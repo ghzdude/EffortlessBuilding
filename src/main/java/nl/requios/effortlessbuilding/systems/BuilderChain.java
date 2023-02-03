@@ -17,6 +17,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.ClientConfig;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
@@ -87,7 +88,8 @@ public class BuilderChain {
                 player.swing(InteractionHand.MAIN_HAND);
 
                 blocks.skipFirst = buildMode == BuildModeEnum.DISABLED;
-                long placeTime = player.level.getGameTime() + CommonConfig.visuals.appearAnimationLength.get() - 3;
+                long placeTime = player.level.getGameTime();
+                if (blocks.size() > 1) placeTime += ClientConfig.visuals.appearAnimationLength.get();
                 PacketHandler.INSTANCE.sendToServer(new ServerPlaceBlocksPacket(blocks, placeTime));
             }
         }

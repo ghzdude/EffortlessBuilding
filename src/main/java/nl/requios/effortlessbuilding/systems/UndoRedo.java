@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.ServerConfig;
 import nl.requios.effortlessbuilding.utilities.UndoRedoBlockSet;
 import nl.requios.effortlessbuilding.utilities.FixedStack;
 import nl.requios.effortlessbuilding.utilities.InventoryHelper;
@@ -49,7 +50,7 @@ public class UndoRedo {
 
 		//If no stack exists, make one
 		if (!undoStacks.containsKey(player.getUUID())) {
-			undoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
+			undoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[ServerConfig.memory.undoStackSize.get()]));
 		}
 
 		undoStacks.get(player.getUUID()).push(blockSet);
@@ -62,7 +63,7 @@ public class UndoRedo {
 
 		//If no stack exists, make one
 		if (!redoStacks.containsKey(player.getUUID())) {
-			redoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[CommonConfig.survivalBalancers.undoStackSize.get()]));
+			redoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[ServerConfig.memory.undoStackSize.get()]));
 		}
 
 		redoStacks.get(player.getUUID()).push(blockSet);
