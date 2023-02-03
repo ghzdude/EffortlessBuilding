@@ -102,7 +102,9 @@ public class MirrorEntry extends BaseModifierEntry<Mirror> {
 		//Radius
 		radiusInput = new LabeledScrollInput(0, 0, 27, 18)
 			.withRange(0, ReachHelper.getMaxMirrorRadius(Minecraft.getInstance().player))
-			.titled(Component.literal("Radius. Use Reach Upgrade items to increase maximum."))
+			.titled(Minecraft.getInstance().player.isCreative() ?
+					Component.literal("Radius") :
+					Component.literal("Radius. Use Reach Upgrade items to increase maximum."))
 			.calling(value -> {
 				modifier.radius = value;
 				onValueChanged();
@@ -212,21 +214,21 @@ public class MirrorEntry extends BaseModifierEntry<Mirror> {
 		//Show lines button
 		if (modifier.drawLines) {
 			showLinesButton.setIcon(AllIcons.I_SHOW_LINES);
-			showLinesButton.setToolTip(Components.literal("Showing mirror lines"));
+			showLinesButton.setToolTip(Components.literal("Show mirror lines"));
 		}
 		else {
 			showLinesButton.setIcon(AllIcons.I_HIDE_LINES);
-			showLinesButton.setToolTip(Components.literal("Not showing mirror lines"));
+			showLinesButton.setToolTip(Components.literal("Show mirror lines"));
 		}
 		
 		//Show areas button
 		if (modifier.drawPlanes) {
 			showAreasButton.setIcon(AllIcons.I_SHOW_AREAS);
-			showAreasButton.setToolTip(Components.literal("Showing mirror areas"));
+			showAreasButton.setToolTip(Components.literal("Show mirror areas"));
 		}
 		else {
 			showAreasButton.setIcon(AllIcons.I_HIDE_AREAS);
-			showAreasButton.setToolTip(Components.literal("Not showing mirror areas"));
+			showAreasButton.setToolTip(Components.literal("Show mirror areas"));
 		}
 	}
 }

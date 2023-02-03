@@ -15,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -22,6 +23,10 @@ import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
+import nl.requios.effortlessbuilding.create.foundation.item.ItemDescription;
+import nl.requios.effortlessbuilding.create.foundation.item.TooltipHelper;
+import nl.requios.effortlessbuilding.create.foundation.utility.Components;
+import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
 import org.apache.commons.lang3.text.WordUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -39,8 +44,6 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
  * https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java
  */
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class RadialMenu extends Screen {
 
 	public static final RadialMenu instance = new RadialMenu();
@@ -181,7 +184,7 @@ public class RadialMenu extends Screen {
 
 		drawIcons(ms, middleX, middleY, modes, buttons);
 
-		drawTexts(ms, currentBuildMode, middleX, middleY, modes, buttons, options);
+		drawTexts(ms, currentBuildMode, middleX, middleY, modes, buttons, options, mouseXX, mouseYY);
 
 		ms.popPose();
 	}
@@ -311,7 +314,7 @@ public class RadialMenu extends Screen {
 		ms.popPose();
 	}
 
-	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options) {
+	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options, int mouseX, int mouseY) {
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
 
 		//Draw option strings
@@ -352,60 +355,25 @@ public class RadialMenu extends Screen {
 		for (final MenuButton button : buttons) {
 			if (button.highlighted) {
 
-				String text = ChatFormatting.AQUA + button.name;
-				String description = ChatFormatting.WHITE + button.description;
+				var tooltip = new ArrayList<Component>();
+				tooltip.add(Components.literal(button.name).withStyle(ChatFormatting.AQUA));
 
-				//Add keybind in brackets
-				String keybind = findKeybind(button, currentBuildMode);
-				boolean hasKeybind = !keybind.isEmpty();
-				keybind = ChatFormatting.GRAY + "(" + WordUtils.capitalizeFully(keybind) + ")";
-
-				if (button.textSide == Direction.WEST) {
-
-					font.draw(ms, text, (int) (middleX + button.x1 - 8) - font.width(text),
-							(int) (middleY + button.y1 + 6), whiteTextColor);
-
-				} else if (button.textSide == Direction.EAST) {
-
-					font.draw(ms, text, (int) (middleX + button.x2 + 8),
-							(int) (middleY + button.y1 + 6), whiteTextColor);
-
-				} else if (button.textSide == Direction.UP || button.textSide == Direction.NORTH) {
-
-					int y = (int) (middleY + button.y1 - 14);
-					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5), y, whiteTextColor);
-
-					y -= 12;
-					if (hasKeybind) {
-						font.draw(ms, keybind, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybind) * 0.5), y, whiteTextColor);
-						y -= 12;
-					}
-
-					if (!description.isEmpty())
-						font.drawWordWrap(FormattedText.of(description), (int) (middleX + (button.x1 + button.x2) * 0.5 - actionDescriptionWidth * 0.5), y, actionDescriptionWidth, whiteTextColor);
-
-				} else if (button.textSide == Direction.DOWN || button.textSide == Direction.SOUTH) {
-
-					int y = (int) (middleY + button.y1 + 26);
-					font.draw(ms, text, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(text) * 0.5), y, whiteTextColor);
-
-					y += 12;
-					if (hasKeybind) {
-						font.draw(ms, keybind, (int) (middleX + (button.x1 + button.x2) * 0.5 - font.width(keybind) * 0.5), y, whiteTextColor);
-						y += 12;
-					}
-
-					if (!description.isEmpty())
-						font.drawWordWrap(FormattedText.of(description), (int) (middleX + (button.x1 + button.x2) * 0.5 - actionDescriptionWidth * 0.5), y, actionDescriptionWidth, whiteTextColor);
-
+				//Add description when holding shift
+				if (!button.description.isEmpty()) {
+					tooltip.add(TooltipHelper.holdShift(ItemDescription.Palette.Blue, hasShiftDown()));
+					if (hasShiftDown()) tooltip.add(Component.literal(button.description).withStyle(ChatFormatting.GRAY));
 				}
 
+				//Add keybind in brackets
+				var keybind = findKeybind(button);
+				if (keybind != null) tooltip.add(Lang.translateDirect("tooltip.keybind", keybind.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.DARK_GRAY));
+				renderComponentTooltip(ms, tooltip, mouseX, mouseY);
 			}
 		}
 	}
 
-	private String findKeybind(MenuButton button, BuildModeEnum currentBuildMode){
-		String result = "";
+	private MutableComponent findKeybind(MenuButton button){
+
 		int keybindingIndex = -1;
 		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 1;
 		if (button.action == ActionEnum.UNDO) keybindingIndex = 2;
@@ -414,23 +382,9 @@ public class RadialMenu extends Screen {
 		if (keybindingIndex != -1) {
 			KeyMapping keyMap = ClientEvents.keyBindings[keybindingIndex];
 
-			if (!keyMap.getKeyModifier().name().equals("None")) {
-				result = keyMap.getKeyModifier().name() + " ";
-			}
-			result += I18n.get(keyMap.getKey().getName());
+			return Components.keybind(keyMap.getName());
 		}
-
-		if (currentBuildMode.options.length > 0) {
-			//Add (ctrl) to first two actions of first option
-			if (button.action == currentBuildMode.options[0].actions[0]
-				|| button.action == currentBuildMode.options[0].actions[1]) {
-				result = I18n.get(ClientEvents.keyBindings[4].getKey().getDisplayName().getString());
-				if (result.equals("Left Control")) result = "Ctrl";
-			}
-		}
-
-		result = result.replace("Key.keyboard.", "");
-		return result;
+		return null;
 	}
 
 	private boolean inTriangle(final double x1, final double y1, final double x2, final double y2,

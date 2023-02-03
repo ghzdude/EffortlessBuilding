@@ -90,5 +90,11 @@
   "effortlessbuilding.gui.scrollInput.scrollToAdjustAmount": "Scroll to Adjust Amount",
   "effortlessbuilding.gui.scrollInput.scrollToSelect": "Scroll to Select",
   "effortlessbuilding.gui.scrollInput.shiftScrollsFaster": "Shift to Scroll Faster",
-  "effortlessbuilding.gui.scrollInput.controlScrollsSlower": "Control to Scroll Slower"
+  "effortlessbuilding.gui.scrollInput.controlScrollsSlower": "Control to Scroll Slower",
+
+  "effortlessbuilding.tooltip.holdForDescription": "Hold [%1$s] for Summary",
+  "effortlessbuilding.tooltip.holdForControls": "Hold [%1$s] for Controls",
+  "effortlessbuilding.tooltip.keyShift": "Shift",
+  "effortlessbuilding.tooltip.keyCtrl": "Ctrl",
+  "effortlessbuilding.tooltip.keybind": "[%1$s]"
 }
