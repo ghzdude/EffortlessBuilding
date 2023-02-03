@@ -28,11 +28,13 @@ public class ServerBlockPlacer {
     }
     
     public void tick() {
-        for (DelayedEntry entry : delayedEntries) {
+        //Iterator to prevent concurrent modification exception
+        for (var iterator = delayedEntries.iterator(); iterator.hasNext(); ) {
+            DelayedEntry entry = iterator.next();
             long gameTime = entry.player.level.getGameTime();
             if (gameTime >= entry.placeTime) {
                 placeBlocks(entry.player, entry.blocks);
-                delayedEntries.remove(entry);
+                iterator.remove();
             }
         }
     }
@@ -40,35 +42,44 @@ public class ServerBlockPlacer {
     public void placeBlocks(Player player, BlockSet blocks) {
         if (!checkAndNotifyAllowedToUseMod(player)) return;
 //        EffortlessBuilding.log(player, "Placing " + blocks.size() + " blocks");
-        
+
+        var undoSet = new BlockSet();
         for (BlockEntry block : blocks) {
             if (blocks.skipFirst && block.blockPos == blocks.firstPos) continue;
-            placeBlock(player, block);
+            if (placeBlock(player, block)) {
+                undoSet.add(block);
+            }
         }
+        EffortlessBuilding.UNDO_REDO.addUndo(player, undoSet);
     }
     
-    private void placeBlock(Player player, BlockEntry block) {
+    private boolean placeBlock(Player player, BlockEntry block) {
         Level world = player.level;
-        if (!world.isLoaded(block.blockPos)) return;
+        if (!world.isLoaded(block.blockPos)) return false;
 
         isPlacingOrBreakingBlocks = true;
         boolean placedBlock = BlockUtilities.placeBlockEntry(player, block) == InteractionResult.SUCCESS;
         isPlacingOrBreakingBlocks = false;
+        return placedBlock;
     }
     
     public void breakBlocks(Player player, BlockSet blocks) {
         if (!checkAndNotifyAllowedToUseMod(player)) return;
 //        EffortlessBuilding.log(player, "Breaking " + blocks.size() + " blocks");
 
+        var undoSet = new BlockSet();
         for (BlockEntry block : blocks) {
             if (blocks.skipFirst && block.blockPos == blocks.firstPos) continue;
-            breakBlock(player, block);
+            if (breakBlock(player, block)) {
+                undoSet.add(block);
+            }
         }
+        EffortlessBuilding.UNDO_REDO.addUndo(player, undoSet);
     }
     
-    private void breakBlock(Player player, BlockEntry block) {
+    private boolean breakBlock(Player player, BlockEntry block) {
         ServerLevel world = (ServerLevel) player.level;
-        if (!world.isLoaded(block.blockPos) || world.isEmptyBlock(block.blockPos)) return;
+        if (!world.isLoaded(block.blockPos) || world.isEmptyBlock(block.blockPos)) return false;
 
         isPlacingOrBreakingBlocks = true;
         boolean brokeBlock = BlockHelper.destroyBlockAs(world, block.blockPos, player, player.getMainHandItem(), 0f, stack -> {
@@ -77,9 +88,16 @@ public class ServerBlockPlacer {
             }
         });
         isPlacingOrBreakingBlocks = false;
+        return brokeBlock;
     }
 
     public boolean checkAndNotifyAllowedToUseMod(Player player) {
+        //TODO TEMP
+        if (!player.isCreative()) {
+            EffortlessBuilding.log(player, ChatFormatting.RED + "Effortless Building is not yet supported in survival mode.");
+            return false;
+        }
+
         if (!isAllowedToUseMod(player)) {
             EffortlessBuilding.log(player, ChatFormatting.RED + "You are not allowed to use Effortless Building.");
             return false;

@@ -1,7 +1,6 @@
 package nl.requios.effortlessbuilding;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-import nl.requios.effortlessbuilding.create.foundation.render.SuperByteBufferCache;
 
 import static net.minecraftforge.common.ForgeConfigSpec.*;
 

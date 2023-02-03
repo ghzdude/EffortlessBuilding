@@ -19,7 +19,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.ClientConfig;
 import nl.requios.effortlessbuilding.ClientEvents;
-import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
@@ -236,11 +235,6 @@ public class BuilderChain {
             boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
             if (!shouldOffsetStartPosition && !replaceable && !becomesDoubleSlab) {
                 startPos = startPos.relative(lookingAt.getDirection());
-            }
-
-            //Get under tall grass and other replaceable blocks
-            if (shouldOffsetStartPosition && replaceable) {
-                startPos = startPos.below();
             }
 
         } else {

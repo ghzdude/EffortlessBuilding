@@ -103,7 +103,7 @@ public class CommonEvents {
 			return;
 		}
 
-		UndoRedo.clear(player);
+		EffortlessBuilding.UNDO_REDO.clear(player);
 	}
 
 	@SubscribeEvent
@@ -129,7 +129,7 @@ public class CommonEvents {
 		}
 
 		//Undo redo has no dimension data, so clear it
-		UndoRedo.clear(player);
+		EffortlessBuilding.UNDO_REDO.clear(player);
 
 		//TODO disable build mode and modifiers?
 	}

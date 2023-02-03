@@ -81,6 +81,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 
 			blocks.clear();
 			for (BlockPos pos : getIntermediateBlocks(player, x1, y1, z1, x2, y2, z2)) {
+				if (blocks.containsKey(pos)) continue;
 				blocks.add(new BlockEntry(pos));
 			}
 			blocks.firstPos = firstPos;
@@ -116,6 +117,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 
 			blocks.clear();
 			for (BlockPos pos : getFinalBlocks(player, x1, y1, z1, x2, y2, z2, x3, y3, z3)) {
+				if (blocks.containsKey(pos)) continue;
 				blocks.add(new BlockEntry(pos));
 			}
 			blocks.firstPos = firstPos;

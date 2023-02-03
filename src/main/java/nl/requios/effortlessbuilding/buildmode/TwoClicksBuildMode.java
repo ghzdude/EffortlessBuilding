@@ -65,6 +65,7 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
 
 		blocks.clear();
 		for (BlockPos pos : getAllBlocks(player, x1, y1, z1, x2, y2, z2)) {
+			if (blocks.containsKey(pos)) continue;
 			blocks.add(new BlockEntry(pos));
 		}
 		blocks.firstPos = firstPos;

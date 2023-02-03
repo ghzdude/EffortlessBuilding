@@ -9,7 +9,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiEvent;
@@ -28,7 +27,6 @@ public class RenderHandler {
 	@SubscribeEvent
 	public static void onRender(RenderLevelStageEvent event) {
 		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
-
 		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
 		PoseStack ms = event.getPoseStack();
@@ -36,7 +34,7 @@ public class RenderHandler {
 		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(bufferBuilder);
 
 		ms.pushPose();
-		ms.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+		ms.translate(-cameraPos.x(), -cameraPos.y(), -cameraPos.z());
 
 		//Mirror and radial mirror lines and areas
 		ModifierRenderer.render(ms, buffer);

@@ -8,187 +8,234 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.ServerConfig;
-import nl.requios.effortlessbuilding.utilities.UndoRedoBlockSet;
-import nl.requios.effortlessbuilding.utilities.FixedStack;
-import nl.requios.effortlessbuilding.utilities.InventoryHelper;
-import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
+import nl.requios.effortlessbuilding.utilities.*;
 
 import java.util.*;
 
 //Server only
 public class UndoRedo {
 
-	//Undo and redo stacks per player
-	//Gets added to twice in singleplayer (server and client) if not careful. So separate stacks.
-	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacksClient = new HashMap<>();
-	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacksServer = new HashMap<>();
-	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacksClient = new HashMap<>();
-	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacksServer = new HashMap<>();
+	public final Map<UUID, FixedStack<BlockSet>> undoStacks = new HashMap<>();
+	public final Map<UUID, FixedStack<BlockSet>> redoStacks = new HashMap<>();
 
-	//add to undo stack
-	public static void addUndo(Player player, UndoRedoBlockSet blockSet) {
-		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
-
-		//Assert coordinates is as long as previous and new blockstate lists
-		if (blockSet.getCoordinates().size() != blockSet.getPreviousBlockStates().size() ||
-			blockSet.getCoordinates().size() != blockSet.getNewBlockStates().size()) {
-			EffortlessBuilding.logger.error("Coordinates and blockstate lists are not equal length. Coordinates: {}. Previous blockstates: {}. New blockstates: {}.",
-				blockSet.getCoordinates().size(), blockSet.getPreviousBlockStates().size(), blockSet.getNewBlockStates().size());
-		}
-
-		//Warn if previous and new blockstate are equal
-		//Can happen in a lot of valid cases
-//        for (int i = 0; i < blockSet.getCoordinates().size(); i++) {
-//            if (blockSet.getPreviousBlockStates().get(i).equals(blockSet.getNewBlockStates().get(i))) {
-//                EffortlessBuilding.logger.warn("Previous and new blockstates are equal at index {}. Blockstate: {}.",
-//                        i, blockSet.getPreviousBlockStates().get(i));
-//            }
-//        }
+	public void addUndo(Player player, BlockSet blockSet) {
+		if (blockSet.isEmpty()) return;
 
 		//If no stack exists, make one
 		if (!undoStacks.containsKey(player.getUUID())) {
-			undoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[ServerConfig.memory.undoStackSize.get()]));
+			undoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[ServerConfig.memory.undoStackSize.get()]));
 		}
 
 		undoStacks.get(player.getUUID()).push(blockSet);
 	}
 
-	private static void addRedo(Player player, UndoRedoBlockSet blockSet) {
-		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
-
-		//(No asserts necessary, it's private)
+	private void addRedo(Player player, BlockSet blockSet) {
+		if (blockSet.isEmpty()) return;
 
 		//If no stack exists, make one
 		if (!redoStacks.containsKey(player.getUUID())) {
-			redoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[ServerConfig.memory.undoStackSize.get()]));
+			redoStacks.put(player.getUUID(), new FixedStack<>(new BlockSet[ServerConfig.memory.undoStackSize.get()]));
 		}
 
 		redoStacks.get(player.getUUID()).push(blockSet);
 	}
 
-	public static boolean undo(Player player) {
-		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
-
+	public boolean undo(Player player) {
 		if (!undoStacks.containsKey(player.getUUID())) return false;
 
-		FixedStack<UndoRedoBlockSet> undoStack = undoStacks.get(player.getUUID());
-
+		FixedStack<BlockSet> undoStack = undoStacks.get(player.getUUID());
 		if (undoStack.isEmpty()) return false;
 
-		UndoRedoBlockSet blockSet = undoStack.pop();
-		List<BlockPos> coordinates = blockSet.getCoordinates();
-		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
-		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
+		BlockSet blockSet = undoStack.pop();
+//		blockSet.undo(player.level);
 
-		//Find up to date itemstacks in player inventory
-		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
-
-		if (player.level.isClientSide) {
-//			BlockPreviews.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
-		} else {
-			//break all those blocks, reset to what they were
-			for (int i = 0; i < coordinates.size(); i++) {
-				BlockPos coordinate = coordinates.get(i);
-				ItemStack itemStack = itemStacks.get(i);
-
-				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
-
-				//get blockstate from itemstack
-				BlockState previousBlockState = previousBlockStates.get(i);
-				if (itemStack.getItem() instanceof BlockItem) {
-					previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
-				}
-
-				if (player.level.isLoaded(coordinate)) {
-					//check itemstack empty
-					if (itemStack.isEmpty() && !player.isCreative()) {
-						itemStack = findItemStackInInventory(player, previousBlockStates.get(i));
-						//get blockstate from new itemstack
-						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {
-							previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
-						} else {
-							if (previousBlockStates.get(i).getBlock() != Blocks.AIR)
-								EffortlessBuilding.logTranslate(player, "", previousBlockStates.get(i).getBlock().getDescriptionId(), " not found in inventory", true);
-							previousBlockState = Blocks.AIR.defaultBlockState();
-						}
-					}
-					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
-					//if previousBlockState is air, placeBlock will set it to air
-					SurvivalHelper.placeBlock(player.level, player, coordinate, previousBlockState, itemStack, true, false, false);
-				}
-			}
-		}
-
-		//add to redo
-		addRedo(player, blockSet);
+		BlockSet redoSet = new BlockSet();
+		addRedo(player, redoSet);
 
 		return true;
 	}
 
-	public static boolean redo(Player player) {
-		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
-
+	public boolean redo(Player player) {
 		if (!redoStacks.containsKey(player.getUUID())) return false;
 
-		FixedStack<UndoRedoBlockSet> redoStack = redoStacks.get(player.getUUID());
-
+		FixedStack<BlockSet> redoStack = redoStacks.get(player.getUUID());
 		if (redoStack.isEmpty()) return false;
 
-		UndoRedoBlockSet blockSet = redoStack.pop();
-		List<BlockPos> coordinates = blockSet.getCoordinates();
-		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
-		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
-
-		//Find up to date itemstacks in player inventory
-		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
-
-		if (player.level.isClientSide) {
-//			BlockPreviews.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
-		} else {
-			//place blocks
-			for (int i = 0; i < coordinates.size(); i++) {
-				BlockPos coordinate = coordinates.get(i);
-				ItemStack itemStack = itemStacks.get(i);
-
-				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
-
-				//get blockstate from itemstack
-				BlockState newBlockState = newBlockStates.get(i);
-				if (itemStack.getItem() instanceof BlockItem) {
-					newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
-				}
-
-				if (player.level.isLoaded(coordinate)) {
-					//check itemstack empty
-					if (itemStack.isEmpty() && !player.isCreative()) {
-						itemStack = findItemStackInInventory(player, newBlockStates.get(i));
-						//get blockstate from new itemstack
-						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {
-							newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
-						} else {
-							if (newBlockStates.get(i).getBlock() != Blocks.AIR)
-								EffortlessBuilding.logTranslate(player, "", newBlockStates.get(i).getBlock().getDescriptionId(), " not found in inventory", true);
-							newBlockState = Blocks.AIR.defaultBlockState();
-						}
-					}
-					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
-					SurvivalHelper.placeBlock(player.level, player, coordinate, newBlockState, itemStack, true, false, false);
-				}
-			}
-		}
-
-		//add to undo
+		BlockSet blockSet = redoStack.pop();
+//		blockSet.redo(player.level);
 		addUndo(player, blockSet);
 
 		return true;
 	}
 
-	public static void clear(Player player) {
-		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
-		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+	//Undo and redo stacks per player
+	//Gets added to twice in singleplayer (server and client) if not careful. So separate stacks.
+//	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacksClient = new HashMap<>();
+//	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacksServer = new HashMap<>();
+//	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacksClient = new HashMap<>();
+//	private static final Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacksServer = new HashMap<>();
+//
+//	//add to undo stack
+//	public static void addUndo(Player player, UndoRedoBlockSet blockSet) {
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+//
+//		//Assert coordinates is as long as previous and new blockstate lists
+//		if (blockSet.getCoordinates().size() != blockSet.getPreviousBlockStates().size() ||
+//			blockSet.getCoordinates().size() != blockSet.getNewBlockStates().size()) {
+//			EffortlessBuilding.logger.error("Coordinates and blockstate lists are not equal length. Coordinates: {}. Previous blockstates: {}. New blockstates: {}.",
+//				blockSet.getCoordinates().size(), blockSet.getPreviousBlockStates().size(), blockSet.getNewBlockStates().size());
+//		}
+//
+//		//Warn if previous and new blockstate are equal
+//		//Can happen in a lot of valid cases
+////        for (int i = 0; i < blockSet.getCoordinates().size(); i++) {
+////            if (blockSet.getPreviousBlockStates().get(i).equals(blockSet.getNewBlockStates().get(i))) {
+////                EffortlessBuilding.logger.warn("Previous and new blockstates are equal at index {}. Blockstate: {}.",
+////                        i, blockSet.getPreviousBlockStates().get(i));
+////            }
+////        }
+//
+//		//If no stack exists, make one
+//		if (!undoStacks.containsKey(player.getUUID())) {
+//			undoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[ServerConfig.memory.undoStackSize.get()]));
+//		}
+//
+//		undoStacks.get(player.getUUID()).push(blockSet);
+//	}
+//
+//	private static void addRedo(Player player, UndoRedoBlockSet blockSet) {
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+//
+//		//(No asserts necessary, it's private)
+//
+//		//If no stack exists, make one
+//		if (!redoStacks.containsKey(player.getUUID())) {
+//			redoStacks.put(player.getUUID(), new FixedStack<>(new UndoRedoBlockSet[ServerConfig.memory.undoStackSize.get()]));
+//		}
+//
+//		redoStacks.get(player.getUUID()).push(blockSet);
+//	}
+//
+//	public static boolean undo(Player player) {
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+//
+//		if (!undoStacks.containsKey(player.getUUID())) return false;
+//
+//		FixedStack<UndoRedoBlockSet> undoStack = undoStacks.get(player.getUUID());
+//
+//		if (undoStack.isEmpty()) return false;
+//
+//		UndoRedoBlockSet blockSet = undoStack.pop();
+//		List<BlockPos> coordinates = blockSet.getCoordinates();
+//		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
+//		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
+//
+//		//Find up to date itemstacks in player inventory
+//		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
+//
+//		if (player.level.isClientSide) {
+////			BlockPreviews.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
+//		} else {
+//			//break all those blocks, reset to what they were
+//			for (int i = 0; i < coordinates.size(); i++) {
+//				BlockPos coordinate = coordinates.get(i);
+//				ItemStack itemStack = itemStacks.get(i);
+//
+//				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
+//
+//				//get blockstate from itemstack
+//				BlockState previousBlockState = previousBlockStates.get(i);
+//				if (itemStack.getItem() instanceof BlockItem) {
+//					previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
+//				}
+//
+//				if (player.level.isLoaded(coordinate)) {
+//					//check itemstack empty
+//					if (itemStack.isEmpty() && !player.isCreative()) {
+//						itemStack = findItemStackInInventory(player, previousBlockStates.get(i));
+//						//get blockstate from new itemstack
+//						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {
+//							previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
+//						} else {
+//							if (previousBlockStates.get(i).getBlock() != Blocks.AIR)
+//								EffortlessBuilding.logTranslate(player, "", previousBlockStates.get(i).getBlock().getDescriptionId(), " not found in inventory", true);
+//							previousBlockState = Blocks.AIR.defaultBlockState();
+//						}
+//					}
+//					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
+//					//if previousBlockState is air, placeBlock will set it to air
+//					SurvivalHelper.placeBlock(player.level, player, coordinate, previousBlockState, itemStack, true, false, false);
+//				}
+//			}
+//		}
+//
+//		//add to redo
+//		addRedo(player, blockSet);
+//
+//		return true;
+//	}
+//
+//	public static boolean redo(Player player) {
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+//
+//		if (!redoStacks.containsKey(player.getUUID())) return false;
+//
+//		FixedStack<UndoRedoBlockSet> redoStack = redoStacks.get(player.getUUID());
+//
+//		if (redoStack.isEmpty()) return false;
+//
+//		UndoRedoBlockSet blockSet = redoStack.pop();
+//		List<BlockPos> coordinates = blockSet.getCoordinates();
+//		List<BlockState> previousBlockStates = blockSet.getPreviousBlockStates();
+//		List<BlockState> newBlockStates = blockSet.getNewBlockStates();
+//
+//		//Find up to date itemstacks in player inventory
+//		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
+//
+//		if (player.level.isClientSide) {
+////			BlockPreviews.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
+//		} else {
+//			//place blocks
+//			for (int i = 0; i < coordinates.size(); i++) {
+//				BlockPos coordinate = coordinates.get(i);
+//				ItemStack itemStack = itemStacks.get(i);
+//
+//				if (previousBlockStates.get(i).equals(newBlockStates.get(i))) continue;
+//
+//				//get blockstate from itemstack
+//				BlockState newBlockState = newBlockStates.get(i);
+//				if (itemStack.getItem() instanceof BlockItem) {
+//					newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
+//				}
+//
+//				if (player.level.isLoaded(coordinate)) {
+//					//check itemstack empty
+//					if (itemStack.isEmpty() && !player.isCreative()) {
+//						itemStack = findItemStackInInventory(player, newBlockStates.get(i));
+//						//get blockstate from new itemstack
+//						if (!itemStack.isEmpty() && itemStack.getItem() instanceof BlockItem) {
+//							newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
+//						} else {
+//							if (newBlockStates.get(i).getBlock() != Blocks.AIR)
+//								EffortlessBuilding.logTranslate(player, "", newBlockStates.get(i).getBlock().getDescriptionId(), " not found in inventory", true);
+//							newBlockState = Blocks.AIR.defaultBlockState();
+//						}
+//					}
+//					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
+//					SurvivalHelper.placeBlock(player.level, player, coordinate, newBlockState, itemStack, true, false, false);
+//				}
+//			}
+//		}
+//
+//		//add to undo
+//		addUndo(player, blockSet);
+//
+//		return true;
+//	}
+
+	public void clear(Player player) {
 		if (undoStacks.containsKey(player.getUUID())) {
 			undoStacks.get(player.getUUID()).clear();
 		}
@@ -197,7 +244,7 @@ public class UndoRedo {
 		}
 	}
 
-	private static List<ItemStack> findItemStacksInInventory(Player player, List<BlockState> blockStates) {
+	private List<ItemStack> findItemStacksInInventory(Player player, List<BlockState> blockStates) {
 		List<ItemStack> itemStacks = new ArrayList<>(blockStates.size());
 		for (BlockState blockState : blockStates) {
 			itemStacks.add(findItemStackInInventory(player, blockState));
@@ -205,7 +252,7 @@ public class UndoRedo {
 		return itemStacks;
 	}
 
-	private static ItemStack findItemStackInInventory(Player player, BlockState blockState) {
+	private ItemStack findItemStackInInventory(Player player, BlockState blockState) {
 		ItemStack itemStack = ItemStack.EMPTY;
 		if (blockState == null) return itemStack;
 

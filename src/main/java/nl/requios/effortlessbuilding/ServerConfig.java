@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,7 +44,7 @@ public class ServerConfig {
             builder.push("Memory");
 
             undoStackSize = builder
-                    .comment("How many placements are remembered for the undo functionality.")
+                    .comment("How many sets of blocks are remembered for the undo functionality, per player.")
                     .worldRestart()
                     .defineInRange("undoStackSize", 50, 10, 200);
 

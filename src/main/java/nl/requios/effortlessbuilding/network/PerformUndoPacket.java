@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
+import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
 
 import java.util.function.Supplier;
@@ -19,7 +20,7 @@ public class PerformUndoPacket {
 	public static class Handler {
 		public static void handle(PerformUndoPacket message, Supplier<NetworkEvent.Context> ctx) {
 			ctx.get().enqueueWork(() -> {
-				UndoRedo.undo(ctx.get().getSender());
+				EffortlessBuilding.UNDO_REDO.undo(ctx.get().getSender());
 			});
 			ctx.get().setPacketHandled(true);
 		}
