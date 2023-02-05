@@ -31,7 +31,7 @@ public class ClientConfig {
 			maxBlockPreviews = builder
 				.comment("Don't show block previews when placing more than this many blocks. " +
 						 "The outline will always be rendered.")
-				.defineInRange("maxBlockPreviews", 500, 0, 5000);
+				.defineInRange("maxBlockPreviews", 400, 0, 5000);
 
 			appearAnimationLength = builder
 					.comment("How long it takes for a block to appear when placed in ticks.",

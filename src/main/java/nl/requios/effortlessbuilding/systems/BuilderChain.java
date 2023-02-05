@@ -262,6 +262,7 @@ public class BuilderChain {
         var clickedFace = lookingAt.getDirection();
         Vec3 relativeHitVec = lookingAt.getLocation().subtract(Vec3.atLowerCornerOf(lookingAt.getBlockPos()));
 
+        //TODO keep track of count and find different itemstack if necessary
         if (itemStack.getItem() instanceof BlockItem) {
 
             for (BlockEntry blockEntry : blocks) {

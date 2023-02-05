@@ -34,6 +34,10 @@ import java.util.List;
 //Common
 public class BlockUtilities {
 
+    public static boolean isNullOrAir(BlockState blockState) {
+        return blockState == null || blockState.isAir();
+    }
+
     @Deprecated //Use BlockEntry.setItemStackAndFindNewBlockState instead
     public static BlockState getBlockState(Player player, InteractionHand hand, ItemStack blockItemStack, BlockEntry blockEntry, Vec3 relativeHitVec, Direction sideHit) {
         Block block = Block.byItem(blockItemStack.getItem());
@@ -58,98 +62,6 @@ public class BlockUtilities {
             }
         }
         return result;
-    }
-
-    //ForgeHooks::onPlaceItemIntoWorld
-    public static InteractionResult placeBlockEntry(Player player, BlockEntry block) {
-        ItemStack itemstack = block.itemStack;
-        Level level = player.level;
-
-        if (player != null && !player.getAbilities().mayBuild && !itemstack.hasAdventureModePlaceTagForBlock(level.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), new BlockInWorld(level, block.blockPos, false)))
-            return InteractionResult.PASS;
-
-        // handle all placement events here
-        Item item = itemstack.getItem();
-        int size = itemstack.getCount();
-        CompoundTag nbt = null;
-        if (itemstack.getTag() != null)
-            nbt = itemstack.getTag().copy();
-
-        if (!(itemstack.getItem() instanceof BucketItem)) // if not bucket
-            level.captureBlockSnapshots = true;
-
-        ItemStack copy = itemstack.copy();
-        ////
-        BlockHelper.placeSchematicBlock(level, player, block.newBlockState, block.blockPos, block.itemStack, null);
-        ////
-        InteractionResult ret = InteractionResult.SUCCESS;
-        if (itemstack.isEmpty())
-            ForgeEventFactory.onPlayerDestroyItem(player, copy, InteractionHand.MAIN_HAND);
-
-        level.captureBlockSnapshots = false;
-
-        if (ret.consumesAction())
-        {
-            // save new item data
-            int newSize = itemstack.getCount();
-            CompoundTag newNBT = null;
-            if (itemstack.getTag() != null)
-            {
-                newNBT = itemstack.getTag().copy();
-            }
-            @SuppressWarnings("unchecked")
-            List<BlockSnapshot> blockSnapshots = (List<BlockSnapshot>)level.capturedBlockSnapshots.clone();
-            level.capturedBlockSnapshots.clear();
-
-            // make sure to set pre-placement item data for event
-            itemstack.setCount(size);
-            itemstack.setTag(nbt);
-
-            Direction side = Direction.UP;
-
-            boolean eventResult = false;
-            if (blockSnapshots.size() > 1)
-            {
-                eventResult = ForgeEventFactory.onMultiBlockPlace(player, blockSnapshots, side);
-            }
-            else if (blockSnapshots.size() == 1)
-            {
-                eventResult = ForgeEventFactory.onBlockPlace(player, blockSnapshots.get(0), side);
-            }
-
-            if (eventResult)
-            {
-                ret = InteractionResult.FAIL; // cancel placement
-                // revert back all captured blocks
-                for (BlockSnapshot blocksnapshot : Lists.reverse(blockSnapshots))
-                {
-                    level.restoringBlockSnapshots = true;
-                    blocksnapshot.restore(true, false);
-                    level.restoringBlockSnapshots = false;
-                }
-            }
-            else
-            {
-                // Change the stack to its new content
-                itemstack.setCount(newSize);
-                itemstack.setTag(newNBT);
-
-                for (BlockSnapshot snap : blockSnapshots)
-                {
-                    int updateFlag = snap.getFlag();
-                    BlockState oldBlock = snap.getReplacedBlock();
-                    BlockState newBlock = level.getBlockState(snap.getPos());
-                    newBlock.onPlace(level, snap.getPos(), oldBlock, false);
-
-                    level.markAndNotifyBlock(snap.getPos(), level.getChunkAt(snap.getPos()), oldBlock, newBlock, updateFlag, 512);
-                }
-                if (player != null)
-                    player.awardStat(Stats.ITEM_USED.get(item));
-            }
-        }
-        level.capturedBlockSnapshots.clear();
-
-        return ret;
     }
 
     public static void playSoundIfFurtherThanNormal(Player player, BlockEntry blockEntry, boolean breaking) {

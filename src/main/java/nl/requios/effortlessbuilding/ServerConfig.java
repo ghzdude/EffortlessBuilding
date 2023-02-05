@@ -17,6 +17,7 @@ public class ServerConfig {
         public final BooleanValue allowInSurvival;
         public final BooleanValue useWhitelist;
         public final ConfigValue<List<? extends String>> whitelist;
+        public final IntValue maxBlocksPlacedAtOnce;
 
         public Validation(Builder builder) {
             builder.push("Validation");
@@ -32,6 +33,10 @@ public class ServerConfig {
             whitelist = builder
                     .comment("List of player names that can use the mod.")
                     .defineList("whitelist", Arrays.asList("Player1", "Player2"), o -> true);
+
+            maxBlocksPlacedAtOnce = builder
+                    .comment("Maximum number of blocks that can be placed at once.")
+                    .defineInRange("maxBlocksPlacedAtOnce", 1000, 1, 10000);
 
             builder.pop();
         }

@@ -31,7 +31,7 @@ public class UndoRedo {
 		undoStacks.get(player.getUUID()).push(blockSet);
 	}
 
-	private void addRedo(Player player, BlockSet blockSet) {
+	public void addRedo(Player player, BlockSet blockSet) {
 		if (blockSet.isEmpty()) return;
 
 		//If no stack exists, make one
@@ -49,10 +49,7 @@ public class UndoRedo {
 		if (undoStack.isEmpty()) return false;
 
 		BlockSet blockSet = undoStack.pop();
-//		blockSet.undo(player.level);
-
-		BlockSet redoSet = new BlockSet();
-		addRedo(player, redoSet);
+		EffortlessBuilding.SERVER_BLOCK_PLACER.undoBlockSet(player, blockSet);
 
 		return true;
 	}
@@ -64,8 +61,7 @@ public class UndoRedo {
 		if (redoStack.isEmpty()) return false;
 
 		BlockSet blockSet = redoStack.pop();
-//		blockSet.redo(player.level);
-		addUndo(player, blockSet);
+		EffortlessBuilding.SERVER_BLOCK_PLACER.applyBlockSet(player, blockSet);
 
 		return true;
 	}
