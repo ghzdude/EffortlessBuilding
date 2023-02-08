@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.systems;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
@@ -8,6 +9,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.common.util.BlockSnapshot;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.ServerConfig;
 import nl.requios.effortlessbuilding.utilities.*;
@@ -17,11 +19,27 @@ import java.util.*;
 //Server only
 public class UndoRedo {
 
+	public class UndoSet {
+		public final List<BlockSnapshot> blockSnapshots;
+
+		public UndoSet(List<BlockSnapshot> blockSnapshots) {
+			this.blockSnapshots = blockSnapshots;
+		}
+	}
+
 	public final Map<UUID, FixedStack<BlockSet>> undoStacks = new HashMap<>();
 	public final Map<UUID, FixedStack<BlockSet>> redoStacks = new HashMap<>();
 
+	private boolean isAllowedToUndo(Player player) {
+		if (!player.isCreative()) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public void addUndo(Player player, BlockSet blockSet) {
-		if (blockSet.isEmpty()) return;
+		if (blockSet.isEmpty() || !isAllowedToUndo(player)) return;
 
 		//If no stack exists, make one
 		if (!undoStacks.containsKey(player.getUUID())) {
@@ -32,7 +50,7 @@ public class UndoRedo {
 	}
 
 	public void addRedo(Player player, BlockSet blockSet) {
-		if (blockSet.isEmpty()) return;
+		if (blockSet.isEmpty() || !isAllowedToUndo(player)) return;
 
 		//If no stack exists, make one
 		if (!redoStacks.containsKey(player.getUUID())) {
@@ -43,6 +61,11 @@ public class UndoRedo {
 	}
 
 	public boolean undo(Player player) {
+		if (!isAllowedToUndo(player)) {
+			EffortlessBuilding.log(player, ChatFormatting.RED + "You are not allowed to undo.");
+			return false;
+		}
+
 		if (!undoStacks.containsKey(player.getUUID())) return false;
 
 		FixedStack<BlockSet> undoStack = undoStacks.get(player.getUUID());
@@ -55,6 +78,11 @@ public class UndoRedo {
 	}
 
 	public boolean redo(Player player) {
+		if (!isAllowedToUndo(player)) {
+			EffortlessBuilding.log(player, ChatFormatting.RED + "You are not allowed to undo.");
+			return false;
+		}
+
 		if (!redoStacks.containsKey(player.getUUID())) return false;
 
 		FixedStack<BlockSet> redoStack = redoStacks.get(player.getUUID());

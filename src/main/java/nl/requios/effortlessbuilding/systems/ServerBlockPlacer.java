@@ -66,11 +66,12 @@ public class ServerBlockPlacer {
                 undoSet.add(block);
             }
         }
-        EffortlessBuilding.UNDO_REDO.addUndo(player, undoSet);
+        if (isAllowedToUndo(player, false))
+            EffortlessBuilding.UNDO_REDO.addUndo(player, undoSet);
     }
 
     public void undoBlockSet(Player player, BlockSet blocks) {
-        if (!isAllowedToUndo(player)) return;
+        if (!isAllowedToUndo(player, true)) return;
 
         var redoSet = new BlockSet();
         for (BlockEntry block : blocks) {
@@ -100,25 +101,27 @@ public class ServerBlockPlacer {
     }
 
     private boolean undoBlockEntry(Player player, BlockEntry block) {
-        //Update newBlockState for future redo's
-        block.newBlockState = player.level.getBlockState(block.blockPos);
         boolean breaking = BlockUtilities.isNullOrAir(block.existingBlockState);
 
         var tempBlockEntry = new BlockEntry(block.blockPos);
-        var newBlockState = block.existingBlockState;
+        var temp = block.existingBlockState;
         tempBlockEntry.existingBlockState = block.newBlockState;
-        tempBlockEntry.newBlockState = newBlockState;
+        tempBlockEntry.newBlockState = temp;
 
         if (!validateBlockEntry(player, tempBlockEntry, breaking)) return false;
+
+        //Update newBlockState for future redo's
+        block.newBlockState = player.level.getBlockState(block.blockPos);
 
         boolean success;
         isPlacingOrBreakingBlocks = true;
         if (breaking) {
-            success = BlockPlacerHelper.placeBlock(player, tempBlockEntry);
-        } else {
             success = BlockPlacerHelper.breakBlock(player, tempBlockEntry);
+        } else {
+            success = BlockPlacerHelper.placeBlock(player, tempBlockEntry);
         }
         isPlacingOrBreakingBlocks = false;
+
         return success;
     }
 
@@ -151,9 +154,9 @@ public class ServerBlockPlacer {
         return true;
     }
 
-    private boolean isAllowedToUndo(Player player) {
+    private boolean isAllowedToUndo(Player player, boolean log) {
         if (!player.isCreative()) {
-            EffortlessBuilding.log(player, ChatFormatting.RED + "Undo is not supported in survival mode.");
+            if (log) EffortlessBuilding.log(player, ChatFormatting.RED + "Undo is not supported in survival mode.");
             return false;
         }
 
@@ -161,15 +164,30 @@ public class ServerBlockPlacer {
     }
 
     private boolean validateBlockSet(Player player, BlockSet blocks) {
+        if (blocks.isEmpty()) {
+            EffortlessBuilding.log(player, ChatFormatting.RED + "No blocks to place.");
+            return false;
+        }
+        if (blocks.skipFirst && blocks.size() == 1 && blocks.iterator().next().blockPos == blocks.firstPos) {
+            EffortlessBuilding.log(player, ChatFormatting.RED + "No blocks to place because the first block was skipped.");
+            return false;
+        }
         if (blocks.size() > ServerConfig.validation.maxBlocksPlacedAtOnce.get()) {
             EffortlessBuilding.log(player, ChatFormatting.RED + "Too many blocks to place. Max: " + ServerConfig.validation.maxBlocksPlacedAtOnce.get());
             return false;
         }
 
         //Dont allow mixing breaking and placing blocks
-        //TODO fix if skipping first block
-        boolean breaking = blocks.getFirstBlockEntry().newBlockState == null || blocks.getFirstBlockEntry().newBlockState.isAir();
-        for (var iterator = blocks.iterator(); iterator.hasNext(); ) {
+        //First determine if we are breaking or placing
+        var iterator = blocks.iterator();
+        //Get any block from the set, skip first if we have to
+        var anyBlock = iterator.next();
+        if (blocks.skipFirst && anyBlock.blockPos == blocks.firstPos) {
+            anyBlock = iterator.next();
+        }
+        boolean breaking = anyBlock.newBlockState == null || anyBlock.newBlockState.isAir();
+
+        while (iterator.hasNext()) {
             var block = iterator.next();
             if (block.newBlockState == null || block.newBlockState.isAir()) {
                 if (!breaking) {
@@ -183,6 +201,7 @@ public class ServerBlockPlacer {
                 }
             }
         }
+
         return true;
     }
 

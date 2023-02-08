@@ -51,9 +51,14 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
 
     public void add(BlockEntry blockEntry) {
         if (!containsKey(blockEntry.blockPos)) {
-            if (!DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> ClientSide.isFull(this))) {
+            //check if we are clientside
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                if (!ClientSide.isFull(this))
+                    put(blockEntry.blockPos, blockEntry);
+            });
+            DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
                 put(blockEntry.blockPos, blockEntry);
-            }
+            });
         } else {
             if (logging) EffortlessBuilding.log("BlockSet already contains block at " + blockEntry.blockPos);
         }

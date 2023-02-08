@@ -47,7 +47,6 @@ public class BlockPlacerHelper {
             return placeBlockWithoutItem(player, blockEntry);
         } else {
             var interactionResult = placeItem(player, blockEntry);
-            interactionResult.shouldSwing()
             return interactionResult == InteractionResult.SUCCESS;
         }
     }
@@ -106,10 +105,7 @@ public class BlockPlacerHelper {
         ItemStack itemstack = block.itemStack;
         Level level = player.level;
 
-        if (player != null && !player.getAbilities().mayBuild)
-            return InteractionResult.PASS;
-
-        if (itemstack != null && !itemstack.hasAdventureModePlaceTagForBlock(level.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), new BlockInWorld(level, block.blockPos, false)))
+        if (player != null && !player.getAbilities().mayBuild && !itemstack.hasAdventureModePlaceTagForBlock(level.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), new BlockInWorld(level, block.blockPos, false)))
             return InteractionResult.PASS;
 
         // handle all placement events here
