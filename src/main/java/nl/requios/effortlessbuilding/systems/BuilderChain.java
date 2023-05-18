@@ -65,6 +65,7 @@ public class BuilderChain {
     private AbilitiesState abilitiesState = AbilitiesState.CAN_PLACE_AND_BREAK;
 
     public void onRightClick() {
+
         if (abilitiesState != AbilitiesState.CAN_PLACE_AND_BREAK || buildingState == BuildingState.BREAKING) {
             cancel();
             return;
@@ -95,6 +96,7 @@ public class BuilderChain {
     }
 
     public void onLeftClick() {
+
         if (abilitiesState == AbilitiesState.NONE || buildingState == BuildingState.PLACING) {
             cancel();
             return;
@@ -109,9 +111,9 @@ public class BuilderChain {
             //Use new start position for breaking, because we assumed the player was gonna place
             blocks.setStartPos(new BlockEntry(startPosForBreaking));
             EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player);
-            BuilderFilter.filterOnCoordinates(blocks, player);
+            EffortlessBuildingClient.BUILDER_FILTER.filterOnCoordinates(blocks, player);
             findExistingBlockStates(player.level);
-            BuilderFilter.filterOnExistingBlockStates(blocks, player);
+            EffortlessBuildingClient.BUILDER_FILTER.filterOnExistingBlockStates(blocks, player);
         }
 
         var buildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
@@ -131,6 +133,7 @@ public class BuilderChain {
     }
 
     public void onTick() {
+
         var previousCoordinates = new HashSet<>(blocks.getCoordinates());
         blocks.clear();
         startPosForPlacing = null;
@@ -160,7 +163,7 @@ public class BuilderChain {
 
         EffortlessBuildingClient.BUILD_MODES.findCoordinates(blocks, player);
         EffortlessBuildingClient.BUILD_MODIFIERS.findCoordinates(blocks, player);
-        BuilderFilter.filterOnCoordinates(blocks, player);
+        EffortlessBuildingClient.BUILDER_FILTER.filterOnCoordinates(blocks, player);
 
         if (buildMode == BuildModeEnum.DISABLED && blocks.size() <= 1) {
             abilitiesState = AbilitiesState.NONE;
@@ -168,18 +171,17 @@ public class BuilderChain {
         }
 
         findExistingBlockStates(world);
-        BuilderFilter.filterOnExistingBlockStates(blocks, player);
+        EffortlessBuildingClient.BUILDER_FILTER.filterOnExistingBlockStates(blocks, player);
 
-        var itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        findNewBlockStates(player, itemStack);
-        BuilderFilter.filterOnNewBlockStates(blocks, player);
+        var heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        findNewBlockStates(player, heldItem); //includes filtering on new blockstates
 
         //Check if any changes are made
-        if (previousHeldItem != itemStack.getItem() || !previousCoordinates.equals(blocks.getCoordinates())) {
+        if (previousHeldItem != heldItem.getItem() || !previousCoordinates.equals(blocks.getCoordinates())) {
             onBlocksChanged(player);
         }
 
-        previousHeldItem = itemStack.getItem();
+        previousHeldItem = heldItem.getItem();
     }
 
     //Whether we can place or break blocks, determined by what we are looking at and what we are holding
@@ -222,9 +224,6 @@ public class BuilderChain {
         if (player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
 
         startPosForBreaking = startPos;
-        if (!shouldLookAtNear && !ReachHelper.canBreakFar(player)) {
-            startPosForBreaking = null;
-        }
 
         if (abilitiesState == AbilitiesState.CAN_PLACE_AND_BREAK) {
             //Calculate start position for placing
@@ -241,7 +240,7 @@ public class BuilderChain {
             //We can only break
 
             //Do not break far if we are not allowed to
-            if (startPosForBreaking == null) return null;
+            if (!shouldLookAtNear && !ReachHelper.canBreakFar(player)) return null;
         }
 
         var blockEntry = new BlockEntry(startPos);
@@ -255,29 +254,54 @@ public class BuilderChain {
         }
     }
 
-    private void findNewBlockStates(Player player, ItemStack itemStack) {
+    private void findNewBlockStates(Player player, ItemStack heldItem) {
         if (buildingState == BuildingState.BREAKING) return;
 
         var originalDirection = player.getDirection();
         var clickedFace = lookingAt.getDirection();
         Vec3 relativeHitVec = lookingAt.getLocation().subtract(Vec3.atLowerCornerOf(lookingAt.getBlockPos()));
 
-        //TODO keep track of count and find different itemstack if necessary
-        if (itemStack.getItem() instanceof BlockItem) {
+        //Keep track of itemstack usage
+        EffortlessBuildingClient.ITEM_USAGE_TRACKER.initialize(player, heldItem);
 
-            for (BlockEntry blockEntry : blocks) {
-                blockEntry.setItemStackAndFindNewBlockState(itemStack, player.level, originalDirection, clickedFace, relativeHitVec);
+        var iter = blocks.entrySet().iterator();
+        while (iter.hasNext()) {
+            var blockEntry = iter.next().getValue();
+
+            //Determine itemstack
+            ItemStack itemStack = determineItemStack(player, heldItem);
+            if (itemStack == null || itemStack.isEmpty()) {
+                iter.remove();
+                continue;
             }
 
-        } else if (CompatHelper.isItemBlockProxy(itemStack, false)) {
+            //Find new blockstate
+            blockEntry.setItemAndFindNewBlockState(itemStack, player.level, originalDirection, clickedFace, relativeHitVec);
 
-            AbstractRandomizerBagItem.resetRandomness();
-            for (BlockEntry blockEntry : blocks) {
-                ItemStack itemBlockStack = CompatHelper.getItemBlockFromStack(itemStack);
-                if (itemBlockStack == null || itemBlockStack.isEmpty()) continue;
-                blockEntry.setItemStackAndFindNewBlockState(itemBlockStack, player.level, originalDirection, clickedFace, relativeHitVec);
+            //Filter on new blockstate
+            if (EffortlessBuildingClient.BUILDER_FILTER.filterOnNewBlockState(blockEntry, player)) {
+                iter.remove();
+                continue;
             }
+
+            //Increase itemstack usage if not filtered out
+            //Mark invalid if the player does not have enough of that item
+            blockEntry.invalid = !EffortlessBuildingClient.ITEM_USAGE_TRACKER.increaseUsageCount(itemStack.getItem(), 1, player);
         }
+
+        EffortlessBuildingClient.ITEM_USAGE_TRACKER.calculateMissingItems(player);
+    }
+
+    private ItemStack determineItemStack(Player player, ItemStack heldItem) {
+        if (heldItem.getItem() instanceof BlockItem) {
+            return heldItem;
+        }
+
+        if (CompatHelper.isItemBlockProxy(heldItem, false)) {
+            return CompatHelper.getItemBlockFromStack(heldItem);
+        }
+
+        return null;
     }
 
     private void onBlocksChanged(Player player) {

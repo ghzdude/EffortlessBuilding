@@ -36,7 +36,7 @@ public class ServerConfig {
 
             maxBlocksPlacedAtOnce = builder
                     .comment("Maximum number of blocks that can be placed at once.")
-                    .defineInRange("maxBlocksPlacedAtOnce", 1000, 1, 10000);
+                    .defineInRange("maxBlocksPlacedAtOnce", 10000, 1, 100000);
 
             builder.pop();
         }

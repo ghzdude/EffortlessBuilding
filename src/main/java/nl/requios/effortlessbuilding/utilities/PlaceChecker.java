@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 
 @OnlyIn(Dist.CLIENT)
 public class PlaceChecker {
@@ -38,14 +39,16 @@ public class PlaceChecker {
             && state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER)
             toReplaceOther = world.getBlockState(pos.above());
 
-        if (!world.isLoaded(pos))
-            return false;
-        if (!world.getWorldBorder().isWithinBounds(pos))
-            return false;
+//        if (!world.isLoaded(pos))
+//            return false;
+//        if (!world.getWorldBorder().isWithinBounds(pos))
+//            return false;
         if (toReplace == state)
             return false;
         if (toReplace.getDestroySpeed(world, pos) == -1
             || (toReplaceOther != null && toReplaceOther.getDestroySpeed(world, pos) == -1))
+            return false;
+        if (EffortlessBuildingClient.BUILD_SETTINGS.shouldProtectTileEntities() && toReplaceOther != null && toReplaceOther.hasBlockEntity())
             return false;
 
         boolean isNormalCube = state.isRedstoneConductor(world, pos);
@@ -55,14 +58,13 @@ public class PlaceChecker {
     //SchematicannonTileEntity::shouldPlace
     private static boolean shouldPlace(Level level, BlockPos pos, BlockState state, BlockEntity tileEntity, BlockState toReplace,
                                   BlockState toReplaceOther, boolean isNormalCube) {
-        return true;
 //        if (!replaceTileEntities
 //            && (toReplace.hasBlockEntity() || (toReplaceOther != null && toReplaceOther.hasBlockEntity())))
 //            return false;
-//
-//        if (shouldIgnoreBlockState(state))
-//            return false;
-//
+
+        if (shouldIgnoreBlockState(state))
+            return false;
+
 //        boolean placingAir = state.isAir();
 //
 //        if (replaceMode == 3)
@@ -76,7 +78,7 @@ public class PlaceChecker {
 //            && (toReplaceOther == null || !toReplaceOther.isRedstoneConductor(level, pos)) && !placingAir)
 //            return true;
 //
-//        return false;
+        return true;
     }
 
     //SchematicannonTileEntity::shouldIgnoreBlockState

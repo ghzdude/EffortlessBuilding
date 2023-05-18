@@ -11,6 +11,8 @@ import nl.requios.effortlessbuilding.gui.RandomizerBagScreen;
 import nl.requios.effortlessbuilding.render.BlockPreviews;
 import nl.requios.effortlessbuilding.systems.BuilderChain;
 import nl.requios.effortlessbuilding.systems.BuildSettings;
+import nl.requios.effortlessbuilding.systems.BuilderFilter;
+import nl.requios.effortlessbuilding.systems.ItemUsageTracker;
 
 public class EffortlessBuildingClient {
 
@@ -19,6 +21,8 @@ public class EffortlessBuildingClient {
     public static final BuildModifiers BUILD_MODIFIERS = new BuildModifiers();
     public static final BuildSettings BUILD_SETTINGS = new BuildSettings();
     public static final BlockPreviews BLOCK_PREVIEWS = new BlockPreviews();
+    public static final BuilderFilter BUILDER_FILTER = new BuilderFilter();
+    public static final ItemUsageTracker ITEM_USAGE_TRACKER = new ItemUsageTracker();
 
     public static void onConstructorClient(IEventBus modEventBus, IEventBus forgeEventBus) {
         modEventBus.addListener(EffortlessBuildingClient::clientSetup);

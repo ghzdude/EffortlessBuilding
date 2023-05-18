@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -22,7 +23,9 @@ public class BlockEntry {
     //BlockState that is currently in the world
     public BlockState existingBlockState;
     public BlockState newBlockState;
-    public ItemStack itemStack = ItemStack.EMPTY;
+    public Item item;
+    //Invalid block entries will be marked red and won't be sent to server
+    public boolean invalid = false;
 
     public BlockEntry(BlockPos blockPos) {
         this.blockPos = blockPos;
@@ -35,10 +38,11 @@ public class BlockEntry {
         rotation = blockEntry.rotation;
     }
 
-    public void setItemStackAndFindNewBlockState(ItemStack itemStack, Level world, Direction originalDirection, Direction clickedFace, Vec3 relativeHitVec) {
-        this.itemStack = itemStack;
+    public void setItemAndFindNewBlockState(ItemStack itemStack, Level world, Direction originalDirection, Direction clickedFace, Vec3 relativeHitVec) {
+        this.item = itemStack.getItem();
 
-        Block block = Block.byItem(itemStack.getItem());
+        //Find new blockstate with right direction
+        Block block = Block.byItem(this.item);
         var direction = originalDirection;
         if (rotation != null) direction = rotation.rotate(direction);
         direction = applyMirror(direction);
@@ -62,7 +66,7 @@ public class BlockEntry {
     public static void encode(FriendlyByteBuf buf, BlockEntry block) {
         buf.writeBlockPos(block.blockPos);
         buf.writeNullable(block.newBlockState, (buffer, blockState) -> buffer.writeNbt(NbtUtils.writeBlockState(blockState)));
-        buf.writeItem(block.itemStack);
+        buf.writeInt(Item.getId(block.item));
     }
 
     public static BlockEntry decode(FriendlyByteBuf buf) {
@@ -72,7 +76,7 @@ public class BlockEntry {
             if (nbt == null) return null;
             return NbtUtils.readBlockState(nbt);
         });
-        block.itemStack = buf.readItem();
+        block.item = Item.byId(buf.readInt());
         return block;
     }
 }

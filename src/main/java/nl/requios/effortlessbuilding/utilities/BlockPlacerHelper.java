@@ -26,6 +26,7 @@ import java.util.List;
 public class BlockPlacerHelper {
 
     public static boolean breakBlock(Player player, BlockEntry blockEntry) {
+
         ItemStack usedTool = player.getMainHandItem();
         if (usedTool.isEmpty() || !(usedTool.getItem() instanceof DiggerItem)) {
             ItemStack offhand = player.getOffhandItem();
@@ -42,20 +43,14 @@ public class BlockPlacerHelper {
         return brokeBlock;
     }
 
+    //ForgeHooks::onPlaceItemIntoWorld, removed itemstack usage
     public static boolean placeBlock(Player player, BlockEntry blockEntry) {
-        if (blockEntry.itemStack == null) {
-            return placeBlockWithoutItem(player, blockEntry);
-        } else {
-            var interactionResult = placeItem(player, blockEntry);
-            return interactionResult == InteractionResult.SUCCESS;
-        }
-    }
 
-    private static boolean placeBlockWithoutItem(Player player, BlockEntry blockEntry) {
         Level level = player.level;
+        var itemStack = new ItemStack(blockEntry.item);
 
         level.captureBlockSnapshots = true;
-        BlockHelper.placeSchematicBlock(level, player, blockEntry.newBlockState, blockEntry.blockPos, blockEntry.itemStack, null);
+        BlockHelper.placeSchematicBlock(level, player, blockEntry.newBlockState, blockEntry.blockPos, itemStack, null);
         level.captureBlockSnapshots = false;
 
         //Find out if we get to keep the placed block by sending a forge event
@@ -98,97 +93,5 @@ public class BlockPlacerHelper {
         }
         level.capturedBlockSnapshots.clear();
         return !eventResult;
-    }
-
-    //ForgeHooks::onPlaceItemIntoWorld
-    private static InteractionResult placeItem(Player player, BlockEntry block) {
-        ItemStack itemstack = block.itemStack;
-        Level level = player.level;
-
-        if (player != null && !player.getAbilities().mayBuild && !itemstack.hasAdventureModePlaceTagForBlock(level.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), new BlockInWorld(level, block.blockPos, false)))
-            return InteractionResult.PASS;
-
-        // handle all placement events here
-        Item item = itemstack.getItem();
-        int size = itemstack.getCount();
-        CompoundTag nbt = null;
-        if (itemstack.getTag() != null)
-            nbt = itemstack.getTag().copy();
-
-        if (!(itemstack.getItem() instanceof BucketItem)) // if not bucket
-            level.captureBlockSnapshots = true;
-
-        ItemStack copy = itemstack.copy();
-        ////
-        BlockHelper.placeSchematicBlock(level, player, block.newBlockState, block.blockPos, block.itemStack, null);
-        ////
-        InteractionResult ret = InteractionResult.SUCCESS;
-        if (itemstack.isEmpty())
-            ForgeEventFactory.onPlayerDestroyItem(player, copy, InteractionHand.MAIN_HAND);
-
-        level.captureBlockSnapshots = false;
-
-        if (ret.consumesAction())
-        {
-            // save new item data
-            int newSize = itemstack.getCount();
-            CompoundTag newNBT = null;
-            if (itemstack.getTag() != null)
-            {
-                newNBT = itemstack.getTag().copy();
-            }
-            @SuppressWarnings("unchecked")
-            List<BlockSnapshot> blockSnapshots = (List<BlockSnapshot>)level.capturedBlockSnapshots.clone();
-            level.capturedBlockSnapshots.clear();
-
-            // make sure to set pre-placement item data for event
-            itemstack.setCount(size);
-            itemstack.setTag(nbt);
-
-            Direction side = Direction.UP;
-
-            boolean eventResult = false;
-            if (blockSnapshots.size() > 1)
-            {
-                eventResult = ForgeEventFactory.onMultiBlockPlace(player, blockSnapshots, side);
-            }
-            else if (blockSnapshots.size() == 1)
-            {
-                eventResult = ForgeEventFactory.onBlockPlace(player, blockSnapshots.get(0), side);
-            }
-
-            if (eventResult)
-            {
-                ret = InteractionResult.FAIL; // cancel placement
-                // revert back all captured blocks
-                for (BlockSnapshot blocksnapshot : Lists.reverse(blockSnapshots))
-                {
-                    level.restoringBlockSnapshots = true;
-                    blocksnapshot.restore(true, false);
-                    level.restoringBlockSnapshots = false;
-                }
-            }
-            else
-            {
-                // Change the stack to its new content
-                itemstack.setCount(newSize);
-                itemstack.setTag(newNBT);
-
-                for (BlockSnapshot snap : blockSnapshots)
-                {
-                    int updateFlag = snap.getFlag();
-                    BlockState oldBlock = snap.getReplacedBlock();
-                    BlockState newBlock = level.getBlockState(snap.getPos());
-                    newBlock.onPlace(level, snap.getPos(), oldBlock, false);
-
-                    level.markAndNotifyBlock(snap.getPos(), level.getChunkAt(snap.getPos()), oldBlock, newBlock, updateFlag, 512);
-                }
-                if (player != null)
-                    player.awardStat(Stats.ITEM_USED.get(item));
-            }
-        }
-        level.capturedBlockSnapshots.clear();
-
-        return ret;
     }
 }

@@ -1,5 +1,6 @@
 package nl.requios.effortlessbuilding.utilities;
 
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -23,6 +24,16 @@ public class InventoryHelper {
 		for (ItemStack invStack : player.getInventory().items) {
 			if (!invStack.isEmpty() && invStack.getItem() instanceof BlockItem &&
 				((BlockItem) invStack.getItem()).getBlock().equals(block)) {
+				total += invStack.getCount();
+			}
+		}
+		return total;
+	}
+
+	public static int findTotalItemsInInventory(Player player, Item item) {
+		int total = 0;
+		for (ItemStack invStack : player.getInventory().items) {
+			if (!invStack.isEmpty() && invStack.getItem().equals(item)) {
 				total += invStack.getCount();
 			}
 		}

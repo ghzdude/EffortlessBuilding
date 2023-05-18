@@ -211,7 +211,8 @@ public class BlockPreviews {
 		CreateClient.GHOST_BLOCKS.showGhostState(blockPos.toShortString(), blockState)
 				.at(blockPos)
 				.alpha(alpha)
-				.scale(scale);
+				.scale(scale)
+				.colored(blockEntry.invalid ? Color.RED : Color.WHITE);
 	}
 
 	//k=1 is the identity curve, k<1 produces the classic gain() shape, and k>1 produces "s" shaped curves. The curves are symmetric (and inverse) for k=a and k=1/a.

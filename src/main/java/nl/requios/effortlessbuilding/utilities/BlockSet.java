@@ -83,7 +83,7 @@ public class BlockSet extends HashMap<BlockPos, BlockEntry> implements Iterable<
     }
 
     public static void encode(FriendlyByteBuf buf, BlockSet block) {
-        buf.writeCollection(block.values(), BlockEntry::encode);
+        buf.writeCollection(block.values().stream().filter(be -> !be.invalid).toList(), BlockEntry::encode);
         buf.writeBlockPos(block.firstPos);
         buf.writeBlockPos(block.lastPos);
         buf.writeBoolean(block.skipFirst);

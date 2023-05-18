@@ -25,6 +25,7 @@ public class ServerBlockPlacer {
     private final Set<DelayedEntry> delayedEntriesView = Collections.unmodifiableSet(delayedEntries);
 
     public void placeBlocksDelayed(Player player, BlockSet blocks, long placeTime) {
+
         if (!checkAndNotifyAllowedToUseMod(player)) return;
         if (!validateBlockSet(player, blocks)) return;
 
@@ -32,6 +33,7 @@ public class ServerBlockPlacer {
     }
     
     public void tick() {
+
         //Iterator to prevent concurrent modification exception
         for (var iterator = delayedEntries.iterator(); iterator.hasNext(); ) {
             DelayedEntry entry = iterator.next();
@@ -55,6 +57,7 @@ public class ServerBlockPlacer {
     }
 
     public void applyBlockSet(Player player, BlockSet blocks) {
+
         if (!checkAndNotifyAllowedToUseMod(player)) return;
         if (!validateBlockSet(player, blocks)) return;
 
@@ -71,6 +74,7 @@ public class ServerBlockPlacer {
     }
 
     public void undoBlockSet(Player player, BlockSet blocks) {
+
         if (!isAllowedToUndo(player, true)) return;
 
         var redoSet = new BlockSet();
@@ -85,6 +89,7 @@ public class ServerBlockPlacer {
     }
 
     private boolean applyBlockEntry(Player player, BlockEntry block) {
+
         block.existingBlockState = player.level.getBlockState(block.blockPos);
         boolean breaking = BlockUtilities.isNullOrAir(block.newBlockState);
         if (!validateBlockEntry(player, block, breaking)) return false;
@@ -101,6 +106,7 @@ public class ServerBlockPlacer {
     }
 
     private boolean undoBlockEntry(Player player, BlockEntry block) {
+
         boolean breaking = BlockUtilities.isNullOrAir(block.existingBlockState);
 
         var tempBlockEntry = new BlockEntry(block.blockPos);
@@ -126,11 +132,6 @@ public class ServerBlockPlacer {
     }
 
     private boolean checkAndNotifyAllowedToUseMod(Player player) {
-        //TODO temp no survival allowed
-        if (!player.isCreative()) {
-            EffortlessBuilding.log(player, ChatFormatting.RED + "Effortless Building is not yet supported in survival mode.");
-            return false;
-        }
 
         if (!player.getAbilities().mayBuild) {
             EffortlessBuilding.log(player, ChatFormatting.RED + "You are not allowed to build.");
@@ -145,6 +146,7 @@ public class ServerBlockPlacer {
     }
 
     private boolean isAllowedToUseMod(Player player) {
+
         if (!ServerConfig.validation.allowInSurvival.get() && !player.isCreative()) return false;
 
         if (ServerConfig.validation.useWhitelist.get()) {
@@ -155,8 +157,9 @@ public class ServerBlockPlacer {
     }
 
     private boolean isAllowedToUndo(Player player, boolean log) {
+
         if (!player.isCreative()) {
-            if (log) EffortlessBuilding.log(player, ChatFormatting.RED + "Undo is not supported in survival mode.");
+            if (log) EffortlessBuilding.log(player, ChatFormatting.RED + "Undo is not available in survival mode.");
             return false;
         }
 
@@ -164,6 +167,7 @@ public class ServerBlockPlacer {
     }
 
     private boolean validateBlockSet(Player player, BlockSet blocks) {
+
         if (blocks.isEmpty()) {
             EffortlessBuilding.log(player, ChatFormatting.RED + "No blocks to place.");
             return false;
@@ -178,34 +182,41 @@ public class ServerBlockPlacer {
         }
 
         //Dont allow mixing breaking and placing blocks
-        //First determine if we are breaking or placing
-        var iterator = blocks.iterator();
-        //Get any block from the set, skip first if we have to
-        var anyBlock = iterator.next();
-        if (blocks.skipFirst && anyBlock.blockPos == blocks.firstPos) {
-            anyBlock = iterator.next();
-        }
-        boolean breaking = anyBlock.newBlockState == null || anyBlock.newBlockState.isAir();
-
-        while (iterator.hasNext()) {
-            var block = iterator.next();
-            if (block.newBlockState == null || block.newBlockState.isAir()) {
-                if (!breaking) {
-                    EffortlessBuilding.log(player, ChatFormatting.RED + "Cannot mix breaking and placing blocks.");
-                    return false;
-                }
-            } else {
-                if (breaking) {
-                    EffortlessBuilding.log(player, ChatFormatting.RED + "Cannot mix breaking and placing blocks.");
-                    return false;
-                }
-            }
+        if (isMixedPlacingAndBreaking(player, blocks)) {
+            EffortlessBuilding.log(player, ChatFormatting.RED + "Cannot mix breaking and placing blocks.");
+            return false;
         }
 
         return true;
     }
 
+    private boolean isMixedPlacingAndBreaking(Player player, BlockSet blocks) {
+
+        //First determine if we are breaking or placing
+        var iterator = blocks.iterator();
+
+        //Get any block from the set, skip first if we have to
+        var anyBlock = iterator.next();
+        if (blocks.skipFirst && anyBlock.blockPos == blocks.firstPos) {
+            anyBlock = iterator.next();
+        }
+
+        boolean breaking = anyBlock.newBlockState == null || anyBlock.newBlockState.isAir();
+
+        while (iterator.hasNext()) {
+            var block = iterator.next();
+            if (block.newBlockState == null || block.newBlockState.isAir()) {
+                if (!breaking) return true;
+            } else {
+                if (breaking) return true;
+            }
+        }
+
+        return false;
+    }
+
     private boolean validateBlockEntry(Player player, BlockEntry block, boolean breaking) {
+
         if (!player.level.isLoaded(block.blockPos)) return false;
 
         if (breaking && BlockUtilities.isNullOrAir(block.existingBlockState)) return false;
