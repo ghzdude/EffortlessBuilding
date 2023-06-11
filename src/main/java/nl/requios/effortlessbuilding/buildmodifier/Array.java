@@ -42,6 +42,11 @@ public class Array extends BaseModifier {
 		}
 	}
 
+	@Override
+	public void onPowerLevelChanged(int powerLevel) {
+
+	}
+
 	public int getReach() {
 		//find largest offset
 		int x = Math.abs(offset.getX());

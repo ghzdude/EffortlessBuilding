@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.create.foundation.utility.NBTHelper;
 import nl.requios.effortlessbuilding.network.ModifierSettingsPacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public class BuildModifiers {
 	private List<BaseModifier> modifierSettingsList = new ArrayList<>();
 
@@ -70,6 +71,12 @@ public class BuildModifiers {
 	public void findCoordinates(BlockSet blocks, Player player) {
 		for (BaseModifier modifierSettings : modifierSettingsList) {
 			modifierSettings.findCoordinates(blocks, player);
+		}
+	}
+
+	public void onPowerLevelChanged(int powerLevel) {
+		for (BaseModifier modifierSettings : modifierSettingsList) {
+			modifierSettings.onPowerLevelChanged(powerLevel);
 		}
 	}
 

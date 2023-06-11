@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
@@ -46,6 +47,11 @@ public class RadialMirror extends BaseModifier {
 
 			performRadialMirror(blocks, blockEntry);
 		}
+	}
+
+	@Override
+	public void onPowerLevelChanged(int powerLevel) {
+		radius = EffortlessBuildingClient.POWER_LEVEL.getMaxMirrorRadius(Minecraft.getInstance().player);
 	}
 
 	public void performRadialMirror(BlockSet blocks, BlockEntry blockEntry) {

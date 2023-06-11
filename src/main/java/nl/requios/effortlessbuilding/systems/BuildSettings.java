@@ -3,6 +3,7 @@ package nl.requios.effortlessbuilding.systems;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.network.IsQuickReplacingPacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
@@ -66,7 +67,7 @@ public class BuildSettings {
         return getReplaceMode() != ReplaceMode.ONLY_AIR;
     }
 
-    public boolean canReplaceBlocks(){
+    private boolean canReplaceBlocks(){
         return Minecraft.getInstance().player != null && PowerLevel.canReplaceBlocks(Minecraft.getInstance().player);
     }
 }

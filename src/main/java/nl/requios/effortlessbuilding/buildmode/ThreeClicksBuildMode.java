@@ -7,7 +7,7 @@ import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
+import nl.requios.effortlessbuilding.systems.PowerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +65,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			if (secondPos == null) return;
 
 			//Limit amount of blocks we can place per row
-			int axisLimit = ReachHelper.getMaxBlocksPerAxis(player);
+			int axisLimit = EffortlessBuildingClient.POWER_LEVEL.getMaxBlocksPerAxis(player);
 
 			int x1 = firstPos.getX(), x2 = secondPos.getX();
 			int y1 = firstPos.getY(), y2 = secondPos.getY();
@@ -94,7 +94,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 			if (thirdPos == null) return;
 
 			//Limit amount of blocks you can place per row
-			int axisLimit = ReachHelper.getMaxBlocksPerAxis(player);
+			int axisLimit = EffortlessBuildingClient.POWER_LEVEL.getMaxBlocksPerAxis(player);
 
 			int x1 = firstPos.getX(), x2 = secondPos.getX(), x3 = thirdPos.getX();
 			int y1 = firstPos.getY(), y2 = secondPos.getY(), y3 = thirdPos.getY();
@@ -140,7 +140,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
 		criteriaList.add(new HeightCriteria(zBound, secondPos, start));
 
 		//Remove invalid criteria
-		int reach = ReachHelper.getPlacementReach(player) * 4; //4 times as much as normal placement reach
+		int reach = EffortlessBuildingClient.POWER_LEVEL.getBuildModeReach(player);
 		criteriaList.removeIf(criteria -> !criteria.isValid(start, look, reach, player, skipRaytrace));
 
 		//If none are valid, return empty list of blocks

@@ -84,7 +84,7 @@ public class BuilderChain {
 
             if (!blocks.isEmpty()) {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksPlaced(blocks);
-                BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), false);
+                ClientBlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), false);
                 player.swing(InteractionHand.MAIN_HAND);
 
                 blocks.skipFirst = buildMode == BuildModeEnum.DISABLED;
@@ -103,7 +103,7 @@ public class BuilderChain {
         }
 
         var player = Minecraft.getInstance().player;
-        if (!ReachHelper.canBreakFar(player)) return;
+        if (player != null && !PowerLevel.canBreakFar(player)) return;
 
         if (buildingState == BuildingState.IDLE){
             buildingState = BuildingState.BREAKING;
@@ -124,7 +124,7 @@ public class BuilderChain {
 
             if (!blocks.isEmpty()) {
                 EffortlessBuildingClient.BLOCK_PREVIEWS.onBlocksBroken(blocks);
-                BlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), true);
+                ClientBlockUtilities.playSoundIfFurtherThanNormal(player, blocks.getLastBlockEntry(), true);
                 player.swing(InteractionHand.MAIN_HAND);
                 blocks.skipFirst = buildMode == BuildModeEnum.DISABLED;
                 PacketHandler.INSTANCE.sendToServer(new ServerBreakBlocksPacket(blocks));
@@ -194,7 +194,7 @@ public class BuilderChain {
 
         var itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
         boolean blockInHand = CompatHelper.isItemBlockProxy(itemStack);
-        boolean lookingAtInteractiveObject = BlockUtilities.determineIfLookingAtInteractiveObject(mc, world);
+        boolean lookingAtInteractiveObject = ClientBlockUtilities.determineIfLookingAtInteractiveObject(mc, world);
         boolean isShiftKeyDown = player.isShiftKeyDown();
 
         if (lookingAtInteractiveObject && !isShiftKeyDown)
@@ -213,14 +213,14 @@ public class BuilderChain {
         if (shouldLookAtNear) {
             lookingAt = lookingAtNear;
         } else {
-            lookingAt = BlockUtilities.getLookingAtFar(player);
+            lookingAt = ClientBlockUtilities.getLookingAtFar(player);
         }
         if (lookingAt == null || lookingAt.getType() == HitResult.Type.MISS) return null;
 
         var startPos = lookingAt.getBlockPos();
 
         //Check if out of reach
-        int maxReach = ReachHelper.getMaxReach(player);
+        int maxReach = EffortlessBuildingClient.POWER_LEVEL.getMaxReach(player);
         if (player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
 
         startPosForBreaking = startPos;
@@ -240,7 +240,7 @@ public class BuilderChain {
             //We can only break
 
             //Do not break far if we are not allowed to
-            if (!shouldLookAtNear && !ReachHelper.canBreakFar(player)) return null;
+            if (!shouldLookAtNear && !PowerLevel.canBreakFar(player)) return null;
         }
 
         var blockEntry = new BlockEntry(startPos);

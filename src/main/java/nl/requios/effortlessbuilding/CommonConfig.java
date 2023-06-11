@@ -10,36 +10,36 @@ public class CommonConfig {
 	public static final Reach reach = new Reach(builder);
 	public static final MaxBlocksPlacedAtOnce maxBlocksPlacedAtOnce = new MaxBlocksPlacedAtOnce(builder);
 	public static final MaxBlocksPerAxis maxBlocksPerAxis = new MaxBlocksPerAxis(builder);
+	public static final MaxMirrorRadius maxMirrorRadius = new MaxMirrorRadius(builder);
 	public static final ForgeConfigSpec spec = builder.build();
 
 	public static class Reach {
-		public final IntValue reachCreative;
-		public final IntValue reachLevel0;
-		public final IntValue reachLevel1;
-		public final IntValue reachLevel2;
-		public final IntValue reachLevel3;
+		public final IntValue creative;
+		public final IntValue level0;
+		public final IntValue level1;
+		public final IntValue level2;
+		public final IntValue level3;
 
 		public Reach(Builder builder) {
 			builder.push("Reach");
 
-			reachCreative = builder
+			creative = builder
 				.comment("How far away the player can place and break blocks.")
-				.defineInRange("maxReachCreative", 200, 0, 10000);
+				.defineInRange("reachCreative", 200, 0, 1000);
 
-			reachLevel0 = builder
+			level0 = builder
 				.comment("Maximum reach in survival without upgrades",
-					"Reach upgrades are craftable consumables that permanently increase reach.",
-					"Set to 0 to disable Effortless Building until the player has consumed a reach upgrade.")
-				.defineInRange("reachLevel0", 20, 0, 10000);
+					"Consume Power Level upgrades upgrades to permanently increase this.")
+				.defineInRange("reachLevel0", 0, 0, 1000);
 
-			reachLevel1 = builder
-				.defineInRange("reachLevel1", 50, 0, 10000);
+			level1 = builder
+				.defineInRange("reachLevel1", 8, 0, 1000);
 
-			reachLevel2 = builder
-				.defineInRange("reachLevel2", 100, 0, 10000);
+			level2 = builder
+				.defineInRange("reachLevel2", 16, 0, 1000);
 
-			reachLevel3 = builder
-				.defineInRange("reachLevel3", 200, 0, 10000);
+			level3 = builder
+				.defineInRange("reachLevel3", 32, 0, 1000);
 
 			builder.pop();
 		}
@@ -57,20 +57,22 @@ public class CommonConfig {
 
 			creative = builder
 				.comment("How many blocks can be placed in one click.")
-				.defineInRange("maxBlocksPlacedAtOnceCreative", 10000, 0, 10000);
+				.defineInRange("maxBlocksPlacedAtOnceCreative", 10000, 0, 100000);
 
 			level0 = builder
-				.comment("Maximum blocks placed at once in survival without upgrades")
-				.defineInRange("maxBlocksPlacedAtOnceLevel0", 100, 0, 10000);
+				.comment("In survival without upgrades",
+						"Consume Power Level upgrades upgrades to permanently increase this.",
+						"Set to 0 to disable Effortless Building until the player has increased their Building Power Level.")
+				.defineInRange("maxBlocksPlacedAtOnceLevel0", 128, 0, 100000);
 
 			level1 = builder
-				.defineInRange("maxBlocksPlacedAtOnceLevel1", 200, 0, 10000);
+				.defineInRange("maxBlocksPlacedAtOnceLevel1", 192, 0, 100000);
 
 			level2 = builder
-				.defineInRange("maxBlocksPlacedAtOnceLevel2", 500, 0, 10000);
+				.defineInRange("maxBlocksPlacedAtOnceLevel2", 320, 0, 100000);
 
 			level3 = builder
-				.defineInRange("maxBlocksPlacedAtOnceLevel3", 1000, 0, 10000);
+				.defineInRange("maxBlocksPlacedAtOnceLevel3", 640, 0, 100000);
 
 			builder.pop();
 		}
@@ -88,20 +90,53 @@ public class CommonConfig {
 
 			creative = builder
 				.comment("How many blocks can be placed at once per axis.")
-				.defineInRange("maxBlocksPerAxisCreative", 10000, 0, 10000);
+				.defineInRange("maxBlocksPerAxisCreative", 1000, 0, 1000);
 
 			level0 = builder
-				.comment("Maximum blocks placed at once in survival without upgrades")
-				.defineInRange("maxBlocksPerAxisLevel0", 100, 0, 10000);
+				.comment("In survival without upgrades",
+						"Consume Power Level upgrades upgrades to permanently increase this.")
+				.defineInRange("maxBlocksPerAxisLevel0", 8, 0, 1000);
 
 			level1 = builder
-				.defineInRange("maxBlocksPerAxisLevel1", 200, 0, 10000);
+				.defineInRange("maxBlocksPerAxisLevel1", 12, 0, 1000);
 
 			level2 = builder
-				.defineInRange("maxBlocksPerAxisLevel2", 500, 0, 10000);
+				.defineInRange("maxBlocksPerAxisLevel2", 16, 0, 1000);
 
 			level3 = builder
-				.defineInRange("maxBlocksPerAxisLevel3", 1000, 0, 10000);
+				.defineInRange("maxBlocksPerAxisLevel3", 20, 0, 1000);
+
+			builder.pop();
+		}
+	}
+
+	public static class MaxMirrorRadius {
+		public final IntValue creative;
+		public final IntValue level0;
+		public final IntValue level1;
+		public final IntValue level2;
+		public final IntValue level3;
+
+		public MaxMirrorRadius(Builder builder) {
+			builder.push("MaxMirrorRadius");
+
+			creative = builder
+				.comment("The maximum (radial) mirror radius.")
+				.defineInRange("maxMirrorRadiusCreative", 200, 0, 1000);
+
+			level0 = builder
+				.comment("Maximum reach in survival without upgrades",
+						"Consume Power Level upgrades upgrades to permanently increase this.")
+				.defineInRange("maxMirrorRadiusLevel0", 16, 0, 1000);
+
+			level1 = builder
+				.defineInRange("maxMirrorRadiusLevel1", 32, 0, 1000);
+
+			level2 = builder
+				.defineInRange("maxMirrorRadiusLevel2", 48, 0, 1000);
+
+			level3 = builder
+				.defineInRange("maxMirrorRadiusLevel3", 64, 0, 1000);
 
 			builder.pop();
 		}

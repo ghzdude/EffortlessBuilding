@@ -10,6 +10,8 @@ public abstract class BaseModifier {
 
     public abstract void findCoordinates(BlockSet blocks, Player player);
 
+    public abstract void onPowerLevelChanged(int powerLevel);
+
     public CompoundTag serializeNBT() {
         CompoundTag compound = new CompoundTag();
         compound.putString("type", this.getClass().getSimpleName());

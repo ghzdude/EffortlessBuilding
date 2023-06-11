@@ -16,8 +16,8 @@ import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.network.ModifierSettingsPacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
+import nl.requios.effortlessbuilding.systems.PowerLevel;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
 
 @EventBusSubscriber
 public class CommonEvents {
@@ -68,7 +68,7 @@ public class CommonEvents {
 		//Don't cancel event if our custom logic is breaking blocks
 		if (EffortlessBuilding.SERVER_BLOCK_PLACER.isPlacingOrBreakingBlocks()) return;
 
-		if (!ServerBuildState.isLikeVanilla(player) && ReachHelper.canBreakFar(player)) {
+		if (!ServerBuildState.isLikeVanilla(player) && PowerLevel.canBreakFar(player)) {
 			event.setCanceled(true);
 		}
 	}

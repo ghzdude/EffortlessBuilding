@@ -11,7 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.CommonConfig;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
+import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -39,11 +39,11 @@ public class ReachUpgrade2Item extends Item {
 			return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
 		}
 
-		int currentLevel = ReachHelper.getReachUpgrade(player);
+		int currentLevel = EffortlessBuildingClient.POWER_LEVEL.getPowerLevel(player);
 		if (currentLevel == 1) {
-			ReachHelper.setReachUpgrade(player, 2);
+			EffortlessBuildingClient.POWER_LEVEL.setPowerLevel(player, 2);
 
-			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + ReachHelper.getMaxReach(player));
+			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + EffortlessBuildingClient.POWER_LEVEL.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
@@ -55,7 +55,7 @@ public class ReachUpgrade2Item extends Item {
 			player.playSound(soundEvent, 1f, 1f);
 		} else if (currentLevel > 1) {
 			if (world.isClientSide)
-				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + ReachHelper
+				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + EffortlessBuildingClient.POWER_LEVEL
 					.getMaxReach(player) + ".");
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
@@ -66,7 +66,7 @@ public class ReachUpgrade2Item extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(Component.literal(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + CommonConfig.reach.reachLevel2.get()));
+		tooltip.add(Component.literal(ChatFormatting.GRAY + "Consume to increase reach to " + ChatFormatting.BLUE + CommonConfig.reach.level2.get()));
 		tooltip.add(Component.literal(ChatFormatting.GRAY + "Previous upgrades need to be consumed first"));
 	}
 }
