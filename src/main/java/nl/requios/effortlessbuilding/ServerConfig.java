@@ -35,7 +35,7 @@ public class ServerConfig {
                     .defineList("whitelist", Arrays.asList("Player1", "Player2"), o -> true);
 
             maxBlocksPlacedAtOnce = builder
-                    .comment("Maximum number of blocks that can be placed at once.")
+                    .comment("Maximum number of blocks that can be placed at once. This is a last check. If you want the player to receive visual feedback instead of an error message, change values in the common config.")
                     .defineInRange("maxBlocksPlacedAtOnce", 10000, 1, 100000);
 
             builder.pop();

@@ -25,15 +25,16 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import nl.requios.effortlessbuilding.EffortlessBuilding;
+import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
+import nl.requios.effortlessbuilding.utilities.BlockEntry;
+import nl.requios.effortlessbuilding.utilities.BlockSet;
 import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -132,15 +133,14 @@ public abstract class AbstractRandomizerBagItem extends Item {
         } else {
             if (world.isClientSide) return InteractionResult.SUCCESS;
 
-            //Only place manually if in normal vanilla mode
+            //---Only place manually if in normal vanilla mode---
             if (!ServerBuildState.isLikeVanilla(player)) {
                 return InteractionResult.FAIL;
             }
 
             //Use item
             //Get bag inventory
-            //TODO offhand support
-            ItemStack bag = player.getItemInHand(InteractionHand.MAIN_HAND);
+            ItemStack bag = ctx.getItemInHand();
             IItemHandler bagInventory = getBagInventory(bag);
             if (bagInventory == null)
                 return InteractionResult.FAIL;
@@ -148,26 +148,16 @@ public abstract class AbstractRandomizerBagItem extends Item {
             ItemStack toPlace = pickRandomStack(bagInventory);
             if (toPlace.isEmpty()) return InteractionResult.FAIL;
 
-            //Previously: use onItemUse to place block (no synergy)
-            //bag.setItemDamage(toPlace.getMetadata());
-            //toPlace.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
-
-            //TODO replaceable
             if (!world.getBlockState(pos).getBlock().canBeReplaced(world.getBlockState(pos), Fluids.EMPTY)) {
                 pos = pos.relative(facing);
             }
 
-            BlockPlaceContext blockItemUseContext = new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(hitVec, facing, pos, false)));
+            BlockPlaceContext blockItemUseContext = new BlockPlaceContext(new UseOnContext(player, ctx.getHand(), new BlockHitResult(hitVec, facing, pos, false)));
             BlockState blockState = Block.byItem(toPlace.getItem()).getStateForPlacement(blockItemUseContext);
 
-            SurvivalHelper.placeBlock(world, player, pos, blockState, toPlace, false, false, true);
-
-            //Synergy
-            //Works without calling
-//            BlockSnapshot blockSnapshot = new BlockSnapshot(player.world, pos, blockState);
-//            BlockEvent.PlaceEvent placeEvent = new BlockEvent.PlaceEvent(blockSnapshot, blockState, player, hand);
-//            Mirror.onBlockPlaced(placeEvent);
-//            Array.onBlockPlaced(placeEvent);
+            var blockEntry = new BlockEntry(pos, blockState, toPlace.getItem());
+            var blockSet = new BlockSet(List.of(blockEntry), pos, pos, false);
+            EffortlessBuilding.SERVER_BLOCK_PLACER.applyBlockSet(player, blockSet);
         }
         return InteractionResult.SUCCESS;
     }

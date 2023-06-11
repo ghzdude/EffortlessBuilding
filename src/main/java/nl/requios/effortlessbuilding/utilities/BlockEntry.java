@@ -31,6 +31,12 @@ public class BlockEntry {
         this.blockPos = blockPos;
     }
 
+    public BlockEntry(BlockPos blockPos, BlockState blockState, Item item) {
+        this.blockPos = blockPos;
+        this.newBlockState = blockState;
+        this.item = item;
+    }
+
     public void copyRotationSettingsFrom(BlockEntry blockEntry) {
         mirrorX = blockEntry.mirrorX;
         mirrorY = blockEntry.mirrorY;

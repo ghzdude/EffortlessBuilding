@@ -40,13 +40,15 @@ public class ClientEvents {
             EffortlessBuilding.log("Registering KeyMappings!");
 
             // register key bindings
-            keyBindings = new KeyMapping[4];
+            keyBindings = new KeyMapping[6];
 
             // instantiate the key bindings
             keyBindings[0] = new KeyMapping("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category");
             keyBindings[1] = new KeyMapping("key.effortlessbuilding.hud.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
             keyBindings[2] = new KeyMapping("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");
             keyBindings[3] = new KeyMapping("key.effortlessbuilding.redo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Y, 0), "key.effortlessbuilding.category");
+            keyBindings[4] = new KeyMapping("key.effortlessbuilding.previous_build_mode.desc", KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, "key.effortlessbuilding.category");
+            keyBindings[5] = new KeyMapping("key.effortlessbuilding.disable_build_mode_toggle.desc", KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, "key.effortlessbuilding.category");
 
             for (KeyMapping keyBinding : keyBindings) {
                 event.register(keyBinding);
@@ -157,6 +159,16 @@ public class ClientEvents {
         //Redo (Ctrl+Y)
         if (keyBindings[3].consumeClick()) {
             ModeOptions.performAction(player, ModeOptions.ActionEnum.REDO);
+        }
+
+        //Previous build mode
+        if (keyBindings[4].consumeClick()) {
+            ModeOptions.performAction(player, ModeOptions.ActionEnum.PREVIOUS_BUILD_MODE);
+        }
+
+        //Disable build mode toggle
+        if (keyBindings[5].consumeClick()) {
+            ModeOptions.performAction(player, ModeOptions.ActionEnum.DISABLE_BUILD_MODE_TOGGLE);
         }
     }
 

@@ -9,10 +9,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.ServerConfig;
 import nl.requios.effortlessbuilding.create.foundation.utility.BlockHelper;
-import nl.requios.effortlessbuilding.utilities.BlockEntry;
-import nl.requios.effortlessbuilding.utilities.BlockPlacerHelper;
-import nl.requios.effortlessbuilding.utilities.BlockSet;
-import nl.requios.effortlessbuilding.utilities.BlockUtilities;
+import nl.requios.effortlessbuilding.utilities.*;
 
 import java.util.*;
 
@@ -61,6 +58,7 @@ public class ServerBlockPlacer {
         if (!checkAndNotifyAllowedToUseMod(player)) return;
         if (!validateBlockSet(player, blocks)) return;
 
+        EffortlessBuilding.ITEM_USAGE_TRACKER.initialize();
         var undoSet = new BlockSet();
         for (BlockEntry block : blocks) {
             if (blocks.skipFirst && block.blockPos == blocks.firstPos) continue;
@@ -69,14 +67,22 @@ public class ServerBlockPlacer {
                 undoSet.add(block);
             }
         }
-        if (isAllowedToUndo(player, false))
-            EffortlessBuilding.UNDO_REDO.addUndo(player, undoSet);
+
+        //Remove items from inventory
+        //(Adding items is done during BlockPlacerHelper.breakBlock)
+        EffortlessBuilding.ITEM_USAGE_TRACKER.calculateMissingItems(player);
+        if (!player.isCreative()) {
+            InventoryHelper.removeFromInventory(player, EffortlessBuilding.ITEM_USAGE_TRACKER.placed);
+        }
+
+        EffortlessBuilding.UNDO_REDO.addUndo(player, undoSet);
     }
 
     public void undoBlockSet(Player player, BlockSet blocks) {
 
-        if (!isAllowedToUndo(player, true)) return;
+        if (!EffortlessBuilding.UNDO_REDO.isAllowedToUndo(player)) return;
 
+        EffortlessBuilding.ITEM_USAGE_TRACKER.initialize();
         var redoSet = new BlockSet();
         for (BlockEntry block : blocks) {
             if (blocks.skipFirst && block.blockPos == blocks.firstPos) continue;
@@ -85,6 +91,14 @@ public class ServerBlockPlacer {
                 redoSet.add(block);
             }
         }
+
+        //Remove items from inventory
+        //(Adding items is done during BlockPlacerHelper.breakBlock)
+        EffortlessBuilding.ITEM_USAGE_TRACKER.calculateMissingItems(player);
+        if (!player.isCreative()) {
+            InventoryHelper.removeFromInventory(player, EffortlessBuilding.ITEM_USAGE_TRACKER.placed);
+        }
+
         EffortlessBuilding.UNDO_REDO.addRedo(player, redoSet);
     }
 
@@ -99,7 +113,15 @@ public class ServerBlockPlacer {
         if (breaking) {
             success = BlockPlacerHelper.breakBlock(player, block);
         } else {
-            success = BlockPlacerHelper.placeBlock(player, block);
+            //If we have the item in our inventory, place it
+            if (EffortlessBuilding.ITEM_USAGE_TRACKER.increaseUsageCount(block.item, 1, player)) {
+                success = BlockPlacerHelper.placeBlock(player, block);
+            } else {
+                success = false;
+                //Not having the item at this point would be a bit weird, so we notify the player
+                //It could mean the client/server are out of sync, or the inventory changed during the short delay period
+                EffortlessBuilding.log(player, ChatFormatting.RED + block.item.toString() + " not found in inventory.");
+            }
         }
         isPlacingOrBreakingBlocks = false;
         return success;
@@ -124,7 +146,14 @@ public class ServerBlockPlacer {
         if (breaking) {
             success = BlockPlacerHelper.breakBlock(player, tempBlockEntry);
         } else {
-            success = BlockPlacerHelper.placeBlock(player, tempBlockEntry);
+            //If we have the item in our inventory, place it
+            if (EffortlessBuilding.ITEM_USAGE_TRACKER.increaseUsageCount(tempBlockEntry.item, 1, player)) {
+                success = BlockPlacerHelper.placeBlock(player, tempBlockEntry);
+            } else {
+                success = false;
+                //Not having the item at this point would be a bit weird, so we notify the player
+                EffortlessBuilding.log(player, ChatFormatting.RED + tempBlockEntry.item.toString() + " not found in inventory.");
+            }
         }
         isPlacingOrBreakingBlocks = false;
 
@@ -151,16 +180,6 @@ public class ServerBlockPlacer {
 
         if (ServerConfig.validation.useWhitelist.get()) {
             return ServerConfig.validation.whitelist.get().contains(player.getGameProfile().getName());
-        }
-
-        return true;
-    }
-
-    private boolean isAllowedToUndo(Player player, boolean log) {
-
-        if (!player.isCreative()) {
-            if (log) EffortlessBuilding.log(player, ChatFormatting.RED + "Undo is not available in survival mode.");
-            return false;
         }
 
         return true;

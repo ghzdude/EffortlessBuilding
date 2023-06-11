@@ -10,6 +10,8 @@
   "key.effortlessbuilding.undo.desc": "Undo",
   "key.effortlessbuilding.redo.desc": "Redo",
   "key.effortlessbuilding.altplacement.desc": "Alternative placement",
+  "key.effortlessbuilding.previous_build_mode.desc": "Activate Previous Build Mode",
+  "key.effortlessbuilding.disable_build_mode_toggle.desc": "Toggle Disabled <> Previous Build Mode",
 
   "item.effortlessbuilding.randomizer_bag": "Leather Randomizer Bag",
   "item.effortlessbuilding.golden_randomizer_bag": "Golden Randomizer Bag",

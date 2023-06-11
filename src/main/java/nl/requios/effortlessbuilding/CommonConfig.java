@@ -8,67 +8,100 @@ public class CommonConfig {
 
 	private static final Builder builder = new Builder();
 	public static final Reach reach = new Reach(builder);
-	public static final SurvivalBalancers survivalBalancers = new SurvivalBalancers(builder);
+	public static final MaxBlocksPlacedAtOnce maxBlocksPlacedAtOnce = new MaxBlocksPlacedAtOnce(builder);
+	public static final MaxBlocksPerAxis maxBlocksPerAxis = new MaxBlocksPerAxis(builder);
 	public static final ForgeConfigSpec spec = builder.build();
 
 	public static class Reach {
-		public final BooleanValue enableReachUpgrades;
-		public final IntValue maxReachCreative;
-		public final IntValue maxReachLevel0;
-		public final IntValue maxReachLevel1;
-		public final IntValue maxReachLevel2;
-		public final IntValue maxReachLevel3;
+		public final IntValue reachCreative;
+		public final IntValue reachLevel0;
+		public final IntValue reachLevel1;
+		public final IntValue reachLevel2;
+		public final IntValue reachLevel3;
 
 		public Reach(Builder builder) {
 			builder.push("Reach");
-			enableReachUpgrades = builder
-				.comment("Reach: how far away the player can place blocks using mirror/array etc.",
-					"Enable the crafting of reach upgrades to increase reach.",
-					"If disabled, reach is set to level 3 for survival players.")
-				.define("enableReachUpgrades", true);
 
-			maxReachCreative = builder
-				.comment("Maximum reach in creative",
-					"Keep in mind that chunks need to be loaded to be able to place blocks inside.")
-				.defineInRange("maxReachCreative", 200, 0, 1000);
+			reachCreative = builder
+				.comment("How far away the player can place and break blocks.")
+				.defineInRange("maxReachCreative", 200, 0, 10000);
 
-			maxReachLevel0 = builder
+			reachLevel0 = builder
 				.comment("Maximum reach in survival without upgrades",
 					"Reach upgrades are craftable consumables that permanently increase reach.",
 					"Set to 0 to disable Effortless Building until the player has consumed a reach upgrade.")
-				.defineInRange("maxReachLevel0", 20, 0, 1000);
+				.defineInRange("reachLevel0", 20, 0, 10000);
 
-			maxReachLevel1 = builder
-				.comment("Maximum reach in survival with one upgrade")
-				.defineInRange("maxReachLevel1", 50, 0, 1000);
+			reachLevel1 = builder
+				.defineInRange("reachLevel1", 50, 0, 10000);
 
-			maxReachLevel2 = builder
-				.comment("Maximum reach in survival with two upgrades")
-				.defineInRange("maxReachLevel2", 100, 0, 1000);
+			reachLevel2 = builder
+				.defineInRange("reachLevel2", 100, 0, 10000);
 
-			maxReachLevel3 = builder
-				.comment("Maximum reach in survival with three upgrades")
-				.defineInRange("maxReachLevel3", 200, 0, 1000);
+			reachLevel3 = builder
+				.defineInRange("reachLevel3", 200, 0, 10000);
 
 			builder.pop();
 		}
 	}
 
-	public static class SurvivalBalancers {
-		public final IntValue quickReplaceMiningLevel;
+	public static class MaxBlocksPlacedAtOnce {
+		public final IntValue creative;
+		public final IntValue level0;
+		public final IntValue level1;
+		public final IntValue level2;
+		public final IntValue level3;
 
-		public SurvivalBalancers(Builder builder) {
-			builder.push("SurvivalBalancers");
+		public MaxBlocksPlacedAtOnce(Builder builder) {
+			builder.push("MaxBlocksPlacedAtOnce");
 
-			quickReplaceMiningLevel = builder
-				.comment("Determines what blocks can be replaced in survival.",
-					"-1: only blocks that can be harvested by hand (default)",
-					"0: blocks that can be harvested with wooden or gold tools",
-					"1: blocks that can be harvested with stone tools",
-					"2: blocks that can be harvested with iron tools",
-					"3: blocks that can be harvested with diamond tools",
-					"4: blocks that can be harvested with netherite tools")
-				.defineInRange("quickReplaceMiningLevel", -1, -1, 3);
+			creative = builder
+				.comment("How many blocks can be placed in one click.")
+				.defineInRange("maxBlocksPlacedAtOnceCreative", 10000, 0, 10000);
+
+			level0 = builder
+				.comment("Maximum blocks placed at once in survival without upgrades")
+				.defineInRange("maxBlocksPlacedAtOnceLevel0", 100, 0, 10000);
+
+			level1 = builder
+				.defineInRange("maxBlocksPlacedAtOnceLevel1", 200, 0, 10000);
+
+			level2 = builder
+				.defineInRange("maxBlocksPlacedAtOnceLevel2", 500, 0, 10000);
+
+			level3 = builder
+				.defineInRange("maxBlocksPlacedAtOnceLevel3", 1000, 0, 10000);
+
+			builder.pop();
+		}
+	}
+
+	public static class MaxBlocksPerAxis {
+		public final IntValue creative;
+		public final IntValue level0;
+		public final IntValue level1;
+		public final IntValue level2;
+		public final IntValue level3;
+
+		public MaxBlocksPerAxis(Builder builder) {
+			builder.push("MaxBlocksPerAxis");
+
+			creative = builder
+				.comment("How many blocks can be placed at once per axis.")
+				.defineInRange("maxBlocksPerAxisCreative", 10000, 0, 10000);
+
+			level0 = builder
+				.comment("Maximum blocks placed at once in survival without upgrades")
+				.defineInRange("maxBlocksPerAxisLevel0", 100, 0, 10000);
+
+			level1 = builder
+				.defineInRange("maxBlocksPerAxisLevel1", 200, 0, 10000);
+
+			level2 = builder
+				.defineInRange("maxBlocksPerAxisLevel2", 500, 0, 10000);
+
+			level3 = builder
+				.defineInRange("maxBlocksPerAxisLevel3", 1000, 0, 10000);
 
 			builder.pop();
 		}

@@ -27,6 +27,7 @@ import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.proxy.ClientProxy;
 import nl.requios.effortlessbuilding.proxy.IProxy;
 import nl.requios.effortlessbuilding.proxy.ServerProxy;
+import nl.requios.effortlessbuilding.systems.ItemUsageTracker;
 import nl.requios.effortlessbuilding.systems.ServerBlockPlacer;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +44,7 @@ public class EffortlessBuilding {
 
 	public static final ServerBlockPlacer SERVER_BLOCK_PLACER = new ServerBlockPlacer();
 	public static final UndoRedo UNDO_REDO = new UndoRedo();
+	public static final ItemUsageTracker ITEM_USAGE_TRACKER = new ItemUsageTracker();
 
 	//Registration
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
@@ -105,6 +107,10 @@ public class EffortlessBuilding {
 	//Log with translation supported, call either on client or server (which then sends a message)
 	public static void logTranslate(Player player, String prefix, String translationKey, String suffix, boolean actionBar) {
 		proxy.logTranslate(player, prefix, translationKey, suffix, actionBar);
+	}
+
+	public static void logError(String msg) {
+		logger.error(msg);
 	}
 
 }

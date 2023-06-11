@@ -73,6 +73,8 @@ public class ModeOptions {
 			case REDO -> PacketHandler.INSTANCE.sendToServer(new PerformRedoPacket());
 			case OPEN_MODIFIER_SETTINGS -> ClientEvents.openModifierSettings();
 			case OPEN_PLAYER_SETTINGS -> ClientEvents.openPlayerSettings();
+			case PREVIOUS_BUILD_MODE -> EffortlessBuildingClient.BUILD_MODES.activatePreviousBuildMode();
+			case DISABLE_BUILD_MODE_TOGGLE -> EffortlessBuildingClient.BUILD_MODES.activateDisableBuildModeToggle();
 
 			case REPLACE_ONLY_AIR -> EffortlessBuildingClient.BUILD_SETTINGS.setReplaceMode(BuildSettings.ReplaceMode.ONLY_AIR);
 			case REPLACE_BLOCKS_AND_AIR -> EffortlessBuildingClient.BUILD_SETTINGS.setReplaceMode(BuildSettings.ReplaceMode.BLOCKS_AND_AIR);
@@ -103,7 +105,9 @@ public class ModeOptions {
 
 		if (player.level.isClientSide &&
 			action != ActionEnum.OPEN_MODIFIER_SETTINGS &&
-			action != ActionEnum.OPEN_PLAYER_SETTINGS) {
+			action != ActionEnum.OPEN_PLAYER_SETTINGS &&
+			action != ActionEnum.PREVIOUS_BUILD_MODE &&
+			action != ActionEnum.DISABLE_BUILD_MODE_TOGGLE) {
 
 			EffortlessBuilding.logTranslate(player, "", action.getNameKey(), "", true);
 		}
@@ -114,6 +118,8 @@ public class ModeOptions {
 		REDO("redo", AllIcons.I_REDO),
 		OPEN_MODIFIER_SETTINGS("open_modifier_settings", AllIcons.I_SETTINGS),
 		OPEN_PLAYER_SETTINGS("open_player_settings", AllIcons.I_SETTINGS),
+		PREVIOUS_BUILD_MODE("previous_build_mode", AllIcons.I_SINGLE),
+		DISABLE_BUILD_MODE_TOGGLE("disable_build_mode_toggle", AllIcons.I_DISABLE),
 
 		REPLACE_ONLY_AIR("replace_only_air", AllIcons.I_REPLACE_AIR),
 		REPLACE_BLOCKS_AND_AIR("replace_blocks_and_air", AllIcons.I_REPLACE_BLOCKS_AND_AIR),

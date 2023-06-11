@@ -3,7 +3,6 @@ package nl.requios.effortlessbuilding.gui.buildmode;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Vector4f;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -14,23 +13,20 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import nl.requios.effortlessbuilding.ClientEvents;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.create.foundation.item.ItemDescription;
 import nl.requios.effortlessbuilding.create.foundation.item.TooltipHelper;
 import nl.requios.effortlessbuilding.create.foundation.utility.Components;
 import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
-import org.apache.commons.lang3.text.WordUtils;
+import nl.requios.effortlessbuilding.systems.PowerLevel;
 import org.lwjgl.opengl.GL11;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 
 import static nl.requios.effortlessbuilding.buildmode.ModeOptions.*;
@@ -154,10 +150,12 @@ public class RadialMenu extends Screen {
 		buttons.add(new MenuButton(ActionEnum.UNDO, -buttonDistance - 26, -13, Direction.UP));
 		buttons.add(new MenuButton(ActionEnum.REDO, -buttonDistance, -13, Direction.UP));
 
-		buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_AIR, -buttonDistance - 78, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.REPLACE_BLOCKS_AND_AIR, -buttonDistance - 52, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_BLOCKS, -buttonDistance - 26, 13, Direction.DOWN));
-		buttons.add(new MenuButton(ActionEnum.REPLACE_FILTERED_BY_OFFHAND, -buttonDistance, 13, Direction.DOWN));
+		if (Minecraft.getInstance().player != null && PowerLevel.canReplaceBlocks(Minecraft.getInstance().player)) {
+			buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_AIR, -buttonDistance - 78, 13, Direction.DOWN));
+			buttons.add(new MenuButton(ActionEnum.REPLACE_BLOCKS_AND_AIR, -buttonDistance - 52, 13, Direction.DOWN));
+			buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_BLOCKS, -buttonDistance - 26, 13, Direction.DOWN));
+			buttons.add(new MenuButton(ActionEnum.REPLACE_FILTERED_BY_OFFHAND, -buttonDistance, 13, Direction.DOWN));
+		}
 
 		//Add buildmode dependent options
 		OptionEnum[] options = currentBuildMode.options;
@@ -425,8 +423,6 @@ public class RadialMenu extends Screen {
 			playRadialMenuSound();
 
 			EffortlessBuildingClient.BUILD_MODES.setBuildMode(switchTo);
-
-			EffortlessBuilding.log(player, I18n.get(switchTo.getNameKey()), true);
 
 			if (fromMouseClick) performedActionUsingMouse = true;
 		}

@@ -30,10 +30,7 @@ public class UndoRedo {
 	public final Map<UUID, FixedStack<BlockSet>> undoStacks = new HashMap<>();
 	public final Map<UUID, FixedStack<BlockSet>> redoStacks = new HashMap<>();
 
-	private boolean isAllowedToUndo(Player player) {
-		if (!player.isCreative()) {
-			return false;
-		}
+	public boolean isAllowedToUndo(Player player) {
 
 		return true;
 	}

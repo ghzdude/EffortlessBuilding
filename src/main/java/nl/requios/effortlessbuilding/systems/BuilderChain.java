@@ -262,7 +262,11 @@ public class BuilderChain {
         Vec3 relativeHitVec = lookingAt.getLocation().subtract(Vec3.atLowerCornerOf(lookingAt.getBlockPos()));
 
         //Keep track of itemstack usage
-        EffortlessBuildingClient.ITEM_USAGE_TRACKER.initialize(player, heldItem);
+        EffortlessBuildingClient.ITEM_USAGE_TRACKER.initialize();
+
+        if (CompatHelper.isItemBlockProxy(heldItem, false)) {
+            AbstractRandomizerBagItem.resetRandomness();
+        }
 
         var iter = blocks.entrySet().iterator();
         while (iter.hasNext()) {

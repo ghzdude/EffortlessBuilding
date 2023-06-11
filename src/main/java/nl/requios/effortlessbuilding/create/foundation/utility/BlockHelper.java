@@ -285,9 +285,8 @@ public class BlockHelper {
 		}
 
 		try {
-			state.getBlock()
-				.setPlacedBy(world, target, state, null, stack);
-		} catch (Exception e) {
+			state.getBlock().setPlacedBy(world, target, state, null, stack);
+		} catch (Exception ignored) {
 		}
 		return true;
 	}

@@ -25,6 +25,7 @@ public class ServerBuildState {
     }
 
     public static boolean isQuickReplacing(Player player) {
+        if (!PowerLevel.canReplaceBlocks(player)) return false;
         return player.getPersistentData().contains(IS_QUICK_REPLACING_KEY);
     }
 

@@ -1,22 +1,23 @@
 package nl.requios.effortlessbuilding.buildmode;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.network.IsUsingBuildModePacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
-import nl.requios.effortlessbuilding.utilities.ReachHelper;
-
-import java.util.*;
 
 @OnlyIn(Dist.CLIENT)
 public class BuildModes {
 	private BuildModeEnum buildMode = BuildModeEnum.DISABLED;
+	private BuildModeEnum previousBuildMode = BuildModeEnum.DISABLED;
+	private BuildModeEnum beforeDisabledBuildMode = BuildModeEnum.SINGLE;
 
 	public void findCoordinates(BlockSet blocks, Player player) {
 		buildMode.instance.findCoordinates(blocks);
@@ -30,6 +31,23 @@ public class BuildModes {
 		this.buildMode = buildMode;
 
 		PacketHandler.INSTANCE.sendToServer(new IsUsingBuildModePacket(this.buildMode != BuildModeEnum.DISABLED));
+
+		EffortlessBuilding.log(Minecraft.getInstance().player, I18n.get(buildMode.getNameKey()), true);
+	}
+
+	public void activatePreviousBuildMode() {
+		var temp = buildMode;
+		setBuildMode(previousBuildMode);
+		previousBuildMode = temp;
+	}
+
+	public void activateDisableBuildModeToggle(){
+		if (buildMode == BuildModeEnum.DISABLED) {
+			setBuildMode(beforeDisabledBuildMode);
+		} else {
+			beforeDisabledBuildMode = buildMode;
+			setBuildMode(BuildModeEnum.DISABLED);
+		}
 	}
 
 	public void onCancel() {
