@@ -3,6 +3,8 @@ package nl.requios.effortlessbuilding.item;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -35,11 +37,19 @@ public class PowerLevelItem extends Item {
                 EffortlessBuildingClient.POWER_LEVEL.increasePowerLevel();
                 EffortlessBuilding.log(player, "Upgraded power level to " + EffortlessBuildingClient.POWER_LEVEL.getPowerLevel());
                 player.setItemInHand(hand, ItemStack.EMPTY);
+
+                SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
+                player.playSound(soundEvent, 1f, 1f);
+
                 return InteractionResultHolder.consume(player.getItemInHand(hand));
 
             } else {
 
                 EffortlessBuilding.log(player, "Already reached maximum power level!");
+
+                SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
+                player.playSound(soundEvent, 1f, 1f);
+
                 return InteractionResultHolder.fail(player.getItemInHand(hand));
             }
 

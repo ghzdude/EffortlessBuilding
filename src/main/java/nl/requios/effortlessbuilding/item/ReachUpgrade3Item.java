@@ -33,38 +33,40 @@ public class ReachUpgrade3Item extends Item {
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-		if (player.isCreative()) {
-			if (world.isClientSide) EffortlessBuilding.log(player, "Reach upgrades are not necessary in creative.");
-			if (world.isClientSide) EffortlessBuilding.log(player, "Still want increased reach? Use the config.");
-			return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
-		}
+
+		if (!world.isClientSide) return InteractionResultHolder.consume(player.getItemInHand(hand));
 
 		int currentLevel = EffortlessBuildingClient.POWER_LEVEL.getPowerLevel();
 		if (currentLevel == 2) {
-			EffortlessBuildingClient.POWER_LEVEL.loadPowerLevel(3);
 
-			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + EffortlessBuildingClient.POWER_LEVEL.getMaxReach(player));
+			EffortlessBuildingClient.POWER_LEVEL.increasePowerLevel();
+			EffortlessBuilding.log(player, "Upgraded power level to " + EffortlessBuildingClient.POWER_LEVEL.getPowerLevel());
 			player.setItemInHand(hand, ItemStack.EMPTY);
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
 			player.playSound(soundEvent, 1f, 1f);
+
+			return InteractionResultHolder.consume(player.getItemInHand(hand));
+
 		} else if (currentLevel < 2) {
-			if (currentLevel == 0)
-				if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 1 and 2 first.");
-			if (currentLevel == 1)
-				if (world.isClientSide) EffortlessBuilding.log(player, "Use Reach Upgrade 2 first.");
+
+			if (currentLevel == 0) EffortlessBuilding.log(player, "Use Reach Upgrade 1 and 2 first.");
+			if (currentLevel == 1) EffortlessBuilding.log(player, "Use Reach Upgrade 2 first.");
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
+
+
 		} else if (currentLevel > 2) {
-			if (world.isClientSide)
-				EffortlessBuilding.log(player, "Already used this upgrade! Current reach is " + EffortlessBuildingClient.POWER_LEVEL
-					.getMaxReach(player) + ".");
+
+			EffortlessBuilding.log(player, "Already used this upgrade! Current power level is " + EffortlessBuildingClient.POWER_LEVEL.getPowerLevel() + ".");
 
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
+
 		}
-		return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
+
+		return InteractionResultHolder.fail(player.getItemInHand(hand));
 	}
 
 	@Override

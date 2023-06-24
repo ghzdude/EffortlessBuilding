@@ -10,7 +10,7 @@ import nl.requios.effortlessbuilding.network.PowerLevelPacket;
 
 @OnlyIn(Dist.CLIENT)
 public class PowerLevel {
-	private static final int MAX_POWER_LEVEL = 3;
+
 	private int powerLevel;
 
 	public int getPowerLevel() {
@@ -23,7 +23,7 @@ public class PowerLevel {
 	}
 
 	public boolean canIncreasePowerLevel() {
-		return getPowerLevel() < MAX_POWER_LEVEL;
+		return getPowerLevel() < ServerPowerLevel.MAX_POWER_LEVEL;
 	}
 
 	public void increasePowerLevel() {

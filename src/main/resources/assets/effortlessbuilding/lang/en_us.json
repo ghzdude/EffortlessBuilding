@@ -12,7 +12,9 @@
   "key.effortlessbuilding.altplacement.desc": "Alternative placement",
   "key.effortlessbuilding.previous_build_mode.desc": "Activate Previous Build Mode",
   "key.effortlessbuilding.disable_build_mode_toggle.desc": "Toggle Disabled <> Previous Build Mode",
-  "key.effortlessbuilding.upgrade_power_level": "Use to permanently upgrade your Building Power Level by 1.",
+  "key.effortlessbuilding.upgrade_power_level": "Right-click to permanently increase your Building Power Level by 1.",
+  "key.effortlessbuilding.use_reach_upgrade": "Consume to increase your Building Power Level to %s.",
+  "key.effortlessbuilding.require_previous_reach_upgrades": "Previous upgrades need to be consumed first.",
 
   "item.effortlessbuilding.randomizer_bag": "Leather Randomizer Bag",
   "item.effortlessbuilding.golden_randomizer_bag": "Golden Randomizer Bag",
@@ -106,5 +108,7 @@
   "effortlessbuilding.tooltip.keyShift": "Shift",
   "effortlessbuilding.tooltip.keyCtrl": "Ctrl",
   "effortlessbuilding.tooltip.keybind": "[%1$s]",
-  "fdsaf": "key.effortlessbuilding.upgrade_power_level"
+
+  "effortlessbuilding.commands.powerlevel": "[Effortless Building] %s's Building Power Level is: %s",
+  "effortlessbuilding.commands.powerlevel.success": "[Effortless Building] Set %s's Building Power Level to: %s"
 }

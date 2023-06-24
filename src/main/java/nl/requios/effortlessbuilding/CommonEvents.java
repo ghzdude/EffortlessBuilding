@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -18,6 +19,7 @@ import nl.requios.effortlessbuilding.network.ModifierSettingsPacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.systems.PowerLevel;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
+import nl.requios.effortlessbuilding.utilities.PowerLevelCommand;
 
 @EventBusSubscriber
 public class CommonEvents {
@@ -27,6 +29,11 @@ public class CommonEvents {
 	public static class ModBusEvents {
 
 
+	}
+
+	@SubscribeEvent
+	public static void registerCommands(RegisterCommandsEvent event) {
+		PowerLevelCommand.register(event.getDispatcher());
 	}
 
 	@SubscribeEvent

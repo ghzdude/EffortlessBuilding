@@ -8,6 +8,7 @@ import nl.requios.effortlessbuilding.network.PacketHandler;
 import nl.requios.effortlessbuilding.network.PowerLevelPacket;
 
 public class ServerPowerLevel {
+    public static final int MAX_POWER_LEVEL = 3; //Common access
     private static final String POWER_LEVEL_KEY = EffortlessBuilding.MODID + ":powerLevel";
 
     public int getPowerLevel(Player player) {
