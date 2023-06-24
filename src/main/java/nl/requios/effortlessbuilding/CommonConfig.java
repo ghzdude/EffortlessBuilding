@@ -29,7 +29,7 @@ public class CommonConfig {
 
 			level0 = builder
 				.comment("Maximum reach in survival without upgrades",
-					"Consume Power Level upgrades upgrades to permanently increase this.")
+					"Consume Power Level upgrades to permanently increase this.")
 				.defineInRange("reachLevel0", 0, 0, 1000);
 
 			level1 = builder
@@ -61,7 +61,7 @@ public class CommonConfig {
 
 			level0 = builder
 				.comment("In survival without upgrades",
-						"Consume Power Level upgrades upgrades to permanently increase this.",
+						"Consume Power Level upgrades to permanently increase this.",
 						"Set to 0 to disable Effortless Building until the player has increased their Building Power Level.")
 				.defineInRange("maxBlocksPlacedAtOnceLevel0", 128, 0, 100000);
 
@@ -89,12 +89,13 @@ public class CommonConfig {
 			builder.push("MaxBlocksPerAxis");
 
 			creative = builder
-				.comment("How many blocks can be placed at once per axis.")
+				.comment("How many blocks can be placed at once per axis when using build modes (e.g. walls).",
+						"Also affects the array modifier.")
 				.defineInRange("maxBlocksPerAxisCreative", 1000, 0, 1000);
 
 			level0 = builder
 				.comment("In survival without upgrades",
-						"Consume Power Level upgrades upgrades to permanently increase this.")
+						"Consume Power Level upgrades to permanently increase this.")
 				.defineInRange("maxBlocksPerAxisLevel0", 8, 0, 1000);
 
 			level1 = builder

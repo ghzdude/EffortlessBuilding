@@ -12,6 +12,7 @@
   "key.effortlessbuilding.altplacement.desc": "Alternative placement",
   "key.effortlessbuilding.previous_build_mode.desc": "Activate Previous Build Mode",
   "key.effortlessbuilding.disable_build_mode_toggle.desc": "Toggle Disabled <> Previous Build Mode",
+  "key.effortlessbuilding.upgrade_power_level": "Use to permanently upgrade your Building Power Level by 1.",
 
   "item.effortlessbuilding.randomizer_bag": "Leather Randomizer Bag",
   "item.effortlessbuilding.golden_randomizer_bag": "Golden Randomizer Bag",
@@ -19,6 +20,12 @@
   "item.effortlessbuilding.reach_upgrade1": "Reach Upgrade 1",
   "item.effortlessbuilding.reach_upgrade2": "Reach Upgrade 2",
   "item.effortlessbuilding.reach_upgrade3": "Reach Upgrade 3",
+  "item.effortlessbuilding.muscles": "Muscles",
+  "item.effortlessbuilding.muscles.desc": "Train your biceps to place multiple blocks at once.",
+  "item.effortlessbuilding.elastic_hand": "Elastic Hand",
+  "item.effortlessbuilding.elastic_hand.desc": "A flexible arm to place blocks further away.",
+  "item.effortlessbuilding.building_techniques_book": "Building Techniques Book",
+  "item.effortlessbuilding.building_techniques_book.desc": "Contains various building techniques to help you build faster.",
 
   "effortlessbuilding.mode.normal": "Disable",
   "effortlessbuilding.mode.normal_plus": "Single",
@@ -98,5 +105,6 @@
   "effortlessbuilding.tooltip.holdForControls": "Hold [%1$s] for Controls",
   "effortlessbuilding.tooltip.keyShift": "Shift",
   "effortlessbuilding.tooltip.keyCtrl": "Ctrl",
-  "effortlessbuilding.tooltip.keybind": "[%1$s]"
+  "effortlessbuilding.tooltip.keybind": "[%1$s]",
+  "fdsaf": "key.effortlessbuilding.upgrade_power_level"
 }

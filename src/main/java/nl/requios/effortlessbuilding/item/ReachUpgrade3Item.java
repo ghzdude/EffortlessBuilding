@@ -39,9 +39,9 @@ public class ReachUpgrade3Item extends Item {
 			return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
 		}
 
-		int currentLevel = EffortlessBuildingClient.POWER_LEVEL.getPowerLevel(player);
+		int currentLevel = EffortlessBuildingClient.POWER_LEVEL.getPowerLevel();
 		if (currentLevel == 2) {
-			EffortlessBuildingClient.POWER_LEVEL.setPowerLevel(player, 3);
+			EffortlessBuildingClient.POWER_LEVEL.loadPowerLevel(3);
 
 			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + EffortlessBuildingClient.POWER_LEVEL.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);

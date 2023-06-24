@@ -37,12 +37,9 @@ public class ClientEvents {
 
         @SubscribeEvent
         public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-            EffortlessBuilding.log("Registering KeyMappings!");
 
-            // register key bindings
             keyBindings = new KeyMapping[6];
 
-            // instantiate the key bindings
             keyBindings[0] = new KeyMapping("key.effortlessbuilding.mode.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_LEFT_ALT, 0), "key.effortlessbuilding.category");
             keyBindings[1] = new KeyMapping("key.effortlessbuilding.hud.desc", KeyConflictContext.IN_GAME, InputConstants.getKey(GLFW.GLFW_KEY_KP_ADD, 0), "key.effortlessbuilding.category");
             keyBindings[2] = new KeyMapping("key.effortlessbuilding.undo.desc", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.getKey(GLFW.GLFW_KEY_Z, 0), "key.effortlessbuilding.category");

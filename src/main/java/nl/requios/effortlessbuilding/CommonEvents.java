@@ -68,7 +68,7 @@ public class CommonEvents {
 		//Don't cancel event if our custom logic is breaking blocks
 		if (EffortlessBuilding.SERVER_BLOCK_PLACER.isPlacingOrBreakingBlocks()) return;
 
-		if (!ServerBuildState.isLikeVanilla(player) && PowerLevel.canBreakFar(player)) {
+		if (!ServerBuildState.isLikeVanilla(player) && EffortlessBuilding.SERVER_POWER_LEVEL.canBreakFar(player)) {
 			event.setCanceled(true);
 		}
 	}
@@ -88,6 +88,7 @@ public class CommonEvents {
 		ServerBuildState.handleNewPlayer(player);
 
 		PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new ModifierSettingsPacket(player));
+		EffortlessBuilding.SERVER_POWER_LEVEL.sendToClient(player);
 	}
 
 	@SubscribeEvent

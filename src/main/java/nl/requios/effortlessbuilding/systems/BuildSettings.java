@@ -68,6 +68,6 @@ public class BuildSettings {
     }
 
     private boolean canReplaceBlocks(){
-        return Minecraft.getInstance().player != null && PowerLevel.canReplaceBlocks(Minecraft.getInstance().player);
+        return Minecraft.getInstance().player != null && EffortlessBuildingClient.POWER_LEVEL.canReplaceBlocks(Minecraft.getInstance().player);
     }
 }

@@ -20,7 +20,6 @@ import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 
 @ParametersAreNonnullByDefault
@@ -36,12 +35,12 @@ public class ReachUpgrade1Item extends Item {
 		if (player.isCreative()) {
 			if (world.isClientSide) EffortlessBuilding.log(player, "Reach upgrades are not necessary in creative.");
 			if (world.isClientSide) EffortlessBuilding.log(player, "Still want increased reach? Use the config.");
-			return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
+			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		}
 
-		int currentLevel = EffortlessBuildingClient.POWER_LEVEL.getPowerLevel(player);
+		int currentLevel = EffortlessBuildingClient.POWER_LEVEL.getPowerLevel();
 		if (currentLevel == 0) {
-			EffortlessBuildingClient.POWER_LEVEL.setPowerLevel(player, 1);
+			EffortlessBuildingClient.POWER_LEVEL.loadPowerLevel(1);
 
 			if (world.isClientSide) EffortlessBuilding.log(player, "Upgraded reach to " + EffortlessBuildingClient.POWER_LEVEL.getMaxReach(player));
 			player.setItemInHand(hand, ItemStack.EMPTY);
@@ -56,7 +55,7 @@ public class ReachUpgrade1Item extends Item {
 			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
 		}
-		return new InteractionResultHolder<>(InteractionResult.PASS, player.getItemInHand(hand));
+		return InteractionResultHolder.consume(player.getItemInHand(hand));
 	}
 
 	@Override

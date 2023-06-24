@@ -49,12 +49,12 @@ public class ModifierSettingsPacket {
 			if (ctx.get().getDirection().getReceptionSide().isServer()) {
 				ctx.get().enqueueWork(() -> {
 					var player = ctx.get().getSender();
-					//Save to persistent player data
+					//To server, save to persistent player data
 					player.getPersistentData().put(DATA_KEY, message.modifiersTag);
 				});
 			} else {
 				ctx.get().enqueueWork(() -> {
-					//Load from persistent player data
+					//To client, load into system
 					EffortlessBuildingClient.BUILD_MODIFIERS.deserializeNBT(message.modifiersTag);
 				});
 			}

@@ -144,13 +144,17 @@ public class RadialMenu extends Screen {
 		}
 
 		//Add actions
+		boolean canReplace = Minecraft.getInstance().player != null && EffortlessBuildingClient.POWER_LEVEL.canReplaceBlocks(Minecraft.getInstance().player);
+
 //		buttons.add(new MenuButton(ActionEnum.OPEN_PLAYER_SETTINGS, -buttonDistance - 65, -13, Direction.UP));
-		buttons.add(new MenuButton(ActionEnum.TOGGLE_PROTECT_TILE_ENTITIES, -buttonDistance - 78, -13, Direction.UP));
+		if (canReplace) {
+			buttons.add(new MenuButton(ActionEnum.TOGGLE_PROTECT_TILE_ENTITIES, -buttonDistance - 78, -13, Direction.UP));
+		}
 		buttons.add(new MenuButton(ActionEnum.OPEN_MODIFIER_SETTINGS, -buttonDistance - 52, -13, Direction.UP));
 		buttons.add(new MenuButton(ActionEnum.UNDO, -buttonDistance - 26, -13, Direction.UP));
 		buttons.add(new MenuButton(ActionEnum.REDO, -buttonDistance, -13, Direction.UP));
 
-		if (Minecraft.getInstance().player != null && PowerLevel.canReplaceBlocks(Minecraft.getInstance().player)) {
+		if (canReplace) {
 			buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_AIR, -buttonDistance - 78, 13, Direction.DOWN));
 			buttons.add(new MenuButton(ActionEnum.REPLACE_BLOCKS_AND_AIR, -buttonDistance - 52, 13, Direction.DOWN));
 			buttons.add(new MenuButton(ActionEnum.REPLACE_ONLY_BLOCKS, -buttonDistance - 26, 13, Direction.DOWN));

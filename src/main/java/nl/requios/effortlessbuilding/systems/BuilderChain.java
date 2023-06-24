@@ -103,7 +103,7 @@ public class BuilderChain {
         }
 
         var player = Minecraft.getInstance().player;
-        if (player != null && !PowerLevel.canBreakFar(player)) return;
+        if (player != null && !EffortlessBuildingClient.POWER_LEVEL.canBreakFar(player)) return;
 
         if (buildingState == BuildingState.IDLE){
             buildingState = BuildingState.BREAKING;
@@ -220,7 +220,7 @@ public class BuilderChain {
         var startPos = lookingAt.getBlockPos();
 
         //Check if out of reach
-        int maxReach = EffortlessBuildingClient.POWER_LEVEL.getMaxReach(player);
+        int maxReach = EffortlessBuildingClient.POWER_LEVEL.getPlacementReach(player);
         if (player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
 
         startPosForBreaking = startPos;
@@ -240,7 +240,7 @@ public class BuilderChain {
             //We can only break
 
             //Do not break far if we are not allowed to
-            if (!shouldLookAtNear && !PowerLevel.canBreakFar(player)) return null;
+            if (!shouldLookAtNear && !EffortlessBuildingClient.POWER_LEVEL.canBreakFar(player)) return null;
         }
 
         var blockEntry = new BlockEntry(startPos);
