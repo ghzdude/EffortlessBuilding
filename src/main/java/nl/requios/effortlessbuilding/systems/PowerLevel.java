@@ -17,6 +17,10 @@ public class PowerLevel {
 		return powerLevel;
 	}
 
+	public int getNextPowerLevel() {
+		return Math.min(powerLevel + 1, ServerPowerLevel.MAX_POWER_LEVEL);
+	}
+
 	public void setPowerLevel(int powerLevel) {
 		this.powerLevel = powerLevel;
 		EffortlessBuildingClient.BUILD_MODIFIERS.onPowerLevelChanged(powerLevel);
@@ -39,8 +43,12 @@ public class PowerLevel {
 	}
 
 	public int getPlacementReach(Player player) {
+		return getPlacementReach(player, false);
+	}
+
+	public int getPlacementReach(Player player, boolean nextPowerLevel) {
 		if (player.isCreative()) return CommonConfig.reach.creative.get();
-		return switch (getPowerLevel()) {
+		return switch (nextPowerLevel ? getNextPowerLevel() : getPowerLevel()) {
 			case 1 -> CommonConfig.reach.level1.get();
 			case 2 -> CommonConfig.reach.level2.get();
 			case 3 -> CommonConfig.reach.level3.get();
@@ -55,8 +63,12 @@ public class PowerLevel {
 	}
 
 	public int getMaxBlocksPlacedAtOnce(Player player) {
+		return getMaxBlocksPlacedAtOnce(player, false);
+	}
+
+	public int getMaxBlocksPlacedAtOnce(Player player, boolean nextPowerLevel) {
 		if (player.isCreative()) return CommonConfig.maxBlocksPlacedAtOnce.creative.get();
-		return switch (getPowerLevel()) {
+		return switch (nextPowerLevel ? getNextPowerLevel() : getPowerLevel()) {
 			case 1 -> CommonConfig.maxBlocksPlacedAtOnce.level1.get();
 			case 2 -> CommonConfig.maxBlocksPlacedAtOnce.level2.get();
 			case 3 -> CommonConfig.maxBlocksPlacedAtOnce.level3.get();
@@ -65,8 +77,12 @@ public class PowerLevel {
 	}
 
 	public int getMaxBlocksPerAxis(Player player) {
+		return getMaxBlocksPerAxis(player, false);
+	}
+
+	public int getMaxBlocksPerAxis(Player player, boolean nextPowerLevel) {
 		if (player.isCreative()) return CommonConfig.maxBlocksPerAxis.creative.get();
-		return switch (getPowerLevel()) {
+		return switch (nextPowerLevel ? getNextPowerLevel() : getPowerLevel()) {
 			case 1 -> CommonConfig.maxBlocksPerAxis.level1.get();
 			case 2 -> CommonConfig.maxBlocksPerAxis.level2.get();
 			case 3 -> CommonConfig.maxBlocksPerAxis.level3.get();
@@ -75,8 +91,12 @@ public class PowerLevel {
 	}
 
 	public int getMaxMirrorRadius(Player player) {
+		return getMaxMirrorRadius(player, false);
+	}
+
+	public int getMaxMirrorRadius(Player player, boolean nextPowerLevel) {
 		if (player.isCreative()) return CommonConfig.maxMirrorRadius.creative.get();
-		return switch (getPowerLevel()) {
+		return switch (getPowerLevel() + (nextPowerLevel ? 1 : 0)) {
 			case 1 -> CommonConfig.maxMirrorRadius.level1.get();
 			case 2 -> CommonConfig.maxMirrorRadius.level2.get();
 			case 3 -> CommonConfig.maxMirrorRadius.level3.get();

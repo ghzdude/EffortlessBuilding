@@ -15,6 +15,13 @@
   "key.effortlessbuilding.upgrade_power_level": "Right-click to permanently increase your Building Power Level by 1.",
   "key.effortlessbuilding.use_reach_upgrade": "Consume to increase your Building Power Level to %s.",
   "key.effortlessbuilding.require_previous_reach_upgrades": "Previous upgrades need to be consumed first.",
+  "key.effortlessbuilding.power_level": "Power Level",
+  "key.effortlessbuilding.placement_reach": "Placement reach",
+  "key.effortlessbuilding.max_blocks_per_axis": "Max blocks per axis",
+  "key.effortlessbuilding.max_blocks_placed_at_once": "Max blocks placed at once",
+  "key.effortlessbuilding.max_mirror_radius": "Max (radial) mirror radius",
+  "key.effortlessbuilding.next_power_level": "Next Power Level",
+  "key.effortlessbuilding.next_power_level_how": "Increase your Power Level by looting power items in dungeons and other structures.",
 
   "item.effortlessbuilding.randomizer_bag": "Leather Randomizer Bag",
   "item.effortlessbuilding.golden_randomizer_bag": "Golden Randomizer Bag",

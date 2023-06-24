@@ -7,7 +7,6 @@ import net.minecraft.world.phys.Vec3;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 
 import java.util.ArrayList;
 import java.util.List;

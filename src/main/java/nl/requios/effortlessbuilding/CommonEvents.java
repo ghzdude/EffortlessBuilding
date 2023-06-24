@@ -17,7 +17,6 @@ import net.minecraftforge.network.PacketDistributor;
 import nl.requios.effortlessbuilding.compatibility.CompatHelper;
 import nl.requios.effortlessbuilding.network.ModifierSettingsPacket;
 import nl.requios.effortlessbuilding.network.PacketHandler;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 import nl.requios.effortlessbuilding.utilities.PowerLevelCommand;
 
