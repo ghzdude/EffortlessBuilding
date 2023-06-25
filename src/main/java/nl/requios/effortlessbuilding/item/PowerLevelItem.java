@@ -15,6 +15,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
+import nl.requios.effortlessbuilding.create.foundation.item.TooltipHelper;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -60,7 +61,7 @@ public class PowerLevelItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag isAdvanced) {
-        tooltip.add(Component.translatable(getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("key.effortlessbuilding.upgrade_power_level").withStyle(ChatFormatting.BLUE));
+        tooltip.addAll(TooltipHelper.cutTextComponent(Component.translatable(getDescriptionId() + ".desc"), ChatFormatting.GRAY, ChatFormatting.GRAY));
+        tooltip.addAll(TooltipHelper.cutTextComponent(Component.translatable("key.effortlessbuilding.upgrade_power_level"), ChatFormatting.BLUE, ChatFormatting.BLUE));
     }
 }

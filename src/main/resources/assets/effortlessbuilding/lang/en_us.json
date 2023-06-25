@@ -73,8 +73,8 @@
   "effortlessbuilding.action.open_modifier_settings": "Open Modifier Settings",
   "effortlessbuilding.action.open_player_settings": "Open Build Settings",
 
-  "effortlessbuilding.action.replace_only_air": "Don't Replace Blocks",
-  "effortlessbuilding.action.replace_only_air.description": "You will only place blocks where there is no block already. Replaceables such as grass will still be replaced.",
+  "effortlessbuilding.action.replace_only_air": "Replace Only Air",
+  "effortlessbuilding.action.replace_only_air.description": "You will only place blocks where there was air. Replaceables such as grass will still be replaced.",
   "effortlessbuilding.action.replace_blocks_and_air": "Replace Blocks And Air",
   "effortlessbuilding.action.replace_blocks_and_air.description": "You will replace blocks and air.",
   "effortlessbuilding.action.replace_only_blocks": "Replace Only Blocks",
@@ -82,7 +82,7 @@
   "effortlessbuilding.action.replace_filtered_by_offhand": "Filter By Offhand",
   "effortlessbuilding.action.replace_filtered_by_offhand.description": "You will only replace blocks that match the block in your offhand. If you don't have a block in your offhand, you will only replace air. If you have a randomizer bag in your offhand, you will only replace blocks that are contained in the bag.",
   "effortlessbuilding.action.toggle_protect_tile_entities": "Protect Tile Entities",
-  "effortlessbuilding.action.toggle_protect_tile_entities.description": "Blocks that hold data such as chests, furnaces, and hoppers will not be replaced.",
+  "effortlessbuilding.action.toggle_protect_tile_entities.description": "If enabled, blocks that hold data such as chests, furnaces, and hoppers will not be replaced.",
 
   "effortlessbuilding.action.build_speed": "Build Speed",
   "effortlessbuilding.action.filling": "Filling",
