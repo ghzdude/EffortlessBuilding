@@ -208,8 +208,10 @@ public class BuilderChain {
 
     private BlockEntry findStartPosition(Player player, BuildModeEnum buildMode) {
 
+        int maxReach = EffortlessBuildingClient.POWER_LEVEL.getPlacementReach(player);
+
         //Determine if we should look far or nearby
-        boolean shouldLookAtNear = buildMode == BuildModeEnum.DISABLED;
+        boolean shouldLookAtNear = buildMode == BuildModeEnum.DISABLED || maxReach < 3;
         if (shouldLookAtNear) {
             lookingAt = lookingAtNear;
         } else {
@@ -220,8 +222,7 @@ public class BuilderChain {
         var startPos = lookingAt.getBlockPos();
 
         //Check if out of reach
-        int maxReach = EffortlessBuildingClient.POWER_LEVEL.getPlacementReach(player);
-        if (player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
+        if (!shouldLookAtNear && player.blockPosition().distSqr(startPos) > maxReach * maxReach) return null;
 
         startPosForBreaking = startPos;
 
