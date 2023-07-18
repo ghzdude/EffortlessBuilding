@@ -7,11 +7,12 @@ buildscript {
         maven { url = 'https://maven.parchmentmc.org' }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: "${forgegradle_version}", changing: false
+        classpath "net.minecraftforge.gradle:ForgeGradle:${forgegradle_version}"
         classpath "org.spongepowered:mixingradle:${mixingradle_version}"
         classpath "org.parchmentmc:librarian:${librarian_version}"
     }
 }
+
 plugins {
     id 'com.matthewprenger.cursegradle' version "${cursegradle_version}"
 }
@@ -33,7 +34,8 @@ archivesBaseName = "effortlessbuilding-${artifact_minecraft_version}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + ' (' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
 minecraft {
     mappings channel: 'parchment', version: "${parchment_version}-${minecraft_version}"
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
@@ -69,7 +71,7 @@ minecraft {
         }
 
         data {
-			workingDirectory project.file('run')
+            workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'effortlessbuilding', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources')
@@ -90,38 +92,16 @@ minecraft {
 
 repositories {
     maven {
-        // Location of the maven that hosts JEI files (and TiC)
-        name 'Progwml6 maven'
-        url 'https://dvs1.progwml6.com/files/maven'
+        // location of the maven for Registrate and Flywheel
+        name = 'tterrag maven'
+        url = 'https://maven.tterrag.com'
     }
-    /*maven {
-        // Location of a maven mirror for JEI files, as a fallback
-        name 'ModMaven'
-        url 'https://modmaven.k-4u.nl'
-    }*/
+
     maven {
-        // Location of the maven for vazkii's mods
-        name 'blamejared'
-        url 'https://maven.blamejared.com'
-    }
-    maven {
-        // Location of the maven for mixed mappings, Registrate, and Flywheel
-        name 'tterrag maven'
-        url 'https://maven.tterrag.com'
-    }
-    maven {
-        url 'https://www.cursemaven.com'
+        url = 'https://www.cursemaven.com'
         content {
             includeGroup "curse.maven"
         }
-    }
-    maven {
-        //location of the maven for dynamic trees
-        url 'https://harleyoconnor.com/maven'
-    }
-    maven {
-        //location of the maven for curios api
-        url = "https://maven.theillusivec4.top/"
     }
     maven {
         name = "Modrinth"
@@ -129,6 +109,11 @@ repositories {
         content {
             includeGroup "maven.modrinth"
         }
+    }
+
+    mavenLocal()
+    flatDir {
+        dirs 'libs'
     }
 }
 
@@ -147,7 +132,7 @@ dependencies {
 
     // Prevent Mixin annotation processor from getting into IntelliJ's annotation processor settings
     // This allows 'Settings > Build, Execution, and Deployment > Build Tools > Gradle > Build and run using' set to IntelliJ to work correctly
-    if (System.getProperty('idea.sync.active') != 'true') {
+    if (!Boolean.getBoolean('idea.sync.active')) {
         annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
     }
 }
@@ -179,6 +164,7 @@ jar {
 }
 
 task jarJarRelease {
+    group = 'jarjar'
     doLast {
         tasks.jarJar {
             classifier = ''
@@ -205,6 +191,7 @@ publishing {
             jarJar.component(it)
         }
     }
+
     repositories {
         if (project.hasProperty('mavendir')) {
             maven { url mavendir }
