@@ -100,7 +100,7 @@ public class UndoRedo {
 //
 //	//add to undo stack
 //	public static void addUndo(Player player, UndoRedoBlockSet blockSet) {
-//		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level().isClientSide ? undoStacksClient : undoStacksServer;
 //
 //		//Assert coordinates is as long as previous and new blockstate lists
 //		if (blockSet.getCoordinates().size() != blockSet.getPreviousBlockStates().size() ||
@@ -127,7 +127,7 @@ public class UndoRedo {
 //	}
 //
 //	private static void addRedo(Player player, UndoRedoBlockSet blockSet) {
-//		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level().isClientSide ? redoStacksClient : redoStacksServer;
 //
 //		//(No asserts necessary, it's private)
 //
@@ -140,7 +140,7 @@ public class UndoRedo {
 //	}
 //
 //	public static boolean undo(Player player) {
-//		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level.isClientSide ? undoStacksClient : undoStacksServer;
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> undoStacks = player.level().isClientSide ? undoStacksClient : undoStacksServer;
 //
 //		if (!undoStacks.containsKey(player.getUUID())) return false;
 //
@@ -156,7 +156,7 @@ public class UndoRedo {
 //		//Find up to date itemstacks in player inventory
 //		List<ItemStack> itemStacks = findItemStacksInInventory(player, previousBlockStates);
 //
-//		if (player.level.isClientSide) {
+//		if (player.level().isClientSide) {
 ////			BlockPreviews.onBlocksBroken(coordinates, itemStacks, newBlockStates, blockSet.getSecondPos(), blockSet.getFirstPos());
 //		} else {
 //			//break all those blocks, reset to what they were
@@ -172,7 +172,7 @@ public class UndoRedo {
 //					previousBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
 //				}
 //
-//				if (player.level.isLoaded(coordinate)) {
+//				if (player.level().isLoaded(coordinate)) {
 //					//check itemstack empty
 //					if (itemStack.isEmpty() && !player.isCreative()) {
 //						itemStack = findItemStackInInventory(player, previousBlockStates.get(i));
@@ -185,9 +185,9 @@ public class UndoRedo {
 //							previousBlockState = Blocks.AIR.defaultBlockState();
 //						}
 //					}
-//					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
+//					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level(), player, coordinate, true);
 //					//if previousBlockState is air, placeBlock will set it to air
-//					SurvivalHelper.placeBlock(player.level, player, coordinate, previousBlockState, itemStack, true, false, false);
+//					SurvivalHelper.placeBlock(player.level(), player, coordinate, previousBlockState, itemStack, true, false, false);
 //				}
 //			}
 //		}
@@ -199,7 +199,7 @@ public class UndoRedo {
 //	}
 //
 //	public static boolean redo(Player player) {
-//		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level.isClientSide ? redoStacksClient : redoStacksServer;
+//		Map<UUID, FixedStack<UndoRedoBlockSet>> redoStacks = player.level().isClientSide ? redoStacksClient : redoStacksServer;
 //
 //		if (!redoStacks.containsKey(player.getUUID())) return false;
 //
@@ -215,7 +215,7 @@ public class UndoRedo {
 //		//Find up to date itemstacks in player inventory
 //		List<ItemStack> itemStacks = findItemStacksInInventory(player, newBlockStates);
 //
-//		if (player.level.isClientSide) {
+//		if (player.level().isClientSide) {
 ////			BlockPreviews.onBlocksPlaced(coordinates, itemStacks, newBlockStates, blockSet.getFirstPos(), blockSet.getSecondPos());
 //		} else {
 //			//place blocks
@@ -231,7 +231,7 @@ public class UndoRedo {
 //					newBlockState = ((BlockItem) itemStack.getItem()).getBlock().defaultBlockState();
 //				}
 //
-//				if (player.level.isLoaded(coordinate)) {
+//				if (player.level().isLoaded(coordinate)) {
 //					//check itemstack empty
 //					if (itemStack.isEmpty() && !player.isCreative()) {
 //						itemStack = findItemStackInInventory(player, newBlockStates.get(i));
@@ -244,8 +244,8 @@ public class UndoRedo {
 //							newBlockState = Blocks.AIR.defaultBlockState();
 //						}
 //					}
-//					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level, player, coordinate, true);
-//					SurvivalHelper.placeBlock(player.level, player, coordinate, newBlockState, itemStack, true, false, false);
+//					if (itemStack.isEmpty()) SurvivalHelper.breakBlock(player.level(), player, coordinate, true);
+//					SurvivalHelper.placeBlock(player.level(), player, coordinate, newBlockState, itemStack, true, false, false);
 //				}
 //			}
 //		}
@@ -286,8 +286,8 @@ public class UndoRedo {
 		//then anything it drops
 		if (itemStack.isEmpty()) {
 			//Cannot check drops on clientside because loot tables are server only
-			if (!player.level.isClientSide) {
-				List<ItemStack> itemsDropped = Block.getDrops(blockState, (ServerLevel) player.level, BlockPos.ZERO, null);
+			if (!player.level().isClientSide) {
+				List<ItemStack> itemsDropped = Block.getDrops(blockState, (ServerLevel) player.level(), BlockPos.ZERO, null);
 				for (ItemStack itemStackDropped : itemsDropped) {
 					if (itemStackDropped.getItem() instanceof BlockItem) {
 						Block block = ((BlockItem) itemStackDropped.getItem()).getBlock();

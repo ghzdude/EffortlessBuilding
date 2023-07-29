@@ -25,7 +25,7 @@ import java.util.List;
 @MethodsReturnNonnullByDefault
 public class PowerLevelItem extends Item {
     public PowerLevelItem() {
-        super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS));
+        super(new Item.Properties());
     }
 
     @Override
@@ -39,7 +39,7 @@ public class PowerLevelItem extends Item {
                 EffortlessBuilding.log(player, "Upgraded power level to " + EffortlessBuildingClient.POWER_LEVEL.getPowerLevel());
                 player.setItemInHand(hand, ItemStack.EMPTY);
 
-                SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
+                SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("entity.player.levelup"));
                 player.playSound(soundEvent, 1f, 1f);
 
                 return InteractionResultHolder.consume(player.getItemInHand(hand));
@@ -48,7 +48,7 @@ public class PowerLevelItem extends Item {
 
                 EffortlessBuilding.log(player, "Already reached maximum power level!");
 
-                SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
+                SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("item.armor.equip_leather"));
                 player.playSound(soundEvent, 1f, 1f);
 
                 return InteractionResultHolder.fail(player.getItemInHand(hand));

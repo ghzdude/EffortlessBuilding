@@ -14,7 +14,7 @@ import nl.requios.effortlessbuilding.utilities.SurvivalHelper;
 @OnlyIn(Dist.CLIENT)
 public class BuilderFilter {
     public void filterOnCoordinates(BlockSet blocks, Player player) {
-        var world = player.level;
+        var world = player.level();
         var iter = blocks.entrySet().iterator();
         while (iter.hasNext()) {
             var pos = iter.next().getValue().blockPos;
@@ -43,7 +43,7 @@ public class BuilderFilter {
             if (placing && !buildSettings.shouldReplaceFiltered()) {
                 if (!buildSettings.shouldReplaceAir() && blockState.isAir()) remove = true;
                 boolean isReplaceable = blockState.getMaterial().isReplaceable();
-//                boolean isSolid = blockState.isRedstoneConductor(player.level, blockEntry.blockPos);
+//                boolean isSolid = blockState.isRedstoneConductor(player.level(), blockEntry.blockPos);
                 if (!buildSettings.shouldReplaceBlocks() && !isReplaceable) remove = true;
             }
 
@@ -78,7 +78,7 @@ public class BuilderFilter {
 
         boolean remove = false;
 
-        if (placing && !PlaceChecker.shouldPlaceBlock(player.level, blockEntry)) remove = true;
+        if (placing && !PlaceChecker.shouldPlaceBlock(player.level(), blockEntry)) remove = true;
 
         return remove;
     }

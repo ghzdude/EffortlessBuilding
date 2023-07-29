@@ -1,6 +1,6 @@
 package nl.requios.effortlessbuilding.buildmode;
 
-import com.mojang.math.Vector4f;
+import org.joml.Vector4f;
 
 public enum BuildModeCategoryEnum {
     BASIC(new Vector4f(0f, .5f, 1f, .8f)),

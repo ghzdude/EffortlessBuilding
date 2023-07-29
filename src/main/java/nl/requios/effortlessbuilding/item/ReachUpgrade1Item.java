@@ -27,7 +27,7 @@ import net.minecraft.world.InteractionResultHolder;
 public class ReachUpgrade1Item extends Item {
 
 	public ReachUpgrade1Item() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
+		super(new Item.Properties().stacksTo(1));
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class ReachUpgrade1Item extends Item {
 			EffortlessBuilding.log(player, "Upgraded power level to " + EffortlessBuildingClient.POWER_LEVEL.getPowerLevel());
 			player.setItemInHand(hand, ItemStack.EMPTY);
 
-			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("entity.player.levelup"));
+			SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("entity.player.levelup"));
 			player.playSound(soundEvent, 1f, 1f);
 
 			return InteractionResultHolder.consume(player.getItemInHand(hand));
@@ -51,7 +51,7 @@ public class ReachUpgrade1Item extends Item {
 
 			EffortlessBuilding.log(player, "Already used this upgrade! Current power level is " + EffortlessBuildingClient.POWER_LEVEL.getPowerLevel() + ".");
 
-			SoundEvent soundEvent = new SoundEvent(new ResourceLocation("item.armor.equip_leather"));
+			SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(new ResourceLocation("item.armor.equip_leather"));
 			player.playSound(soundEvent, 1f, 1f);
 
 		}

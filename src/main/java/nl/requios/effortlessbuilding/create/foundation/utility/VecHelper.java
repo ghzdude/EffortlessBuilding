@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -237,7 +237,7 @@ public class VecHelper {
 		 */
 		Camera ari = Minecraft.getInstance().gameRenderer.getMainCamera();
 		Vec3 camera_pos = ari.getPosition();
-		Quaternion camera_rotation_conj = ari.rotation()
+		Quaternionf camera_rotation_conj = ari.rotation()
 			.copy();
 		camera_rotation_conj.conj();
 
@@ -257,12 +257,12 @@ public class VecHelper {
 				float f = distwalked_modified - playerentity.walkDistO;
 				float f1 = -(distwalked_modified + f * partialTicks);
 				float f2 = Mth.lerp(partialTicks, playerentity.oBob, playerentity.bob);
-				Quaternion q2 =
-					new Quaternion(Vector3f.XP, Math.abs(Mth.cos(f1 * (float) Math.PI - 0.2F) * f2) * 5.0F, true);
+				Quaternionf q2 =
+					new Quaternionf(Vector3f.XP, Math.abs(Mth.cos(f1 * (float) Math.PI - 0.2F) * f2) * 5.0F, true);
 				q2.conj();
 				result3f.transform(q2);
 
-				Quaternion q1 = new Quaternion(Vector3f.ZP, Mth.sin(f1 * (float) Math.PI) * f2 * 3.0F, true);
+				Quaternionf q1 = new Quaternionf(Vector3f.ZP, Mth.sin(f1 * (float) Math.PI) * f2 * 3.0F, true);
 				q1.conj();
 				result3f.transform(q1);
 

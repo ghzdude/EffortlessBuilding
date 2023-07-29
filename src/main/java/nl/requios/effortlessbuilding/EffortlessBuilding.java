@@ -1,11 +1,15 @@
 package nl.requios.effortlessbuilding;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
@@ -54,6 +58,7 @@ public class EffortlessBuilding {
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
 	private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, EffortlessBuilding.MODID);
 	public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIERS = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, EffortlessBuilding.MODID);
+	private static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, EffortlessBuilding.MODID);
 
 	public static final RegistryObject<Item> RANDOMIZER_BAG_ITEM = ITEMS.register("randomizer_bag", RandomizerBagItem::new);
 	public static final RegistryObject<Item> GOLDEN_RANDOMIZER_BAG_ITEM = ITEMS.register("golden_randomizer_bag", GoldenRandomizerBagItem::new);
@@ -69,6 +74,12 @@ public class EffortlessBuilding {
 	public static final RegistryObject<MenuType<GoldenRandomizerBagContainer>> GOLDEN_RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("golden_randomizer_bag", () -> registerContainer(GoldenRandomizerBagContainer::new));
 	public static final RegistryObject<MenuType<DiamondRandomizerBagContainer>> DIAMOND_RANDOMIZER_BAG_CONTAINER = CONTAINERS.register("diamond_randomizer_bag", () -> registerContainer(DiamondRandomizerBagContainer::new));
 
+	public static final RegistryObject<CreativeModeTab> CREATIVE_TAB = CREATIVE_TABS.register("effortlessbuilding",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("key.effortlessbuilding.category"))
+					.icon(() -> new ItemStack(RANDOMIZER_BAG_ITEM.get()))
+					.displayItems(new EBCreativeModeTab())
+					.build());
 
 	public EffortlessBuilding() {
 		instance = this;
@@ -87,6 +98,8 @@ public class EffortlessBuilding {
 		var singleItemLootModifier = SingleItemLootModifier.CODEC; //load this class to register the loot modifier
 		LOOT_MODIFIERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
+		CREATIVE_TABS.register(FMLJavaModLoadingContext.get().getModEventBus());
+
 		//Register config
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.spec);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.spec);
@@ -100,7 +113,7 @@ public class EffortlessBuilding {
 	}
 
 	public static <T extends AbstractContainerMenu> MenuType<T> registerContainer(IContainerFactory<T> fact){
-		MenuType<T> type = new MenuType<T>(fact);
+		MenuType<T> type = new MenuType<T>(fact, FeatureFlagSet.of());
 		return type;
 	}
 

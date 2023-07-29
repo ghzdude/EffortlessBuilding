@@ -14,11 +14,11 @@ import com.jozufozu.flywheel.util.transform.Transform;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import nl.requios.effortlessbuilding.create.foundation.block.render.SpriteShiftEntry;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 
@@ -264,7 +264,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 	}
 
 	@Override
-	public SuperByteBuffer multiply(Quaternion quaternion) {
+	public SuperByteBuffer multiply(Quaternionf quaternion) {
 		transforms.mulPose(quaternion);
 		return this;
 	}
@@ -321,7 +321,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 		return this;
 	}
 
-	public SuperByteBuffer rotateCentered(Quaternion q) {
+	public SuperByteBuffer rotateCentered(Quaternionf q) {
 		translate(.5f, .5f, .5f).multiply(q)
 				.translate(-.5f, -.5f, -.5f);
 		return this;

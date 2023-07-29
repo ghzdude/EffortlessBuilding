@@ -50,7 +50,7 @@ public abstract class AbstractRandomizerBagItem extends Item {
     private static final Random rand = new Random(currentSeed);
 
     public AbstractRandomizerBagItem() {
-        super(new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
+        super(new Item.Properties().stacksTo(1));
     }
 
     public abstract int getInventorySize();

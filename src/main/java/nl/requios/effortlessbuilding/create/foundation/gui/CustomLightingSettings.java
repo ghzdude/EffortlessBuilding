@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.create.foundation.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public class CustomLightingSettings implements ILightingSettings {
 
