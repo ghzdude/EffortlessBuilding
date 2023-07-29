@@ -231,7 +231,7 @@ public class BuilderChain {
 
             //Offset in direction of sidehit if not quickreplace and not replaceable
             boolean shouldOffsetStartPosition = EffortlessBuildingClient.BUILD_SETTINGS.shouldOffsetStartPosition();
-            boolean replaceable = player.level().getBlockState(startPos).getMaterial().isReplaceable();
+            boolean replaceable = player.level().getBlockState(startPos).canBeReplaced();
             boolean becomesDoubleSlab = SurvivalHelper.doesBecomeDoubleSlab(player, startPos);
             if (!shouldOffsetStartPosition && !replaceable && !becomesDoubleSlab) {
                 startPos = startPos.relative(lookingAt.getDirection());

@@ -433,6 +433,10 @@ public class RadialMenu extends Screen {
 		return n > 0 ? 1 : -1;
 	}
 
+	private double getBlitOffset(){
+		return 0;
+	}
+
 	@Override
 	public boolean isPauseScreen() {
 		return false;

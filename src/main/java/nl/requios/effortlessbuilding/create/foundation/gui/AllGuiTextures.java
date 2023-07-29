@@ -12,7 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public enum AllGuiTextures implements ScreenElement {
 
-	// Widgets
+	// Renderables
 	BUTTON("widgets", 18, 18),
 	BUTTON_HOVER("widgets", 18, 0, 18, 18),
 	BUTTON_DOWN("widgets", 36, 0, 18, 18),

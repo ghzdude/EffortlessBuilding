@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Button;
@@ -34,7 +34,7 @@ public class GuiNumberField extends GuiComponent {
 
 	List<Component> tooltip = new ArrayList<>();
 
-	public GuiNumberField(Font font, List<Widget> renderables, int x, int y, int width, int height) {
+	public GuiNumberField(Font font, List<Renderable> renderables, int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;

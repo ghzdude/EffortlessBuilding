@@ -92,7 +92,7 @@ public class TileEntityRenderHelper {
 		if (lightTransform != null) {
 			Vector4f lightVec = new Vector4f(contraptionPos.getX() + .5f, contraptionPos.getY() + .5f, contraptionPos.getZ() + .5f, 1);
 			lightVec.transform(lightTransform);
-			return new BlockPos(lightVec.x(), lightVec.y(), lightVec.z());
+			return BlockPos.containing(lightVec.x(), lightVec.y(), lightVec.z());
 		} else {
 			return contraptionPos;
 		}
