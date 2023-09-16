@@ -1,9 +1,15 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.ghost;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.jozufozu.flywheel.core.model.ModelUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+//import nl.requios.effortlessbuilding.create.foundation.placement.PlacementHelpers;
 import nl.requios.effortlessbuilding.create.foundation.render.SuperRenderTypeBuffer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -18,11 +24,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public abstract class GhostBlockRenderer {
 
@@ -38,12 +42,13 @@ public abstract class GhostBlockRenderer {
 		return TRANSPARENT;
 	}
 
-	public abstract void render(PoseStack ms, SuperRenderTypeBuffer buffer, GhostBlockParams params);
+	public abstract void render(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera, GhostBlockParams params);
 
 	private static class DefaultGhostBlockRenderer extends GhostBlockRenderer {
 
 		@Override
-		public void render(PoseStack ms, SuperRenderTypeBuffer buffer, GhostBlockParams params) {
+		public void render(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera, GhostBlockParams params) {
+			ms.pushPose();
 			BlockRenderDispatcher dispatcher = Minecraft.getInstance()
 				.getBlockRenderer();
 			ModelBlockRenderer renderer = dispatcher.getModelRenderer();
@@ -54,7 +59,7 @@ public abstract class GhostBlockRenderer {
 			BakedModel model = dispatcher.getBlockModel(state);
 
 			ms.pushPose();
-			ms.translate(pos.getX(), pos.getY(), pos.getZ());
+			ms.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
 
 			for (RenderType layer : model.getRenderTypes(state, RandomSource.create(42L), ModelUtil.VIRTUAL_DATA)) {
 				VertexConsumer vb = buffer.getEarlyBuffer(layer);
@@ -70,13 +75,15 @@ public abstract class GhostBlockRenderer {
 	private static class TransparentGhostBlockRenderer extends GhostBlockRenderer {
 
 		@Override
-		public void render(PoseStack ms, SuperRenderTypeBuffer buffer, GhostBlockParams params) {
+		public void render(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera, GhostBlockParams params) {
+			ms.pushPose();
+
 			Minecraft mc = Minecraft.getInstance();
 			BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
 
 			BlockState state = params.state;
 			BlockPos pos = params.pos;
-			float alpha = params.alphaSupplier.get()/*  * .75f* PlacementHelpers.getCurrentAlpha()*/;
+			float alpha = params.alphaSupplier.get()/* * .75f * PlacementHelpers.getCurrentAlpha()*/;
 			float scale = params.scaleSupplier.get();
 			Color color = params.rgbSupplier.get();
 
@@ -84,9 +91,7 @@ public abstract class GhostBlockRenderer {
 			RenderType layer = RenderType.translucent();
 			VertexConsumer vb = buffer.getEarlyBuffer(layer);
 
-			ms.pushPose();
-			ms.translate(pos.getX(), pos.getY(), pos.getZ());
-
+			ms.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
 			ms.translate(.5, .5, .5);
 			ms.scale(scale, scale, scale);
 			ms.translate(-.5, -.5, -.5);
@@ -107,12 +112,12 @@ public abstract class GhostBlockRenderer {
 			for (Direction direction : Direction.values()) {
 				random.setSeed(42L);
 				renderQuadList(pose, consumer, red, green, blue, alpha,
-					model.getQuads(state, direction, random, modelData, renderType), packedLight, packedOverlay);
+					model.getQuads(state, direction, random, modelData, null), packedLight, packedOverlay);
 			}
 
 			random.setSeed(42L);
 			renderQuadList(pose, consumer, red, green, blue, alpha,
-				model.getQuads(state, null, random, modelData, renderType), packedLight, packedOverlay);
+				model.getQuads(state, null, random, modelData, null), packedLight, packedOverlay);
 		}
 
 		// ModelBlockRenderer
