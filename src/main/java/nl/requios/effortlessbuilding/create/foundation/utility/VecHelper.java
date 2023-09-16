@@ -1,7 +1,12 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import javax.annotation.Nullable;
+
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import nl.requios.effortlessbuilding.create.foundation.mixin.accessor.GameRendererAccessor;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -19,8 +24,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.phys.Vec3;
-
-import javax.annotation.Nullable;
 
 public class VecHelper {
 
@@ -184,7 +187,7 @@ public class VecHelper {
 	}
 
 	public static Vec3 clamp(Vec3 vec, float maxLength) {
-		return vec.length() > maxLength ? vec.normalize()
+		return vec.lengthSqr() > maxLength * maxLength ? vec.normalize()
 			.scale(maxLength) : vec;
 	}
 
@@ -204,6 +207,14 @@ public class VecHelper {
 		return new Vec3(Mth.clamp(vec.x, -maxLength, maxLength), Mth.clamp(vec.y, -maxLength, maxLength),
 			Mth.clamp(vec.z, -maxLength, maxLength));
 	}
+	
+	public static Vec3 componentMin(Vec3 vec1, Vec3 vec2) {
+		return new Vec3(Math.min(vec1.x, vec2.x), Math.min(vec1.y, vec2.y), Math.min(vec1.z, vec2.z));
+	}
+	
+	public static Vec3 componentMax(Vec3 vec1, Vec3 vec2) {
+		return new Vec3(Math.max(vec1.x, vec2.x), Math.max(vec1.y, vec2.y), Math.max(vec1.z, vec2.z));
+	}
 
 	public static Vec3 project(Vec3 vec, Vec3 ontoVec) {
 		if (ontoVec.equals(Vec3.ZERO))
@@ -215,7 +226,7 @@ public class VecHelper {
 	public static Vec3 intersectSphere(Vec3 origin, Vec3 lineDirection, Vec3 sphereCenter, double radius) {
 		if (lineDirection.equals(Vec3.ZERO))
 			return null;
-		if (lineDirection.length() != 1)
+		if (lineDirection.lengthSqr() != 1)
 			lineDirection = lineDirection.normalize();
 
 		Vec3 diff = origin.subtract(sphereCenter);
@@ -237,13 +248,12 @@ public class VecHelper {
 		 */
 		Camera ari = Minecraft.getInstance().gameRenderer.getMainCamera();
 		Vec3 camera_pos = ari.getPosition();
-		Quaternionf camera_rotation_conj = ari.rotation()
-			.copy();
-		camera_rotation_conj.conj();
+		Quaternionf camera_rotation_conj = new Quaternionf(ari.rotation());
+		camera_rotation_conj.conjugate();
 
 		Vector3f result3f = new Vector3f((float) (camera_pos.x - target.x), (float) (camera_pos.y - target.y),
 			(float) (camera_pos.z - target.z));
-		result3f.transform(camera_rotation_conj);
+		result3f.rotate(camera_rotation_conj);
 
 		// ----- compensate for view bobbing (if active) -----
 		// the following code adapted from GameRenderer::applyBobbing (to invert it)
@@ -258,23 +268,23 @@ public class VecHelper {
 				float f1 = -(distwalked_modified + f * partialTicks);
 				float f2 = Mth.lerp(partialTicks, playerentity.oBob, playerentity.bob);
 				Quaternionf q2 =
-					new Quaternionf(Vector3f.XP, Math.abs(Mth.cos(f1 * (float) Math.PI - 0.2F) * f2) * 5.0F, true);
-				q2.conj();
-				result3f.transform(q2);
+					com.mojang.math.Axis.XP.rotationDegrees(Math.abs(Mth.cos(f1 * (float) Math.PI - 0.2F) * f2) * 5.0F);
+				q2.conjugate();
+				result3f.rotate(q2);
 
-				Quaternionf q1 = new Quaternionf(Vector3f.ZP, Mth.sin(f1 * (float) Math.PI) * f2 * 3.0F, true);
-				q1.conj();
-				result3f.transform(q1);
+				Quaternionf q1 = com.mojang.math.Axis.ZP.rotationDegrees(Mth.sin(f1 * (float) Math.PI) * f2 * 3.0F);
+				q1.conjugate();
+				result3f.rotate(q1);
 
 				Vector3f bob_translation = new Vector3f((Mth.sin(f1 * (float) Math.PI) * f2 * 0.5F),
 					(-Math.abs(Mth.cos(f1 * (float) Math.PI) * f2)), 0.0f);
-				bob_translation.setY(-bob_translation.y()); // this is weird but hey, if it works
+				bob_translation.y = -bob_translation.y(); // this is weird but hey, if it works
 				result3f.add(bob_translation);
 			}
 		}
 
 		// ----- adjust for fov -----
-		float fov = 70;//(float) ((GameRendererAccessor) mc.gameRenderer).create$callGetFov(ari, partialTicks, true);
+		float fov = (float) ((GameRendererAccessor) mc.gameRenderer).create$callGetFov(ari, partialTicks, true);
 
 		float half_height = (float) mc.getWindow()
 			.getGuiScaledHeight() / 2;
@@ -308,7 +318,7 @@ public class VecHelper {
 			return null;
 		if (intersect[0] < 0 || intersect[1] < 0)
 			return null;
-		if (intersect[0] > pDiff.length() || intersect[1] > qDiff.length())
+		if (intersect[0] * intersect[0] > pDiff.lengthSqr() || intersect[1] * intersect[1] > qDiff.lengthSqr())
 			return null;
 		return intersect;
 	}

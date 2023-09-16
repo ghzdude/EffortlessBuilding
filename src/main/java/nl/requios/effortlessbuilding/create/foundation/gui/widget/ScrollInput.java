@@ -1,17 +1,19 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.widget;
 
-import nl.requios.effortlessbuilding.create.AllKeys;
-//import nl.requios.effortlessbuilding.create.AllSoundEvents;
-import nl.requios.effortlessbuilding.create.foundation.utility.Components;
-import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-//import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import nl.requios.effortlessbuilding.create.AllKeys;
+import nl.requios.effortlessbuilding.create.AllSoundEvents;
+import nl.requios.effortlessbuilding.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour.StepContext;
+import nl.requios.effortlessbuilding.create.foundation.utility.Components;
+import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public class ScrollInput extends AbstractSimiWidget {
 
@@ -20,8 +22,10 @@ public class ScrollInput extends AbstractSimiWidget {
 	protected Component title = Lang.translateDirect("gui.scrollInput.defaultTitle");
 	protected final Component scrollToModify = Lang.translateDirect("gui.scrollInput.scrollToModify");
 	protected final Component shiftScrollsFaster = Lang.translateDirect("gui.scrollInput.shiftScrollsFaster");
+	protected Component hint = null;
 	protected Label displayLabel;
 	protected boolean inverted;
+	protected boolean soundPlayed;
 	protected Function<Integer, Component> formatter;
 
 	protected int min, max;
@@ -36,6 +40,7 @@ public class ScrollInput extends AbstractSimiWidget {
 		shiftStep = 5;
 		step = standardStep();
 		formatter = i -> Components.literal(String.valueOf(i));
+		soundPlayed = false;
 	}
 
 	public Function<StepContext, Integer> standardStep() {
@@ -74,6 +79,12 @@ public class ScrollInput extends AbstractSimiWidget {
 		return this;
 	}
 
+	public ScrollInput addHint(MutableComponent hint) {
+		this.hint = hint;
+		updateTooltip();
+		return this;
+	}
+
 	public ScrollInput withStepFunction(Function<StepContext, Integer> step) {
 		this.step = step;
 		return this;
@@ -84,6 +95,12 @@ public class ScrollInput extends AbstractSimiWidget {
 		if (label != null)
 			writeToLabel();
 		return this;
+	}
+	
+	@Override
+	public void tick() {
+		super.tick();
+		soundPlayed = false;
 	}
 
 	public int getState() {
@@ -106,8 +123,6 @@ public class ScrollInput extends AbstractSimiWidget {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-		if (!this.visible || !this.isHovered) return false; //Added
-		
 		if (inverted)
 			delta *= -1;
 
@@ -128,12 +143,16 @@ public class ScrollInput extends AbstractSimiWidget {
 		clampState();
 
 		if (priorState != state) {
-//			Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 1.5f + 0.1f * (state-min)/(max-min)));
+//			if (!soundPlayed)
+//				Minecraft.getInstance()
+//					.getSoundManager()
+//					.play(SimpleSoundInstance.forUI(AllSoundEvents.SCROLL_VALUE.getMainEvent(),
+//						1.5f + 0.1f * (state - min) / (max - min)));
+//			soundPlayed = true;
 			onChanged();
 		}
 
-//		return priorState != state;
-		return true; //Changed
+		return priorState != state;
 	}
 
 	protected void clampState() {
@@ -161,6 +180,9 @@ public class ScrollInput extends AbstractSimiWidget {
 			return;
 		toolTip.add(title.plainCopy()
 			.withStyle(s -> s.withColor(HEADER_RGB)));
+		if (hint != null)
+			toolTip.add(hint.plainCopy()
+				.withStyle(s -> s.withColor(HINT_RGB)));
 		toolTip.add(scrollToModify.plainCopy()
 			.withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_GRAY));
 		toolTip.add(shiftScrollsFaster.plainCopy()

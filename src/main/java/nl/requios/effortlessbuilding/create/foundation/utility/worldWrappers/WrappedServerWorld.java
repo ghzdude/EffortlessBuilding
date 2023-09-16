@@ -1,5 +1,12 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.worldWrappers;
 
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import nl.requios.effortlessbuilding.create.foundation.mixin.accessor.EntityAccessor;
+
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -20,10 +27,6 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.ticks.LevelTicks;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Collections;
-import java.util.List;
-
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class WrappedServerWorld extends ServerLevel {
@@ -35,7 +38,7 @@ public class WrappedServerWorld extends ServerLevel {
 			(ServerLevelData) world.getLevelData(), world.dimension(),
 			new LevelStem(world.dimensionTypeRegistration(), world.getChunkSource().getGenerator()),
 			new DummyStatusListener(), world.isDebug(), world.getBiomeManager().biomeZoomSeed,
-			Collections.emptyList(), false);
+			Collections.emptyList(), false, world.getRandomSequences());
 		this.world = world;
 	}
 
@@ -92,7 +95,7 @@ public class WrappedServerWorld extends ServerLevel {
 
 	@Override
 	public boolean addFreshEntity(Entity entityIn) {
-		entityIn.level = world;
+		((EntityAccessor) entityIn).create$callSetLevel(world);
 		return world.addFreshEntity(entityIn);
 	}
 

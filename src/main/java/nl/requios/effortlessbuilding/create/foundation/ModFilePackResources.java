@@ -1,16 +1,16 @@
 package nl.requios.effortlessbuilding.create.foundation;
 
+import java.nio.file.Path;
+
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.resource.PathPackResources;
-
-import java.nio.file.Path;
 
 public class ModFilePackResources extends PathPackResources {
 	protected final IModFile modFile;
 	protected final String sourcePath;
 
 	public ModFilePackResources(String name, IModFile modFile, String sourcePath) {
-		super(name, modFile.findResource(sourcePath));
+		super(name, true, modFile.findResource(sourcePath));
 		this.modFile = modFile;
 		this.sourcePath = sourcePath;
 	}

@@ -1,10 +1,10 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.worldWrappers;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkStatus;
-
-import javax.annotation.Nullable;
 
 public class DummyStatusListener implements ChunkProgressListener {
 

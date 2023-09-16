@@ -1,9 +1,10 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
-import net.minecraft.client.Minecraft;
-
 import java.text.NumberFormat;
 import java.util.Locale;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
 
 public class LangNumberFormat {
 
@@ -17,7 +18,6 @@ public class LangNumberFormat {
 	public void update() {
 		format = NumberFormat.getInstance(Minecraft.getInstance()
 			.getLanguageManager()
-			.getSelected()
 			.getJavaLocale());
 		format.setMaximumFractionDigits(2);
 		format.setMinimumFractionDigits(0);
@@ -25,6 +25,8 @@ public class LangNumberFormat {
 	}
 
 	public static String format(double d) {
+		if (Mth.equal(d, 0))
+			d = 0;
 		return numberFormat.get()
 			.format(d)
 			.replace("\u00A0", " ");

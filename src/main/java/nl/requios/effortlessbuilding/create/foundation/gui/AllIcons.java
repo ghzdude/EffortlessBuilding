@@ -1,14 +1,16 @@
 package nl.requios.effortlessbuilding.create.foundation.gui;
 
+import org.joml.Matrix4f;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.joml.Matrix4f;
 import nl.requios.effortlessbuilding.create.Create;
 import nl.requios.effortlessbuilding.create.foundation.gui.element.DelegatedStencilElement;
 import nl.requios.effortlessbuilding.create.foundation.gui.element.ScreenElement;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-import net.minecraft.client.gui.GuiComponent;
+
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -19,7 +21,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class AllIcons implements ScreenElement {
 
-	public static final ResourceLocation ICON_ATLAS = Create.asResource("textures/gui/create_icons.png");
+	public static final ResourceLocation ICON_ATLAS = Create.asResource("textures/gui/icons.png");
 	public static final int ICON_ATLAS_SIZE = 256;
 
 	private static int x = 0, y = -1;
@@ -81,7 +83,7 @@ public class AllIcons implements ScreenElement {
 	public static final AllIcons
 		I_TOOL_DEPLOY = newRow(),
 		I_SKIP_MISSING = next(),
-		I_SKIP_TILES = next(),
+		I_SKIP_BLOCK_ENTITIES = next(),
 		I_DICE = next(),
 		I_TUNNEL_SPLIT = next(),
 		I_TUNNEL_FORCED_SPLIT = next(),
@@ -103,6 +105,10 @@ public class AllIcons implements ScreenElement {
 
 		I_ADD_INVERTED_ATTRIBUTE = next(),
 		I_FLIP = next(),
+		
+		I_ROLLER_PAVE = next(),
+		I_ROLLER_FILL = next(),
+		I_ROLLER_WIDE_FILL = next(),
 
 		I_PLAY = newRow(),
 		I_PAUSE = next(),
@@ -122,9 +128,14 @@ public class AllIcons implements ScreenElement {
 		I_PATTERN_CHANCE_75 = next(),
 		I_FOLLOW_DIAGONAL = next(),
 		I_FOLLOW_MATERIAL = next(),
+		
+		I_CLEAR_CHECKED = next(),
 
 		I_SCHEMATIC = newRow(),
 		I_SEQ_REPEAT = next(),
+		VALUE_BOX_HOVER_6PX = next(),
+		VALUE_BOX_HOVER_4PX = next(),
+		VALUE_BOX_HOVER_8PX = next(),
 
 		I_MTD_LEFT = newRow(),
 		I_MTD_CLOSE = next(),
@@ -173,20 +184,13 @@ public class AllIcons implements ScreenElement {
 
 	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void render(PoseStack matrixStack, int x, int y) {
-		bind();
-		GuiComponent.blit(matrixStack, x, y, 0, iconX, iconY, 16, 16, 256, 256);
-	}
-
-	@OnlyIn(Dist.CLIENT)
-	public void render(PoseStack matrixStack, int x, int y, GuiComponent component) {
-		bind();
-		component.blit(matrixStack, x, y, iconX, iconY, 16, 16);
+	public void render(GuiGraphics graphics, int x, int y) {
+		graphics.blit(ICON_ATLAS, x, y, 0, iconX, iconY, 16, 16, 256, 256);
 	}
 
 	@OnlyIn(Dist.CLIENT)
 	public void render(PoseStack ms, MultiBufferSource buffer, int color) {
-		VertexConsumer builder = buffer.getBuffer(RenderType.textSeeThrough(ICON_ATLAS));
+		VertexConsumer builder = buffer.getBuffer(RenderType.text(ICON_ATLAS));
 		Matrix4f matrix = ms.last().pose();
 		Color rgb = new Color(color);
 		int light = LightTexture.FULL_BRIGHT;

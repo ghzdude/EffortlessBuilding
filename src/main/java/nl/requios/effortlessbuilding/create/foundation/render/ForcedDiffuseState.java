@@ -1,9 +1,10 @@
 package nl.requios.effortlessbuilding.create.foundation.render;
 
-import com.jozufozu.flywheel.util.DiffuseLightCalculator;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import javax.annotation.Nullable;
+
+import com.jozufozu.flywheel.util.DiffuseLightCalculator;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public final class ForcedDiffuseState {
 	private static final ThreadLocal<ObjectArrayList<DiffuseLightCalculator>> FORCED_DIFFUSE = ThreadLocal.withInitial(ObjectArrayList::new);

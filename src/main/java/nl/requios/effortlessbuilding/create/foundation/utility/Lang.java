@@ -1,15 +1,16 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import nl.requios.effortlessbuilding.create.Create;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fluids.FluidStack;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 public class Lang {
 

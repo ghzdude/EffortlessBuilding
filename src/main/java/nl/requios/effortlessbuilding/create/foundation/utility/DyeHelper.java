@@ -1,11 +1,12 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import java.util.Map;
+
 import com.google.common.collect.ImmutableMap;
+
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
-
-import java.util.Map;
 
 public class DyeHelper {
 

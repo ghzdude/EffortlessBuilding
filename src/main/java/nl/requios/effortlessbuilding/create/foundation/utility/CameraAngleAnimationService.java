@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
 import nl.requios.effortlessbuilding.create.foundation.utility.animation.LerpedFloat;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 

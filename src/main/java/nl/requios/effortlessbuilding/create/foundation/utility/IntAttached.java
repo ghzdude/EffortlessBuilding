@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
-import net.minecraft.nbt.CompoundTag;
-
 import java.util.Comparator;
 import java.util.function.Function;
+
+import net.minecraft.nbt.CompoundTag;
 
 public class IntAttached<V> extends Pair<Integer, V> {
 

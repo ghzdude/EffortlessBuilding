@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.animation;
 
 import nl.requios.effortlessbuilding.create.foundation.utility.AngleHelper;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 
@@ -94,7 +95,7 @@ public class LerpedFloat {
 	}
 
 	public boolean settled() {
-		return Mth.equal((double) previousValue, value);
+		return Mth.equal((double) previousValue, value) && (chaseFunction == null || Mth.equal((double) value, chaseTarget));
 	}
 
 	public float getChaseTarget() {

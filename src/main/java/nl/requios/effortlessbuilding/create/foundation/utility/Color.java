@@ -1,12 +1,15 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
-import com.google.common.hash.Hashing;
-import org.joml.Vector3f;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
+import java.util.function.UnaryOperator;
 
 import javax.annotation.Nonnull;
-import java.util.function.UnaryOperator;
+
+import org.joml.Vector3f;
+
+import com.google.common.hash.Hashing;
+
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 public class Color {
 	public final static Color TRANSPARENT_BLACK = new Color(0, 0, 0, 0).setImmutable();

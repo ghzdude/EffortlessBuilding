@@ -1,7 +1,10 @@
 package nl.requios.effortlessbuilding.create.foundation.render;
 
+import java.util.SortedMap;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.ChunkBufferBuilderPack;
@@ -9,8 +12,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.ModelBakery;
-
-import java.util.SortedMap;
 
 public class SuperRenderTypeBuffer implements MultiBufferSource {
 
@@ -83,7 +84,7 @@ public class SuperRenderTypeBuffer implements MultiBufferSource {
 					put(map, p_173062_);
 				});
 			});
-		private final BufferSource bufferSource = MultiBufferSource.immediateWithBuffers(fixedBuffers, new BufferBuilder(256));
+		private final MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediateWithBuffers(fixedBuffers, new BufferBuilder(256));
 
 		private static void put(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, RenderType type) {
 			map.put(type, new BufferBuilder(type.bufferSize()));

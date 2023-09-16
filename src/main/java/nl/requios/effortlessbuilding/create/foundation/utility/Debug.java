@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
 import nl.requios.effortlessbuilding.create.Create;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

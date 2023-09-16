@@ -1,5 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -11,7 +13,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
-import org.jetbrains.annotations.NotNull;
 
 public final class RegisteredObjects {
 	// registry argument for easier porting to 1.19

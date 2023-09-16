@@ -1,12 +1,12 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import java.util.List;
+
 import joptsimple.internal.Strings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.List;
 
 public class LangBuilder {
 

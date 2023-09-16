@@ -1,16 +1,23 @@
 package nl.requios.effortlessbuilding.create.foundation.render;
 
+import java.util.Iterator;
+
+import javax.annotation.Nullable;
+
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
+
 import com.jozufozu.flywheel.backend.Backend;
 import com.jozufozu.flywheel.backend.instancing.InstancedRenderRegistry;
 import com.jozufozu.flywheel.config.BackendType;
 import com.jozufozu.flywheel.core.virtual.VirtualRenderWorld;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import nl.requios.effortlessbuilding.create.Create;
 import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
 import nl.requios.effortlessbuilding.create.foundation.utility.RegisteredObjects;
+import nl.requios.effortlessbuilding.create.infrastructure.config.AllConfigs;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -20,43 +27,40 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nullable;
-import java.util.Iterator;
+public class BlockEntityRenderHelper {
 
-public class TileEntityRenderHelper {
-
-	public static void renderTileEntities(Level world, Iterable<BlockEntity> customRenderTEs, PoseStack ms,
+	public static void renderBlockEntities(Level world, Iterable<BlockEntity> customRenderBEs, PoseStack ms,
 			MultiBufferSource buffer) {
-		renderTileEntities(world, null, customRenderTEs, ms, null, buffer);
+		renderBlockEntities(world, null, customRenderBEs, ms, null, buffer);
 	}
 
-	public static void renderTileEntities(Level world, Iterable<BlockEntity> customRenderTEs, PoseStack ms,
+	public static void renderBlockEntities(Level world, Iterable<BlockEntity> customRenderBEs, PoseStack ms,
 			MultiBufferSource buffer, float pt) {
-		renderTileEntities(world, null, customRenderTEs, ms, null, buffer, pt);
+		renderBlockEntities(world, null, customRenderBEs, ms, null, buffer, pt);
 	}
 
-	public static void renderTileEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
-			Iterable<BlockEntity> customRenderTEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer) {
-		renderTileEntities(world, renderWorld, customRenderTEs, ms, lightTransform, buffer,
+	public static void renderBlockEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
+			Iterable<BlockEntity> customRenderBEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer) {
+		renderBlockEntities(world, renderWorld, customRenderBEs, ms, lightTransform, buffer,
 			AnimationTickHolder.getPartialTicks());
 	}
 
-	public static void renderTileEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
-			Iterable<BlockEntity> customRenderTEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer,
+	public static void renderBlockEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
+			Iterable<BlockEntity> customRenderBEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer,
 			float pt) {
-		Iterator<BlockEntity> iterator = customRenderTEs.iterator();
+		Iterator<BlockEntity> iterator = customRenderBEs.iterator();
 		while (iterator.hasNext()) {
-			BlockEntity tileEntity = iterator.next();
-			if (Backend.getBackendType() == BackendType.INSTANCING && Backend.isFlywheelWorld(renderWorld) && InstancedRenderRegistry.shouldSkipRender(tileEntity))
+			BlockEntity blockEntity = iterator.next();
+			if (Backend.getBackendType() == BackendType.INSTANCING && Backend.isFlywheelWorld(renderWorld) && InstancedRenderRegistry.shouldSkipRender(blockEntity))
 				continue;
 
-			BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(tileEntity);
+			BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(blockEntity);
 			if (renderer == null) {
 				iterator.remove();
 				continue;
 			}
 
-			BlockPos pos = tileEntity.getBlockPos();
+			BlockPos pos = blockEntity.getBlockPos();
 			ms.pushPose();
 			TransformStack.cast(ms)
 				.translate(pos);
@@ -66,22 +70,22 @@ public class TileEntityRenderHelper {
 
 				if (renderWorld != null) {
 					// Swap the real world for the render world so that the renderer gets contraption-local information
-					tileEntity.setLevel(renderWorld);
-					renderer.render(tileEntity, pt, ms, buffer, worldLight, OverlayTexture.NO_OVERLAY);
-					tileEntity.setLevel(world);
+					blockEntity.setLevel(renderWorld);
+					renderer.render(blockEntity, pt, ms, buffer, worldLight, OverlayTexture.NO_OVERLAY);
+					blockEntity.setLevel(world);
 				} else {
-					renderer.render(tileEntity, pt, ms, buffer, worldLight, OverlayTexture.NO_OVERLAY);
+					renderer.render(blockEntity, pt, ms, buffer, worldLight, OverlayTexture.NO_OVERLAY);
 				}
 
 			} catch (Exception e) {
 				iterator.remove();
 
-				String message = "BlockEntity " + RegisteredObjects.getKeyOrThrow(tileEntity.getType())
+				String message = "BlockEntity " + RegisteredObjects.getKeyOrThrow(blockEntity.getType())
 					.toString() + " could not be rendered virtually.";
-//				if (AllConfigs.CLIENT.explainRenderErrors.get())
-					Create.LOGGER.error(message, e);
+//				if (AllConfigs.client().explainRenderErrors.get())
+//					Create.LOGGER.error(message, e);
 //				else
-//					Create.LOGGER.error(message);
+					Create.LOGGER.error(message);
 			}
 
 			ms.popPose();
@@ -91,7 +95,7 @@ public class TileEntityRenderHelper {
 	private static BlockPos getLightPos(@Nullable Matrix4f lightTransform, BlockPos contraptionPos) {
 		if (lightTransform != null) {
 			Vector4f lightVec = new Vector4f(contraptionPos.getX() + .5f, contraptionPos.getY() + .5f, contraptionPos.getZ() + .5f, 1);
-			lightVec.transform(lightTransform);
+			lightVec.mul(lightTransform);
 			return BlockPos.containing(lightVec.x(), lightVec.y(), lightVec.z());
 		} else {
 			return contraptionPos;

@@ -1,8 +1,5 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
-import net.minecraft.world.level.LevelAccessor;
-
-import javax.annotation.Nonnull;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +8,10 @@ import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.annotation.Nonnull;
+
+import net.minecraft.world.level.LevelAccessor;
 
 public class WorldAttached<T> {
 

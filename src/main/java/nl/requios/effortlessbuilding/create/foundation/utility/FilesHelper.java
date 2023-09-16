@@ -1,20 +1,22 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import nl.requios.effortlessbuilding.create.Create;
-import net.minecraft.nbt.CompoundTag;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import net.minecraft.nbt.CompoundTag;
 
 public class FilesHelper {
 
@@ -26,15 +28,15 @@ public class FilesHelper {
 		}
 	}
 
-	public static String findFirstValidFilename(String name, String folderPath, String extension) {
+	public static String findFirstValidFilename(String name, Path folderPath, String extension) {
 		int index = 0;
 		String filename;
-		String filepath;
+		Path filepath;
 		do {
 			filename = slug(name) + ((index == 0) ? "" : "_" + index) + "." + extension;
 			index++;
-			filepath = folderPath + "/" + filename;
-		} while (Files.exists(Paths.get(filepath)));
+			filepath = folderPath.resolve(filename);
+		} while (Files.exists(filepath));
 		return filename;
 	}
 

@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.worldWrappers;
 
+import java.util.function.BiFunction;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-
-import java.util.function.BiFunction;
 
 public class RayTraceWorld implements BlockGetter {
 

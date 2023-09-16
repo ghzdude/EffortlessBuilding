@@ -1,6 +1,9 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import nl.requios.effortlessbuilding.create.foundation.ponder.PonderWorld;
+import nl.requios.effortlessbuilding.create.foundation.ponder.ui.PonderUI;
 import nl.requios.effortlessbuilding.create.foundation.utility.worldWrappers.WrappedClientWorld;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.LevelAccessor;
 
@@ -43,7 +46,7 @@ public class AnimationTickHolder {
 	public static int getTicks(LevelAccessor world) {
 		if (world instanceof WrappedClientWorld)
 			return getTicks(((WrappedClientWorld) world).getWrappedWorld());
-		return getTicks();
+		return /*world instanceof PonderWorld ? PonderUI.ponderTicks : */getTicks();
 	}
 
 	public static float getRenderTime(LevelAccessor world) {
@@ -51,6 +54,6 @@ public class AnimationTickHolder {
 	}
 
 	public static float getPartialTicks(LevelAccessor world) {
-		return getPartialTicks();
+		return /*world instanceof PonderWorld ? PonderUI.getPartialTicks() : */getPartialTicks();
 	}
 }

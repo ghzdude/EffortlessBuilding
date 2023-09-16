@@ -1,16 +1,18 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
+import java.text.BreakIterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.joml.Matrix4f;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import org.joml.Matrix4f;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-
-import java.text.BreakIterator;
-import java.util.LinkedList;
-import java.util.List;
 
 public final class FontHelper {
 
@@ -78,7 +80,7 @@ public final class FontHelper {
 			MultiBufferSource.BufferSource irendertypebuffer$impl = MultiBufferSource.immediate(Tesselator.getInstance()
 				.getBuilder());
 			int i = font.drawInBatch(p_228078_1_, p_228078_2_, p_228078_3_, p_228078_4_, p_228078_6_, p_228078_5_,
-				irendertypebuffer$impl, false, 0, LightTexture.FULL_BRIGHT);
+				irendertypebuffer$impl, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
 			irendertypebuffer$impl.endBatch();
 			return i;
 		}

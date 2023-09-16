@@ -1,31 +1,35 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.element;
 
+import javax.annotation.Nullable;
+
 import com.jozufozu.flywheel.core.PartialModel;
 import com.jozufozu.flywheel.core.model.ModelUtil;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.joml.Vector3f;
-//import nl.requios.effortlessbuilding.create.foundation.fluid.FluidRenderer;
+import com.mojang.math.Axis;
 import nl.requios.effortlessbuilding.create.foundation.gui.ILightingSettings;
 import nl.requios.effortlessbuilding.create.foundation.gui.UIRenderHelper;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 import nl.requios.effortlessbuilding.create.foundation.utility.VecHelper;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -36,8 +40,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.fluids.FluidStack;
-
-import javax.annotation.Nullable;
 
 public class GuiGameElement {
 
@@ -125,9 +127,9 @@ public class GuiGameElement {
 			matrixStack.translate(xLocal, yLocal, zLocal);
 			UIRenderHelper.flipForGuiRender(matrixStack);
 			matrixStack.translate(rotationOffset.x, rotationOffset.y, rotationOffset.z);
-			matrixStack.mulPose(Vector3f.ZP.rotationDegrees((float) zRot));
-			matrixStack.mulPose(Vector3f.XP.rotationDegrees((float) xRot));
-			matrixStack.mulPose(Vector3f.YP.rotationDegrees((float) yRot));
+			matrixStack.mulPose(Axis.ZP.rotationDegrees((float) zRot));
+			matrixStack.mulPose(Axis.XP.rotationDegrees((float) xRot));
+			matrixStack.mulPose(Axis.YP.rotationDegrees((float) yRot));
 			matrixStack.translate(-rotationOffset.x, -rotationOffset.y, -rotationOffset.z);
 		}
 
@@ -162,7 +164,8 @@ public class GuiGameElement {
 		}
 
 		@Override
-		public void render(PoseStack matrixStack) {
+		public void render(GuiGraphics graphics) {
+			PoseStack matrixStack = graphics.pose();
 			prepareMatrix(matrixStack);
 
 			Minecraft mc = Minecraft.getInstance();
@@ -231,7 +234,7 @@ public class GuiGameElement {
 
 //			FluidRenderer.renderFluidBox(new FluidStack(blockState.getFluidState()
 //				.getType(), 1000), 0, 0, 0, 1, 1, 1, buffer, ms, LightTexture.FULL_BRIGHT, false);
-//			buffer.endBatch();
+			buffer.endBatch();
 		}
 	}
 
@@ -256,7 +259,8 @@ public class GuiGameElement {
 		}
 
 		@Override
-		public void render(PoseStack matrixStack) {
+		public void render(GuiGraphics graphics) {
+			PoseStack matrixStack = graphics.pose();
 			prepareMatrix(matrixStack);
 			transformMatrix(matrixStack);
 			renderItemIntoGUI(matrixStack, stack, customLighting == null);
@@ -270,10 +274,11 @@ public class GuiGameElement {
 			renderer.textureManager.getTexture(InventoryMenu.BLOCK_ATLAS).setFilter(false, false);
 			RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
 			RenderSystem.enableBlend();
-			RenderSystem.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
+			RenderSystem.enableCull();
+			RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			matrixStack.pushPose();
-			matrixStack.translate(0, 0, 100.0F + renderer.blitOffset);
+			matrixStack.translate(0, 0, 100.0F);
 			matrixStack.translate(8.0F, -8.0F, 0.0F);
 			matrixStack.scale(16.0F, 16.0F, 16.0F);
 			MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -282,8 +287,10 @@ public class GuiGameElement {
 				Lighting.setupForFlatItems();
 			}
 
-			renderer.render(stack, ItemTransforms.TransformType.GUI, false, matrixStack, buffer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedModel);
+			renderer.render(stack, ItemDisplayContext.GUI, false, matrixStack, buffer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedModel);
+			RenderSystem.disableDepthTest();
 			buffer.endBatch();
+			
 			RenderSystem.enableDepthTest();
 			if (useDefaultLighting && flatLighting) {
 				Lighting.setupFor3DItems();

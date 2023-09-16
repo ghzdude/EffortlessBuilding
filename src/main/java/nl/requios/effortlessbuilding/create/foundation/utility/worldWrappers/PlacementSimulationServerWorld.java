@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.worldWrappers;
 
+import java.util.HashMap;
+import java.util.function.Predicate;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-
-import java.util.HashMap;
-import java.util.function.Predicate;
 
 public class PlacementSimulationServerWorld extends WrappedServerWorld {
 	public HashMap<BlockPos, BlockState> blocksAdded;

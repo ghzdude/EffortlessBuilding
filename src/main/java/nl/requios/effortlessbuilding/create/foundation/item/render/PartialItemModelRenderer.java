@@ -4,14 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import nl.requios.effortlessbuilding.create.foundation.render.RenderTypes;
 import nl.requios.effortlessbuilding.create.foundation.utility.Iterate;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.client.model.data.ModelData;
@@ -23,12 +24,12 @@ public class PartialItemModelRenderer {
 	private final RandomSource random = RandomSource.create();
 
 	private ItemStack stack;
-	private ItemTransforms.TransformType transformType;
+	private ItemDisplayContext transformType;
 	private PoseStack ms;
 	private MultiBufferSource buffer;
 	private int overlay;
 
-	public static PartialItemModelRenderer of(ItemStack stack, ItemTransforms.TransformType transformType,
+	public static PartialItemModelRenderer of(ItemStack stack, ItemDisplayContext transformType,
 		PoseStack ms, MultiBufferSource buffer, int overlay) {
 		PartialItemModelRenderer instance = INSTANCE;
 		instance.stack = stack;
@@ -47,13 +48,13 @@ public class PartialItemModelRenderer {
 		render(model, RenderTypes.getItemPartialSolid(), light);
 	}
 
-//	public void renderSolidGlowing(BakedModel model, int light) {
-//		render(model, RenderTypes.getGlowingSolid(), light);
-//	}
-//
-//	public void renderGlowing(BakedModel model, int light) {
-//		render(model, RenderTypes.getGlowingTranslucent(), light);
-//	}
+	public void renderSolidGlowing(BakedModel model, int light) {
+		render(model, RenderTypes.getGlowingSolid(), light);
+	}
+
+	public void renderGlowing(BakedModel model, int light) {
+		render(model, RenderTypes.getGlowingTranslucent(), light);
+	}
 
 	public void render(BakedModel model, RenderType type, int light) {
 		if (stack.isEmpty())

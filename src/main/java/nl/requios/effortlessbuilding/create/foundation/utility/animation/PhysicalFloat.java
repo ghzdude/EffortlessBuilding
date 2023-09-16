@@ -1,8 +1,8 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.animation;
 
-import net.minecraft.util.Mth;
-
 import java.util.ArrayList;
+
+import net.minecraft.util.Mth;
 
 public class PhysicalFloat {
 

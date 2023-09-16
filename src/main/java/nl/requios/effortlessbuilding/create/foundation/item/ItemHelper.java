@@ -1,6 +1,16 @@
 package nl.requios.effortlessbuilding.create.foundation.item;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.mutable.MutableInt;
+
 import nl.requios.effortlessbuilding.create.foundation.utility.Pair;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.util.Mth;
@@ -10,15 +20,16 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
-import org.apache.commons.lang3.mutable.MutableInt;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class ItemHelper {
+
+	public static boolean sameItem(ItemStack stack, ItemStack otherStack) {
+		return !otherStack.isEmpty() && stack.is(otherStack.getItem());
+	}
+	
+	public static Predicate<ItemStack> sameItemPredicate(ItemStack stack) {
+		return s -> sameItem(stack, s);
+	}
 
 	public static void dropContents(Level world, BlockPos pos, IItemHandler inv) {
 		for (int slot = 0; slot < inv.getSlots(); slot++)
@@ -122,7 +133,7 @@ public class ItemHelper {
 			return true;
 		if (stacks1.length == stacks2.length) {
 			for (int i = 0; i < stacks1.length; i++)
-				if (!ItemStack.isSame(stacks1[i], stacks2[i]))
+				if (!ItemStack.isSameItem(stacks1[i], stacks2[i]))
 					return false;
 			return true;
 		}

@@ -1,6 +1,7 @@
 package nl.requios.effortlessbuilding.create;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.resources.ResourceLocation;
 
 public enum AllSpecialTextures {
