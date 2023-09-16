@@ -2,7 +2,7 @@ package nl.requios.effortlessbuilding.create;
 
 import nl.requios.effortlessbuilding.create.foundation.render.SuperByteBufferCache;
 import nl.requios.effortlessbuilding.create.foundation.utility.ghost.GhostBlocks;
-import nl.requios.effortlessbuilding.create.foundation.utility.outliner.Outliner;
+import nl.requios.effortlessbuilding.create.foundation.outliner.Outliner;
 
 public class CreateClient {
     public static final SuperByteBufferCache BUFFER_CACHE = new SuperByteBufferCache();
