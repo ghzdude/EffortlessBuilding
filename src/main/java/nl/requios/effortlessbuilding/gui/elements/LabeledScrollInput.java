@@ -3,6 +3,7 @@ package nl.requios.effortlessbuilding.gui.elements;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.Label;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.ScrollInput;
@@ -30,12 +31,12 @@ public class LabeledScrollInput extends ScrollInput {
     }
     
     @Override
-    public void renderButton(@NotNull PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-        super.renderButton(ms, mouseX, mouseY, partialTicks);
+    public void renderButton(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderButton(graphics, mouseX, mouseY, partialTicks);
         
-        label.x = x + width / 2 - Minecraft.getInstance().font.width(label.text) / 2;
-        label.y = y + height / 2 - Minecraft.getInstance().font.lineHeight / 2;
-        label.renderButton(ms, mouseX, mouseY, partialTicks);
+        label.setX(getX() + width / 2 - Minecraft.getInstance().font.width(label.text) / 2);
+        label.setY(getY() + height / 2 - Minecraft.getInstance().font.lineHeight / 2);
+        label.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }
     
     @Override

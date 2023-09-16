@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
@@ -65,7 +66,7 @@ public class PlayerSettingsGui extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		this.renderBackground(ms);
 
 		int yy = top;
@@ -189,7 +190,7 @@ public class PlayerSettingsGui extends Screen {
 
 		//From AbstractSelectionList, disabled parts
 		@Override
-		public void render(PoseStack ms, int p_render_1_, int p_render_2_, float p_render_3_) {
+		public void render(GuiGraphics graphics, int p_render_1_, int p_render_2_, float p_render_3_) {
 			this.renderBackground(ms);
 			int i = this.getScrollbarPosition();
 			int j = i + 6;

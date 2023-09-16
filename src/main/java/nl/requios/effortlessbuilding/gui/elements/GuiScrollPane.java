@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -72,7 +73,7 @@ public class GuiScrollPane extends SlotGui {
 
 	//Removed background
 	@Override
-	public void render(PoseStack ms, int mouseXIn, int mouseYIn, float partialTicks) {
+	public void render(GuiGraphics graphics, int mouseXIn, int mouseYIn, float partialTicks) {
 		if (this.visible) {
 			this.mouseX = mouseXIn;
 			this.mouseY = mouseYIn;
@@ -91,7 +92,7 @@ public class GuiScrollPane extends SlotGui {
 			}
 
 			//All entries
-			this.renderList(ms, insideLeft, insideTop, mouseXIn, mouseYIn, partialTicks);
+			this.renderList(graphics, insideLeft, insideTop, mouseXIn, mouseYIn, partialTicks);
 			RenderSystem.disableDepthTest();
 
 			//Dirt overlays on top and bottom
@@ -100,7 +101,7 @@ public class GuiScrollPane extends SlotGui {
 
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-			RenderSystem.disableTexture();
+//			RenderSystem.disableTexture();
 
 			//top
 //            bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
@@ -149,7 +150,7 @@ public class GuiScrollPane extends SlotGui {
 			}
 
 			//this.renderDecorations(mouseXIn, mouseYIn);
-			RenderSystem.enableTexture();
+//			RenderSystem.enableTexture();
 			RenderSystem.disableBlend();
 		}
 	}
@@ -353,7 +354,7 @@ public class GuiScrollPane extends SlotGui {
 			if (this.renderSelection && this.isSelectedItem(i)) {
 				int i1 = this.x0 + this.width / 2 - this.getRowWidth() / 2;
 				int j1 = this.x0 + this.width / 2 + this.getRowWidth() / 2;
-				RenderSystem.disableTexture();
+//				RenderSystem.disableTexture();
 				float f = this.isFocused() ? 1.0F : 0.5F;
 				RenderSystem.setShaderColor(f, f, f, 1.0F);
 				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
@@ -369,7 +370,7 @@ public class GuiScrollPane extends SlotGui {
 				bufferbuilder.vertex(j1 - 1, y - 1, 0.0D).endVertex();
 				bufferbuilder.vertex(i1 + 1, y - 1, 0.0D).endVertex();
 				tessellator.end();
-				RenderSystem.enableTexture();
+//				RenderSystem.enableTexture();
 			}
 
 			this.renderItem(ms, i, insideLeft, y, entryHeight2, mouseXIn, mouseYIn, partialTicks);

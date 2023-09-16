@@ -225,7 +225,7 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements R
 			if (this.renderSelection && this.isSelectedItem(j)) {
 				int i1 = this.x0 + this.width / 2 - this.getRowWidth() / 2;
 				int j1 = this.x0 + this.width / 2 + this.getRowWidth() / 2;
-				RenderSystem.disableTexture();
+//				RenderSystem.disableTexture();
 				float f = this.isFocused() ? 1.0F : 0.5F;
 				RenderSystem.setShaderColor(f, f, f, 1.0F);
 				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
@@ -241,7 +241,7 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements R
 				bufferbuilder.vertex(j1 - 1, k - 1, 0.0D).endVertex();
 				bufferbuilder.vertex(i1 + 1, k - 1, 0.0D).endVertex();
 				tessellator.end();
-				RenderSystem.enableTexture();
+//				RenderSystem.enableTexture();
 			}
 
 			this.renderItem(ms, j, p_renderList_1_, k, l, p_renderList_3_, p_renderList_4_, p_renderList_5_);
@@ -249,9 +249,9 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements R
 
 	}
 
-	protected boolean isFocused() {
-		return false;
-	}
+//	protected boolean isFocused() {
+//		return false;
+//	}
 
 	protected int getScrollbarPosition() {
 		return this.width / 2 + 124;

@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.gui.elements;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.ScreenUtils;
@@ -26,12 +27,12 @@ public class GuiCheckBoxFixed extends Button {
 	}
 
 	@Override
-	public void renderButton(PoseStack ms, int mouseX, int mouseY, float partial) {
+	public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partial) {
 		if (this.visible) {
 			Minecraft mc = Minecraft.getInstance();
-			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.boxWidth && mouseY < this.y + this.height;
-			ScreenUtils.blitWithBorder(ms, WIDGETS_LOCATION, this.x, this.y, 0, 46, this.boxWidth, this.height, 200, 20, 2, 3, 2, 2, this.getBlitOffset());
-			this.renderBg(ms, mc, mouseX, mouseY);
+			this.isHovered = mouseX >= this.getX() && mouseY >= this.getY() && mouseX < this.getX() + this.boxWidth && mouseY < this.getY() + this.height;
+			graphics.blitWithBorder(WIDGETS_LOCATION, this.getX(), this.getY(), 0, 46, this.boxWidth, this.height, 200, 20, 2, 3, 2, 2);
+			this.renderBg(graphics, mc, mouseX, mouseY);
 			int color = 14737632;
 
 			if (packedFGColor != 0) {
@@ -41,9 +42,9 @@ public class GuiCheckBoxFixed extends Button {
 			}
 
 			if (this.isChecked)
-				drawCenteredString(ms, mc.font, "x", this.x + this.boxWidth / 2 + 1, this.y + 1, 14737632);
+				graphics.drawCenteredString(mc.font, "x", this.getX() + this.boxWidth / 2 + 1, this.getY() + 1, 14737632);
 
-			drawString(ms, mc.font, getMessage(), this.x + this.boxWidth + 2, this.y + 2, color);
+			graphics.drawString(mc.font, getMessage(), this.getX() + this.boxWidth + 2, this.getY() + 2, color);
 		}
 	}
 

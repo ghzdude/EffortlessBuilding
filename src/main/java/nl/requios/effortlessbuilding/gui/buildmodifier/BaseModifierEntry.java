@@ -1,18 +1,11 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import nl.requios.effortlessbuilding.AllGuiTextures;
-import nl.requios.effortlessbuilding.AllIcons;
 import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
-import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
-import nl.requios.effortlessbuilding.create.foundation.gui.widget.BoxWidget;
-import nl.requios.effortlessbuilding.create.foundation.gui.widget.ElementWidget;
-import nl.requios.effortlessbuilding.create.foundation.gui.widget.IconButton;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.Label;
 import nl.requios.effortlessbuilding.create.foundation.utility.Components;
-import nl.requios.effortlessbuilding.gui.elements.GuiCollapsibleScrollEntry;
-import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
 import nl.requios.effortlessbuilding.gui.elements.MiniButton;
 
 public abstract class BaseModifierEntry<T extends BaseModifier> extends ModifiersScreenList.Entry {
@@ -87,41 +80,41 @@ public abstract class BaseModifierEntry<T extends BaseModifier> extends Modifier
     }
 
     @Override
-    public void render(PoseStack ms, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
+    public void render(GuiGraphics graphics, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
 
         left = x + width / 2 - BACKGROUND_WIDTH / 2;
         right = x + width / 2 + BACKGROUND_WIDTH / 2;
         top = y;
         bottom = y + BACKGROUND_HEIGHT;
-        
-        background.render(ms, left, top, screen);
-        
-        enableButton.x = left + 4;
-        enableButton.y = top + 3;
-        enableButton.render(ms, mouseX, mouseY, partialTicks);
+
+        background.render(graphics, left, top);
+
+        enableButton.setX(left + 4);
+        enableButton.setY(top + 3);
+        enableButton.render(graphics, mouseX, mouseY, partialTicks);
         if (modifier.enabled)
-            AllGuiTextures.CHECKMARK.render(ms, left + 5, top + 3, screen);
-        
-        nameLabel.x = left + 18;
-        nameLabel.y = top + 4;
-        nameLabel.render(ms, mouseX, mouseY, partialTicks);
+            AllGuiTextures.CHECKMARK.render(graphics, left + 5, top + 3);
+
+        nameLabel.setX(left + 18);
+        nameLabel.setY(top + 4);
+        nameLabel.render(graphics, mouseX, mouseY, partialTicks);
     
         moveUpButton.visible = screen.canMoveUp(this);
         moveDownButton.visible = screen.canMoveDown(this);
+
+        moveUpButton.setX(right - 31);
+        moveUpButton.setY(top + 3);
+        moveUpButton.render(graphics, mouseX, mouseY, partialTicks);
+
+        moveDownButton.setX(right - 22);
+        moveDownButton.setY(top + 3);
+        moveDownButton.render(graphics, mouseX, mouseY, partialTicks);
+
+        removeButton.setX(right - 13);
+        removeButton.setY(top + 3);
+        removeButton.render(graphics, mouseX, mouseY, partialTicks);
         
-        moveUpButton.x = right - 31;
-        moveUpButton.y = top + 3;
-        moveUpButton.render(ms, mouseX, mouseY, partialTicks);
-        
-        moveDownButton.x = right - 22;
-        moveDownButton.y = top + 3;
-        moveDownButton.render(ms, mouseX, mouseY, partialTicks);
-        
-        removeButton.x = right - 13;
-        removeButton.y = top + 3;
-        removeButton.render(ms, mouseX, mouseY, partialTicks);
-        
-        super.render(ms, index, y, x, width, height, mouseX, mouseY, p_230432_9_, partialTicks);
+//        super.render(graphics, index, y, x, width, height, mouseX, mouseY, p_230432_9_, partialTicks);
     }
 
     public void onValueChanged() {

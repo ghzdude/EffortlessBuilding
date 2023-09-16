@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.gui.buildmode;
 
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -95,7 +96,7 @@ public class RadialMenu extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack ms, final int mouseX, final int mouseY, final float partialTicks) {
+	public void render(GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
 		BuildModeEnum currentBuildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
 
 		ms.pushPose();
@@ -288,7 +289,7 @@ public class RadialMenu extends Screen {
 		}
 	}
 
-	private void drawIcons(PoseStack ms, double middleX, double middleY,
+	private void drawIcons(GuiGraphics graphics, double middleX, double middleY,
 						   ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
 		ms.pushPose();
 		RenderSystem.enableTexture();
@@ -316,7 +317,7 @@ public class RadialMenu extends Screen {
 		ms.popPose();
 	}
 
-	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options, int mouseX, int mouseY) {
+	private void drawTexts(GuiGraphics graphics, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options, int mouseX, int mouseY) {
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
 
 		//Draw option strings

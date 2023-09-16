@@ -1,6 +1,6 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.menu;
 
-import nl.requios.effortlessbuilding.create.AllPackets;
+//import nl.requios.effortlessbuilding.create.AllPackets;
 
 public interface IClearableMenu {
 

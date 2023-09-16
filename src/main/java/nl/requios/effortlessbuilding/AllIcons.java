@@ -3,8 +3,8 @@ package nl.requios.effortlessbuilding;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -108,15 +108,9 @@ public class AllIcons implements ScreenElement {
     
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void render(PoseStack matrixStack, int x, int y) {
+    public void render(GuiGraphics graphics, int x, int y) {
         bind();
-        GuiComponent.blit(matrixStack, x, y, 0, iconX, iconY, 16, 16, 256, 256);
-    }
-    
-    @OnlyIn(Dist.CLIENT)
-    public void render(PoseStack matrixStack, int x, int y, GuiComponent component) {
-        bind();
-        component.blit(matrixStack, x, y, iconX, iconY, 16, 16);
+        graphics.blit(ICON_ATLAS, x, y, 0, iconX, iconY, 16, 16, 256, 256);
     }
     
     @OnlyIn(Dist.CLIENT)

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
@@ -30,18 +31,18 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
     }
 
     @Override
-    public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         Color c = new Color(0x60_000000);
-        UIRenderHelper.angledGradient(ms, 90, x0 + width / 2, y0, width, 5, c, Color.TRANSPARENT_BLACK);
-        UIRenderHelper.angledGradient(ms, -90, x0 + width / 2, y1, width, 5, c, Color.TRANSPARENT_BLACK);
-        UIRenderHelper.angledGradient(ms, 0, x0, y0 + height / 2, height, 5, c, Color.TRANSPARENT_BLACK);
-        UIRenderHelper.angledGradient(ms, 180, x1, y0 + height / 2, height, 5, c, Color.TRANSPARENT_BLACK);
+        UIRenderHelper.angledGradient(graphics, 90, x0 + width / 2, y0, width, 5, c, Color.TRANSPARENT_BLACK);
+        UIRenderHelper.angledGradient(graphics, -90, x0 + width / 2, y1, width, 5, c, Color.TRANSPARENT_BLACK);
+        UIRenderHelper.angledGradient(graphics, 0, x0, y0 + height / 2, height, 5, c, Color.TRANSPARENT_BLACK);
+        UIRenderHelper.angledGradient(graphics, 180, x1, y0 + height / 2, height, 5, c, Color.TRANSPARENT_BLACK);
 
-        super.render(ms, mouseX, mouseY, partialTicks);
+        super.render(graphics, mouseX, mouseY, partialTicks);
     }
 
     @Override
-    protected void renderList(PoseStack p_239228_, int p_239229_, int p_239230_, float p_239231_) {
+    protected void renderList(GuiGraphics graphics, int p_239229_, int p_239230_, float p_239231_) {
         Window window = minecraft.getWindow();
         double d0 = window.getGuiScale();
         RenderSystem.enableScissor((int) (this.x0 * d0), (int) (window.getHeight() - (this.y1 * d0)), (int) (this.width * d0), (int) (this.height * d0));
@@ -49,11 +50,11 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
         RenderSystem.disableScissor();
     }
     
-    public void renderWindowForeground(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-        renderListForeground(ms, mouseX, mouseY, partialTicks);
+    public void renderWindowForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        renderListForeground(graphics, mouseX, mouseY, partialTicks);
     }
     
-    protected void renderListForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    protected void renderListForeground(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         int i = this.getRowLeft();
         int j = this.getRowWidth();
         int k = this.itemHeight - 4;
@@ -63,14 +64,14 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
             int j1 = this.getRowTop(i1);
             int k1 = j1 + itemHeight;
             if (k1 >= this.y0 && j1 <= this.y1) {
-                renderItemForeground(pPoseStack, pMouseX, pMouseY, pPartialTick, i1, i, j1, j, k);
+                renderItemForeground(graphics, pMouseX, pMouseY, pPartialTick, i1, i, j1, j, k);
             }
         }
     }
     
-    protected void renderItemForeground(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
+    protected void renderItemForeground(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
         Entry e = this.getEntry(pIndex);
-        e.renderForeground(pPoseStack, pIndex, pTop, pLeft, pWidth, pHeight, pMouseX, pMouseY, Objects.equals(this.getHovered(), e), pPartialTick);
+        e.renderForeground(graphics, pIndex, pTop, pLeft, pWidth, pHeight, pMouseX, pMouseY, Objects.equals(this.getHovered(), e), pPartialTick);
     }
 
     @Override
@@ -146,14 +147,14 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
         }
     
         @Override
-        public void render(PoseStack ms, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
+        public void render(GuiGraphics graphics, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
     
 //            UIRenderHelper.streak(ms, 0, x - 10, y + height / 2, height - 6, width, 0xdd_000000);
 //            UIRenderHelper.streak(ms, 180, x + (int) (width * 1.35f) + 10, y + height / 2, height - 6, width / 8 * 7, 0xdd_000000);
     
         }
         
-        public void renderForeground(PoseStack ms, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
+        public void renderForeground(GuiGraphics graphics, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
     
             for (var listener : listeners) {
                 if (listener instanceof AbstractSimiWidget simiWidget && simiWidget.isHoveredOrFocused()
@@ -163,7 +164,7 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
                         continue;
                     int ttx = simiWidget.lockedTooltipX == -1 ? mouseX : simiWidget.lockedTooltipX + simiWidget.x;
                     int tty = simiWidget.lockedTooltipY == -1 ? mouseY : simiWidget.lockedTooltipY + simiWidget.y;
-                    screen.renderComponentTooltip(ms, tooltip, ttx, tty);
+                    screen.renderComponentTooltip(graphics, tooltip, ttx, tty);
                 }
             }
         }

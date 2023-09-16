@@ -1,7 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.utility;
 
-import nl.requios.effortlessbuilding.create.foundation.ponder.PonderWorld;
-import nl.requios.effortlessbuilding.create.foundation.ponder.ui.PonderUI;
+//import nl.requios.effortlessbuilding.create.foundation.ponder.PonderWorld;
+//import nl.requios.effortlessbuilding.create.foundation.ponder.ui.PonderUI;
 import nl.requios.effortlessbuilding.create.foundation.utility.worldWrappers.WrappedClientWorld;
 
 import net.minecraft.client.Minecraft;
