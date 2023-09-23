@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -49,9 +50,9 @@ public class RenderHandler {
 
 	@SubscribeEvent
 	public static void onRenderGuiEvent(RenderGuiEvent event) {
-		renderSubText(event.getPoseStack());
+		renderSubText(event.getGuiGraphics());
 
-		drawStacks(event.getPoseStack());
+		drawStacks(event.getGuiGraphics());
 	}
 
 	private static final ChatFormatting highlightColor = ChatFormatting.DARK_AQUA;
@@ -64,7 +65,7 @@ public class RenderHandler {
 			normalColor + "Left-click to " + highlightColor + "break, " +
 			normalColor + "Right-click to " + highlightColor + "cancel");
 
-	private static void renderSubText(PoseStack ms) {
+	private static void renderSubText(GuiGraphics graphics) {
 		var state = EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState();
 		if (state == BuilderChain.BuildingState.IDLE) return;
 
@@ -74,18 +75,18 @@ public class RenderHandler {
 		int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 		var font = Minecraft.getInstance().font;
 
-		ms.pushPose();
-		ms.translate(screenWidth / 2.0, screenHeight - 54, 0.0D);
+		graphics.pose().pushPose();
+		graphics.pose().translate(screenWidth / 2.0, screenHeight - 54, 0.0D);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		int l = font.width(text);
-		font.drawShadow(ms, text, (float)(-l / 2), -4.0F, 0xffffffff);
+		graphics.drawString(font, text.getString(), (float)(-l / 2), -4.0F, 0xffffffff, true);
 		RenderSystem.disableBlend();
-		ms.popPose();
+		graphics.pose().popPose();
 	}
 
 	//Draw item stacks at cursor, showing what will be used and what is missing
-	private static void drawStacks(PoseStack ms) {
+	private static void drawStacks(GuiGraphics graphics) {
 		var state = EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState();
 		if (state != BuilderChain.BuildingState.PLACING) return;
 
@@ -108,30 +109,30 @@ public class RenderHandler {
 			int missing = EffortlessBuildingClient.ITEM_USAGE_TRACKER.getMissingCount(stack.getKey());
 
 			if (total - missing > 0) {
-				drawItemStack(ms, new ItemStack(stack.getKey(), total - missing), x + i * 20, y, false);
+				drawItemStack(graphics, new ItemStack(stack.getKey(), total - missing), x + i * 20, y, false);
 				i++;
 			}
 
 			if (missing > 0) {
-				drawItemStack(ms, new ItemStack(stack.getKey(), missing), x + i * 20, y, true);
+				drawItemStack(graphics, new ItemStack(stack.getKey(), missing), x + i * 20, y, true);
 				i++;
 			}
 		}
 	}
 
-	private static void drawItemStack(PoseStack ms, ItemStack stack, int x, int y, boolean missing) {
+	private static void drawItemStack(GuiGraphics graphics, ItemStack stack, int x, int y, boolean missing) {
 		Minecraft.getInstance().getItemRenderer().renderGuiItem(stack, x, y);
 
 		//draw count text, red if missing
 		//from ItemRenderer#renderGuiItemDecorations
-		ms.pushPose();
+		graphics.pose().pushPose();
 		Font font = Minecraft.getInstance().font;
 		String text = String.valueOf(stack.getCount());
-		ms.translate(0.0D, 0.0D, (double)(Minecraft.getInstance().getItemRenderer().blitOffset + 200.0F));
+		graphics.pose().translate(0.0D, 0.0D, (double)(Minecraft.getInstance().getItemRenderer().blitOffset + 200.0F));
 		MultiBufferSource.BufferSource multibuffersource$buffersource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-		font.drawInBatch(text, (float)(x + 19 - 2 - font.width(text)), (float)(y + 6 + 3), missing ? ChatFormatting.RED.getColor() : ChatFormatting.WHITE.getColor(), true, ms.last().pose(), multibuffersource$buffersource, false, 0, 15728880);
+		font.drawInBatch(text, (float)(x + 19 - 2 - font.width(text)), (float)(y + 6 + 3), missing ? ChatFormatting.RED.getColor() : ChatFormatting.WHITE.getColor(), true, graphics.pose().last().pose(), multibuffersource$buffersource, false, 0, 15728880);
 		multibuffersource$buffersource.endBatch();
-		ms.popPose();
+		graphics.pose().popPose();
 	}
 
 	protected static VertexConsumer beginLines(MultiBufferSource.BufferSource renderTypeBuffer) {

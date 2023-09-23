@@ -50,7 +50,7 @@ public class BlockPlacerHelper {
         var itemStack = new ItemStack(blockEntry.item);
 
         level.captureBlockSnapshots = true;
-        BlockHelper.placeSchematicBlock(level, player, blockEntry.newBlockState, blockEntry.blockPos, itemStack, null);
+        BlockHelper.placeSchematicBlock(level, blockEntry.newBlockState, blockEntry.blockPos, itemStack, null);
         level.captureBlockSnapshots = false;
 
         //Find out if we get to keep the placed block by sending a forge event

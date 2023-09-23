@@ -60,7 +60,7 @@ public class ArrayEntry extends BaseModifierEntry<Array> {
 
 	@Override
 	public void render(GuiGraphics graphics, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean p_230432_9_, float partialTicks) {
-		super(graphics, index, y, x, width, height, mouseX, mouseY, p_230432_9_, partialTicks);
+		super.render(graphics, index, y, x, width, height, mouseX, mouseY, p_230432_9_, partialTicks);
 
 		//draw offset inputs
 		for (int i = 0; i < 3; i++) {

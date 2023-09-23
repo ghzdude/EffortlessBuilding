@@ -62,12 +62,12 @@ public class ModularGuiLine {
 	}
 
 	private void box(GuiGraphics graphics, int x, int width, boolean b) {
-		UIRenderHelper.drawStretched(graphics, x, 0, width, 18, 0, AllGuiTextures.DATA_AREA);
-		if (b)
-			AllGuiTextures.DATA_AREA_SPEECH.render(graphics, x - 3, 0);
-		else
-			AllGuiTextures.DATA_AREA_START.render(graphics, x, 0);
-		AllGuiTextures.DATA_AREA_END.render(graphics, x + width - 2, 0);
+//		UIRenderHelper.drawStretched(graphics, x, 0, width, 18, 0, AllGuiTextures.DATA_AREA);
+//		if (b)
+//			AllGuiTextures.DATA_AREA_SPEECH.render(graphics, x - 3, 0);
+//		else
+//			AllGuiTextures.DATA_AREA_START.render(graphics, x, 0);
+//		AllGuiTextures.DATA_AREA_END.render(graphics, x + width - 2, 0);
 	}
 
 	public void saveValues(CompoundTag data) {

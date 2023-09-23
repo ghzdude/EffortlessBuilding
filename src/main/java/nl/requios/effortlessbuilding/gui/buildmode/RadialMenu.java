@@ -36,6 +36,8 @@ import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 
+import javax.swing.text.Style;
+
 /**
  * Initially from Chisels and Bits by AlgorithmX2
  * https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/client/gui/ChiselsAndBitsMenu.java
@@ -99,8 +101,8 @@ public class RadialMenu extends Screen {
 	public void render(GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
 		BuildModeEnum currentBuildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
 
-		ms.pushPose();
-		ms.translate(0, 0, 200);
+		graphics.pose().pushPose();
+		graphics.pose().translate(0, 0, 200);
 
 		visibility += fadeSpeed * partialTicks;
 		if (visibility > 1f) visibility = 1f;
@@ -108,9 +110,9 @@ public class RadialMenu extends Screen {
 		final int startColor = (int) (visibility * 98) << 24;
 		final int endColor = (int) (visibility * 128) << 24;
 
-		fillGradient(ms, 0, 0, width, height, startColor, endColor);
+		graphics.fillGradient(0, 0, width, height, startColor, endColor);
 
-		RenderSystem.disableTexture();
+//		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 		RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
 		final Tesselator tessellator = Tesselator.getInstance();
@@ -183,13 +185,13 @@ public class RadialMenu extends Screen {
 
 		tessellator.end();
 		RenderSystem.disableBlend();
-		RenderSystem.enableTexture();
+//		RenderSystem.enableTexture();
 
-		drawIcons(ms, middleX, middleY, modes, buttons);
+		drawIcons(graphics, middleX, middleY, modes, buttons);
 
-		drawTexts(ms, currentBuildMode, middleX, middleY, modes, buttons, options, mouseXX, mouseYY);
+		drawTexts(graphics, currentBuildMode, middleX, middleY, modes, buttons, options, mouseXX, mouseYY);
 
-		ms.popPose();
+		graphics.pose().popPose();
 	}
 
 	private void drawRadialButtonBackgrounds(BuildModeEnum currentBuildMode, BufferBuilder buffer, double middleX, double middleY,
@@ -291,8 +293,8 @@ public class RadialMenu extends Screen {
 
 	private void drawIcons(GuiGraphics graphics, double middleX, double middleY,
 						   ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
-		ms.pushPose();
-		RenderSystem.enableTexture();
+		graphics.pose().pushPose();
+//		RenderSystem.enableTexture();
 		RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
@@ -302,7 +304,7 @@ public class RadialMenu extends Screen {
 			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 			
-			menuRegion.mode.icon.render(ms, (int) (middleX + x - 8), (int) (middleY + y - 8));
+			menuRegion.mode.icon.render(graphics, (int) (middleX + x - 8), (int) (middleY + y - 8));
 		}
 
 		//Draw action icons
@@ -311,10 +313,10 @@ public class RadialMenu extends Screen {
 			final double x = (button.x1 + button.x2) / 2 + 0.01;
 			final double y = (button.y1 + button.y2) / 2 + 0.01;
 
-			button.action.icon.render(ms, (int) (middleX + x - 8), (int) (middleY + y - 8));
+			button.action.icon.render(graphics, (int) (middleX + x - 8), (int) (middleY + y - 8));
 		}
 
-		ms.popPose();
+		graphics.pose().popPose();
 	}
 
 	private void drawTexts(GuiGraphics graphics, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options, int mouseX, int mouseY) {
@@ -323,16 +325,16 @@ public class RadialMenu extends Screen {
 		//Draw option strings
 		for (int i = 0; i < currentBuildMode.options.length; i++) {
 			OptionEnum option = options[i];
-			font.drawShadow(ms, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, optionTextColor);
+			graphics.drawString(font, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, optionTextColor, true);
 		}
 
 		String credits = "Effortless Building";
-		font.drawShadow(ms, credits, width - font.width(credits) - 4, height - 10, watermarkTextColor);
+		graphics.drawString(font, credits, width - font.width(credits) - 4, height - 10, watermarkTextColor, true);
 
 		//Draw power level info
 		String powerLevelValue = minecraft.player.isCreative() ? "Creative" : String.valueOf(EffortlessBuildingClient.POWER_LEVEL.getPowerLevel());
 		String powerLevelText = I18n.get("key.effortlessbuilding.power_level") + ": " + powerLevelValue;
-		font.drawShadow(ms, powerLevelText, width - font.width(powerLevelText) - 4, height - 22, minecraft.player.isCreative() ? watermarkTextColor : ChatFormatting.DARK_PURPLE.getColor());
+		graphics.drawString(font, powerLevelText, width - font.width(powerLevelText) - 4, height - 22, minecraft.player.isCreative() ? watermarkTextColor : ChatFormatting.DARK_PURPLE.getColor(), true);
 
 		//if hover over power level info, show tooltip
 		if (mouseX >= width - font.width(powerLevelText) - 14 && mouseX <= width && mouseY >= height - 24 && mouseY <= height) {
@@ -355,7 +357,7 @@ public class RadialMenu extends Screen {
 				tooltip.addAll(TooltipHelper.cutTextComponent(Components.translatable("key.effortlessbuilding.next_power_level_how"), ChatFormatting.GRAY, ChatFormatting.WHITE));
 			}
 
-			renderComponentTooltip(ms, tooltip, mouseX, mouseY);
+			renderComponentTooltip(graphics, tooltip, mouseX, mouseY);
 		}
 
 
@@ -376,11 +378,12 @@ public class RadialMenu extends Screen {
 					fixed_x -= font.width(text) / 2;
 				}
 
-				font.drawShadow(ms, text, (int) middleX + fixed_x, (int) middleY + fixed_y, whiteTextColor);
+				graphics.drawString(font, text, (int) middleX + fixed_x, (int) middleY + fixed_y, whiteTextColor, true);
+				graphics.drawString(font, text, (int) middleX + fixed_x, (int) middleY + fixed_y, whiteTextColor, true);
 
 				//Draw description
 				text = I18n.get(menuRegion.mode.getDescriptionKey());
-				font.drawShadow(ms, text, (int) middleX - font.width(text) / 2f, (int) middleY + buildModeDescriptionHeight, descriptionTextColor);
+				graphics.drawString(font, text, (int) middleX - font.width(text) / 2f, (int) middleY + buildModeDescriptionHeight, descriptionTextColor, true);
 			}
 		}
 
@@ -393,7 +396,7 @@ public class RadialMenu extends Screen {
 
 				//Add description when holding shift
 				if (!button.description.isEmpty()) {
-					tooltip.add(TooltipHelper.holdShift(ItemDescription.Palette.Blue, hasShiftDown()));
+					tooltip.add(TooltipHelper.holdShift(TooltipHelper.Palette.BLUE, hasShiftDown()));
 					if (hasShiftDown()) {
 						tooltip.addAll(TooltipHelper.cutStringTextComponent(button.description, ChatFormatting.GRAY, ChatFormatting.WHITE));
 					}
@@ -402,7 +405,7 @@ public class RadialMenu extends Screen {
 				//Add keybind in brackets
 				var keybind = findKeybind(button);
 				if (keybind != null) tooltip.add(Lang.translateDirect("tooltip.keybind", keybind.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.DARK_GRAY));
-				renderComponentTooltip(ms, tooltip, mouseX, mouseY);
+				renderComponentTooltip(graphics, tooltip, mouseX, mouseY);
 			}
 		}
 	}

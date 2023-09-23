@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.gui.ScreenUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -19,7 +18,7 @@ public class GuiCheckBoxFixed extends Button {
 
 	public GuiCheckBoxFixed(int xPos, int yPos, String displayString, boolean isChecked) {
 		super(xPos, yPos, Minecraft.getInstance().font.width(displayString) + 2 + 11, 11, Component.literal(displayString), b -> {
-		});
+		}, DEFAULT_NARRATION);
 		this.isChecked = isChecked;
 		this.boxWidth = 11;
 		this.height = 11;

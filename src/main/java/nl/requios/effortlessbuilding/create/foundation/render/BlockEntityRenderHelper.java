@@ -16,7 +16,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import nl.requios.effortlessbuilding.create.Create;
 import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
 import nl.requios.effortlessbuilding.create.foundation.utility.RegisteredObjects;
-import nl.requios.effortlessbuilding.create.infrastructure.config.AllConfigs;
+//import nl.requios.effortlessbuilding.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;

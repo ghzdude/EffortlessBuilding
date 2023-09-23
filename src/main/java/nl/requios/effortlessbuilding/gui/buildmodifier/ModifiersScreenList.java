@@ -46,7 +46,7 @@ public class ModifiersScreenList extends ObjectSelectionList<ModifiersScreenList
         Window window = minecraft.getWindow();
         double d0 = window.getGuiScale();
         RenderSystem.enableScissor((int) (this.x0 * d0), (int) (window.getHeight() - (this.y1 * d0)), (int) (this.width * d0), (int) (this.height * d0));
-        super.renderList(p_239228_, p_239229_, p_239230_, p_239231_);
+        super.renderList(graphics, p_239229_, p_239230_, p_239231_);
         RenderSystem.disableScissor();
     }
     
