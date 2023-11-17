@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding.create.foundation.utility;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistry;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.create.Create;
 import org.jetbrains.annotations.Nullable;
 

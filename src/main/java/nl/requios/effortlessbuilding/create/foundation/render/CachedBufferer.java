@@ -3,7 +3,6 @@ package nl.requios.effortlessbuilding.create.foundation.render;
 import com.jozufozu.flywheel.core.PartialModel;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
-import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.create.CreateClient;
 import nl.requios.effortlessbuilding.create.foundation.render.SuperByteBufferCache.Compartment;
 import nl.requios.effortlessbuilding.create.foundation.utility.AngleHelper;

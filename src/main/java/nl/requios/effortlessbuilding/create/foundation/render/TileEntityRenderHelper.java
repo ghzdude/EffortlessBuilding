@@ -6,11 +6,6 @@ import com.jozufozu.flywheel.config.BackendType;
 import com.jozufozu.flywheel.core.virtual.VirtualRenderWorld;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector4f;
-import nl.requios.effortlessbuilding.create.Create;
-import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
-import nl.requios.effortlessbuilding.create.foundation.utility.RegisteredObjects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,6 +14,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import nl.requios.effortlessbuilding.create.Create;
+import nl.requios.effortlessbuilding.create.foundation.utility.AnimationTickHolder;
+import nl.requios.effortlessbuilding.create.foundation.utility.RegisteredObjects;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -36,7 +36,7 @@ public class TileEntityRenderHelper {
 	}
 
 	public static void renderTileEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
-			Iterable<BlockEntity> customRenderTEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer) {
+										  Iterable<BlockEntity> customRenderTEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer) {
 		renderTileEntities(world, renderWorld, customRenderTEs, ms, lightTransform, buffer,
 			AnimationTickHolder.getPartialTicks());
 	}
@@ -91,8 +91,8 @@ public class TileEntityRenderHelper {
 	private static BlockPos getLightPos(@Nullable Matrix4f lightTransform, BlockPos contraptionPos) {
 		if (lightTransform != null) {
 			Vector4f lightVec = new Vector4f(contraptionPos.getX() + .5f, contraptionPos.getY() + .5f, contraptionPos.getZ() + .5f, 1);
-			lightVec.transform(lightTransform);
-			return new BlockPos(lightVec.x(), lightVec.y(), lightVec.z());
+			lightVec.mul(lightTransform);
+			return BlockPos.containing(lightVec.x(), lightVec.y(), lightVec.z());
 		} else {
 			return contraptionPos;
 		}

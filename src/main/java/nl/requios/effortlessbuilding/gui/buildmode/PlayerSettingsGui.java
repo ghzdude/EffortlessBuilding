@@ -5,6 +5,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
@@ -65,19 +67,19 @@ public class PlayerSettingsGui extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground(ms);
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(guiGraphics);
 
 		int yy = top;
-		font.draw(ms, "Shader type", left, yy + 5, 0xFFFFFF);
+		guiGraphics.drawString(font, "Shader type", left, yy + 5, 0xFFFFFF, false);
 
 		yy += 50;
-		font.draw(ms, "Shader speed", left, yy + 5, 0xFFFFFF);
+		guiGraphics.drawString(font, "Shader speed", left, yy + 5, 0xFFFFFF, false);
 
-		super.render(ms, mouseX, mouseY, partialTicks);
+		super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
 		if (showShaderList)
-			this.shaderTypeList.render(ms, mouseX, mouseY, partialTicks);
+			this.shaderTypeList.render(guiGraphics, mouseX, mouseY, partialTicks);
 	}
 
 	@Override
@@ -178,7 +180,7 @@ public class PlayerSettingsGui extends Screen {
 			return super.isMouseOver(p_isMouseOver_1_, p_isMouseOver_3_);
 		}
 
-		protected boolean isFocused() {
+		public boolean isFocused() {
 			return PlayerSettingsGui.this.getFocused() == this;
 		}
 
@@ -189,8 +191,8 @@ public class PlayerSettingsGui extends Screen {
 
 		//From AbstractSelectionList, disabled parts
 		@Override
-		public void render(PoseStack ms, int p_render_1_, int p_render_2_, float p_render_3_) {
-			this.renderBackground(ms);
+		public void render(GuiGraphics guiGraphics, int p_render_1_, int p_render_2_, float p_render_3_) {
+			this.renderBackground(guiGraphics);
 			int i = this.getScrollbarPosition();
 			int j = i + 6;
 			Tesselator tessellator = Tesselator.getInstance();
@@ -209,16 +211,17 @@ public class PlayerSettingsGui extends Screen {
 			int k = this.getRowLeft();
 			int l = this.y0 + 4 - (int) this.getScrollAmount();
 			if (this.renderHeader) {
-				this.renderHeader(ms, k, l, tessellator);
+				this.renderHeader(guiGraphics, k, l);
 			}
 
-			this.renderList(ms, p_render_1_, p_render_2_, p_render_3_);
+			this.renderList(guiGraphics, p_render_1_, p_render_2_, p_render_3_);
 			RenderSystem.disableDepthTest();
 //            this.renderHoleBackground(0, this.y0, 255, 255);
 //            this.renderHoleBackground(this.y1, this.height, 255, 255);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-			RenderSystem.disableTexture();
+//			RenderSystem.disableTexture();
+			RenderSystem.setShader(GameRenderer::getPositionColorShader);
 //            int i1 = 4;
 //            bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
 //            bufferbuilder.pos((double)this.x0, (double)(this.y0 + 4), 0.0D).tex(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
@@ -264,7 +267,7 @@ public class PlayerSettingsGui extends Screen {
 			}
 
 //            this.renderDecorations(p_render_1_, p_render_2_);
-			RenderSystem.enableTexture();
+//			RenderSystem.enableTexture();
 			RenderSystem.disableBlend();
 		}
 
@@ -281,9 +284,9 @@ public class PlayerSettingsGui extends Screen {
 			}
 
 			@Override
-			public void render(PoseStack ms, int itemIndex, int rowTop, int rowLeft, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean hovered, float partialTicks) {
+			public void render(GuiGraphics guiGraphics, int itemIndex, int rowTop, int rowLeft, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean hovered, float partialTicks) {
 				if (rowTop + 10 > ShaderTypeList.this.y0 && rowTop + rowHeight - 5 < ShaderTypeList.this.y1)
-					drawString(ms, font, shaderType.name, ShaderTypeList.this.x0 + 8, rowTop + 4, 0xFFFFFF);
+					guiGraphics.drawString(font, shaderType.name, ShaderTypeList.this.x0 + 8, rowTop + 4, 0xFFFFFF, false);
 			}
 
 			@Override

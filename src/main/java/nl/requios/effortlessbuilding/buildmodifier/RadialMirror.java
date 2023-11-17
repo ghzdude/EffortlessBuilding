@@ -4,22 +4,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.IItemHandler;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.item.AbstractRandomizerBagItem;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class RadialMirror extends BaseModifier {
 
@@ -77,7 +69,7 @@ public class RadialMirror extends BaseModifier {
 			}
 
 			Vec3 relNewVec = relStartVec.yRot((float) curAngle);
-			BlockPos newBlockPos = new BlockPos(position.add(relNewVec));
+			BlockPos newBlockPos = BlockPos.containing(position.add(relNewVec));
 
 			if (blocks.containsKey(newBlockPos)) continue;
 
@@ -120,11 +112,11 @@ public class RadialMirror extends BaseModifier {
 		BlockState newBlockState = blockState;
 
 		if (startAngleToCenter < -0.751 * Math.PI || startAngleToCenter > 0.749 * Math.PI) {
-			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_180);
+			newBlockState = blockState.rotate(player.level(), startPos, Rotation.CLOCKWISE_180);
 		} else if (startAngleToCenter < -0.251 * Math.PI) {
-			newBlockState = blockState.rotate(player.level, startPos, Rotation.COUNTERCLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level(), startPos, Rotation.COUNTERCLOCKWISE_90);
 		} else if (startAngleToCenter > 0.249 * Math.PI) {
-			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level(), startPos, Rotation.CLOCKWISE_90);
 		}
 
 		return newBlockState;
@@ -135,17 +127,17 @@ public class RadialMirror extends BaseModifier {
 		double angleToCenter = Mth.atan2(relVec.x, relVec.z); //between -PI and PI
 
 		if (angleToCenter < -0.751 * Math.PI || angleToCenter > 0.749 * Math.PI) {
-			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_180);
+			newBlockState = blockState.rotate(player.level(), startPos, Rotation.CLOCKWISE_180);
 			if (alternate) {
 				newBlockState = newBlockState.mirror(Mirror.FRONT_BACK);
 			}
 		} else if (angleToCenter < -0.251 * Math.PI) {
-			newBlockState = blockState.rotate(player.level, startPos, Rotation.CLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level(), startPos, Rotation.CLOCKWISE_90);
 			if (alternate) {
 				newBlockState = newBlockState.mirror(Mirror.LEFT_RIGHT);
 			}
 		} else if (angleToCenter > 0.249 * Math.PI) {
-			newBlockState = blockState.rotate(player.level, startPos, Rotation.COUNTERCLOCKWISE_90);
+			newBlockState = blockState.rotate(player.level(), startPos, Rotation.COUNTERCLOCKWISE_90);
 			if (alternate) {
 				newBlockState = newBlockState.mirror(Mirror.LEFT_RIGHT);
 			}

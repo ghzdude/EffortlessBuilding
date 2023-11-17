@@ -1,8 +1,7 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.widget;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import nl.requios.effortlessbuilding.create.foundation.gui.Theme;
-import nl.requios.effortlessbuilding.create.foundation.gui.Theme.Key;
 import nl.requios.effortlessbuilding.create.foundation.gui.UIRenderHelper;
 import nl.requios.effortlessbuilding.create.foundation.gui.element.BoxElement;
 import nl.requios.effortlessbuilding.create.foundation.gui.element.DelegatedStencilElement;
@@ -10,7 +9,6 @@ import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 import nl.requios.effortlessbuilding.create.foundation.utility.Couple;
 import nl.requios.effortlessbuilding.create.foundation.utility.animation.LerpedFloat;
 
-import javax.annotation.Nonnull;
 import java.util.function.Function;
 
 public class BoxWidget extends ElementWidget {
@@ -98,8 +96,8 @@ public class BoxWidget extends ElementWidget {
 	}
 
 	@Override
-	protected void beforeRender(@Nonnull PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		super.beforeRender(ms, mouseX, mouseY, partialTicks);
+	protected void beforeRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.beforeRender(graphics, mouseX, mouseY, partialTicks);
 
 		if (isHovered != wasHovered) {
 			startGradientAnimation(
@@ -121,7 +119,7 @@ public class BoxWidget extends ElementWidget {
 	}
 
 	@Override
-	public void renderButton(@Nonnull PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		float fadeValue = fade.getValue(partialTicks);
 		if (fadeValue < .1f)
 			return;
@@ -129,11 +127,11 @@ public class BoxWidget extends ElementWidget {
 		box.withAlpha(fadeValue);
 		box.withBackground(customBackground != null ? customBackground : Theme.c(Theme.Key.PONDER_BACKGROUND_TRANSPARENT))
 				.gradientBorder(gradientColor1, gradientColor2)
-				.at(x, y, z)
+				.at(getX(), getY(), z)
 				.withBounds(width, height)
-				.render(ms);
+				.render(graphics);
 
-		super.renderButton(ms, mouseX, mouseY, partialTicks);
+		super.doRender(graphics, mouseX, mouseY, partialTicks);
 
 		wasHovered = isHovered;
 	}
@@ -146,9 +144,9 @@ public class BoxWidget extends ElementWidget {
 		float padX = 2 + paddingX;
 		float padY = 2 + paddingY;
 
-		return x - padX <= mX && y - padY <= mY && mX < x + padX + width && mY < y + padY + height;
+		return getX() - padX <= mX && getY() - padY <= mY && mX < getX() + padX + width && mY < getY() + padY + height;
 	}
-	
+
 	@Override
 	protected boolean clicked(double pMouseX, double pMouseY) {
 		if (!active || !visible)
@@ -209,19 +207,19 @@ public class BoxWidget extends ElementWidget {
 			return customBorderBot != null ? customBorderBot : Theme.c(getIdleTheme(), false);
 	}
 
-	public Key getDisabledTheme() {
+	public Theme.Key getDisabledTheme() {
 		return Theme.Key.BUTTON_DISABLE;
 	}
 
-	public Key getIdleTheme() {
+	public Theme.Key getIdleTheme() {
 		return Theme.Key.BUTTON_IDLE;
 	}
 
-	public Key getHoverTheme() {
+	public Theme.Key getHoverTheme() {
 		return Theme.Key.BUTTON_HOVER;
 	}
 
-	public Key getClickTheme() {
+	public Theme.Key getClickTheme() {
 		return Theme.Key.BUTTON_CLICK;
 	}
 

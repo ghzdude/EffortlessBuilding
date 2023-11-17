@@ -1,13 +1,11 @@
 package nl.requios.effortlessbuilding.gui.buildmodifier;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.requios.effortlessbuilding.ClientEvents;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmodifier.Array;
 import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
@@ -17,14 +15,9 @@ import nl.requios.effortlessbuilding.create.foundation.gui.AbstractSimiScreen;
 import nl.requios.effortlessbuilding.create.foundation.gui.AllIcons;
 import nl.requios.effortlessbuilding.create.foundation.gui.widget.BoxWidget;
 import nl.requios.effortlessbuilding.create.foundation.utility.Components;
-import nl.requios.effortlessbuilding.gui.elements.GuiScrollPane;
-import nl.requios.effortlessbuilding.network.PacketHandler;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class ModifiersScreen extends AbstractSimiScreen {
@@ -152,7 +145,7 @@ public class ModifiersScreen extends AbstractSimiScreen {
 	}
 	
 	@Override
-	protected void renderWindow(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	protected void renderWindow(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 	
 	}
 	

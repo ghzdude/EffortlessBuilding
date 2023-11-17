@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-import nl.requios.effortlessbuilding.create.foundation.utility.outliner.Outline;
 
 import java.util.function.Supplier;
 

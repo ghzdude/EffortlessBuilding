@@ -1,9 +1,9 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.widget;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.network.chat.Component;
-
 import java.util.List;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 public class TooltipArea extends AbstractSimiWidget {
 
@@ -12,9 +12,9 @@ public class TooltipArea extends AbstractSimiWidget {
 	}
 
 	@Override
-	public void renderButton(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		if (visible)
-			isHovered = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
+			isHovered = mouseX >= getX() && mouseY >= getY() && mouseX < getX() + width && mouseY < getY() + height;
 	}
 
 	public TooltipArea withTooltip(List<Component> tooltip) {

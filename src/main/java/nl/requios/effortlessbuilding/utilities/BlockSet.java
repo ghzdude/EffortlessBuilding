@@ -7,7 +7,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

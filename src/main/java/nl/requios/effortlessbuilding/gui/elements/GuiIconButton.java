@@ -1,7 +1,6 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +27,7 @@ public class GuiIconButton extends Button {
 	}
 
 	public GuiIconButton(int x, int y, int width, int height, int iconX, int iconY, int iconWidth, int iconHeight, int iconAltX, int iconAltY, ResourceLocation resourceLocation, Button.OnPress onPress) {
-		super(x, y, width, height, Component.empty(), onPress);
+		super(x, y, width, height, Component.empty(), onPress, DEFAULT_NARRATION);
 		this.iconX = iconX;
 		this.iconY = iconY;
 		this.iconWidth = iconWidth;
@@ -51,29 +50,24 @@ public class GuiIconButton extends Button {
 	}
 
 	@Override
-	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		super.render(ms, mouseX, mouseY, partialTicks);
-		if (this.visible) {
-			this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-			RenderSystem.setShaderTexture(0, this.resourceLocation);
-			int currentIconX = this.iconX;
-			int currentIconY = this.iconY;
+	public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		int currentIconX = this.iconX;
+		int currentIconY = this.iconY;
 
-			if (useAltIcon) {
-				currentIconX += iconAltX;
-				currentIconY += iconAltY;
-			}
-
-			//Draws a textured rectangle at the current z-value. Used to be drawTexturedModalRect in Gui.
-			this.blit(ms, this.x, this.y, currentIconX, currentIconY, this.iconWidth, this.iconHeight);
+		if (useAltIcon) {
+			currentIconX += iconAltX;
+			currentIconY += iconAltY;
 		}
+
+		//Draws a textured rectangle at the current z-value. Used to be drawTexturedModalRect in Gui.
+		guiGraphics.blit(resourceLocation, this.getX(), this.getY(), currentIconX, currentIconY, this.iconWidth, this.iconHeight);
 	}
 
-	public void drawTooltip(PoseStack ms, Screen screen, int mouseX, int mouseY) {
-		boolean flag = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+	public void drawTooltip(GuiGraphics guiGraphics, Screen screen, int mouseX, int mouseY) {
+		boolean flag = mouseX >= getX() && mouseX < getX() + width && mouseY >= getY() && mouseY < getY() + height;
 
 		if (flag) {
-			screen.renderComponentTooltip(ms, tooltip, mouseX - 10, mouseY + 25);
+			guiGraphics.renderComponentTooltip(screen.getMinecraft().font, tooltip, mouseX - 10, mouseY + 25);
 		}
 	}
 }

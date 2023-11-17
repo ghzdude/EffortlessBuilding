@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.ThreeClicksBuildMode;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,12 +3,7 @@ package nl.requios.effortlessbuilding.create.foundation.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import nl.requios.effortlessbuilding.create.Create;
-import nl.requios.effortlessbuilding.create.foundation.gui.element.DelegatedStencilElement;
-import nl.requios.effortlessbuilding.create.foundation.gui.element.ScreenElement;
-import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -16,6 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.create.Create;
+import nl.requios.effortlessbuilding.create.foundation.gui.element.DelegatedStencilElement;
+import nl.requios.effortlessbuilding.create.foundation.gui.element.ScreenElement;
+import nl.requios.effortlessbuilding.create.foundation.utility.Color;
+import org.joml.Matrix4f;
 
 public class AllIcons implements ScreenElement {
 
@@ -81,7 +81,7 @@ public class AllIcons implements ScreenElement {
 	public static final AllIcons
 		I_TOOL_DEPLOY = newRow(),
 		I_SKIP_MISSING = next(),
-		I_SKIP_TILES = next(),
+		I_SKIP_BLOCK_ENTITIES = next(),
 		I_DICE = next(),
 		I_TUNNEL_SPLIT = next(),
 		I_TUNNEL_FORCED_SPLIT = next(),
@@ -173,20 +173,13 @@ public class AllIcons implements ScreenElement {
 
 	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void render(PoseStack matrixStack, int x, int y) {
-		bind();
-		GuiComponent.blit(matrixStack, x, y, 0, iconX, iconY, 16, 16, 256, 256);
-	}
-
-	@OnlyIn(Dist.CLIENT)
-	public void render(PoseStack matrixStack, int x, int y, GuiComponent component) {
-		bind();
-		component.blit(matrixStack, x, y, iconX, iconY, 16, 16);
+	public void render(GuiGraphics graphics, int x, int y) {
+		graphics.blit(ICON_ATLAS, x, y, 0, iconX, iconY, 16, 16, 256, 256);
 	}
 
 	@OnlyIn(Dist.CLIENT)
 	public void render(PoseStack ms, MultiBufferSource buffer, int color) {
-		VertexConsumer builder = buffer.getBuffer(RenderType.textSeeThrough(ICON_ATLAS));
+		VertexConsumer builder = buffer.getBuffer(RenderType.text(ICON_ATLAS));
 		Matrix4f matrix = ms.last().pose();
 		Color rgb = new Color(color);
 		int light = LightTexture.FULL_BRIGHT;

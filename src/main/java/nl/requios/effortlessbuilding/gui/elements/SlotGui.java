@@ -1,12 +1,17 @@
 package nl.requios.effortlessbuilding.gui.elements;
 
-import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -18,7 +23,7 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public abstract class SlotGui extends AbstractContainerEventHandler implements Widget {
+public abstract class SlotGui extends AbstractContainerEventHandler implements Renderable {
 	protected final Minecraft minecraft;
 	protected final int itemHeight;
 	protected int width;
@@ -71,7 +76,7 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements W
 	protected void updateItemPosition(int p_updateItemPosition_1_, int p_updateItemPosition_2_, int p_updateItemPosition_3_, float p_updateItemPosition_4_) {
 	}
 
-	protected abstract void renderItem(PoseStack ms, int p_renderItem_1_, int p_renderItem_2_, int p_renderItem_3_, int p_renderItem_4_, int p_renderItem_5_, int p_renderItem_6_, float p_renderItem_7_);
+	protected abstract void renderItem(GuiGraphics guiGraphics, int p_renderItem_1_, int p_renderItem_2_, int p_renderItem_3_, int p_renderItem_4_, int p_renderItem_5_, int p_renderItem_6_, float p_renderItem_7_);
 
 	protected void renderHeader(int p_renderHeader_1_, int p_renderHeader_2_, Tesselator p_renderHeader_3_) {
 	}
@@ -103,7 +108,7 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements W
 		return p_isMouseInList_3_ >= (double) this.y0 && p_isMouseInList_3_ <= (double) this.y1 && p_isMouseInList_1_ >= (double) this.x0 && p_isMouseInList_1_ <= (double) this.x1;
 	}
 
-	public abstract void render(PoseStack ms, int p_render_1_, int p_render_2_, float p_render_3_);
+	public abstract void render(GuiGraphics guiGraphics, int p_render_1_, int p_render_2_, float p_render_3_);
 
 	protected void updateScrollingState(double p_updateScrollingState_1_, double p_updateScrollingState_3_, int p_updateScrollingState_5_) {
 		this.scrolling = p_updateScrollingState_5_ == 0 && p_updateScrollingState_1_ >= (double) this.getScrollbarPosition() && p_updateScrollingState_1_ < (double) (this.getScrollbarPosition() + 6);
@@ -210,7 +215,7 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements W
 		return 220;
 	}
 
-	protected void renderList(PoseStack ms, int p_renderList_1_, int p_renderList_2_, int p_renderList_3_, int p_renderList_4_, float p_renderList_5_) {
+	protected void renderList(GuiGraphics guiGraphics, int p_renderList_1_, int p_renderList_2_, int p_renderList_3_, int p_renderList_4_, float p_renderList_5_) {
 		int i = this.getItemCount();
 		Tesselator tessellator = Tesselator.getInstance();
 		BufferBuilder bufferbuilder = tessellator.getBuilder();
@@ -225,7 +230,7 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements W
 			if (this.renderSelection && this.isSelectedItem(j)) {
 				int i1 = this.x0 + this.width / 2 - this.getRowWidth() / 2;
 				int j1 = this.x0 + this.width / 2 + this.getRowWidth() / 2;
-				RenderSystem.disableTexture();
+				RenderSystem.setShader(GameRenderer::getPositionShader);
 				float f = this.isFocused() ? 1.0F : 0.5F;
 				RenderSystem.setShaderColor(f, f, f, 1.0F);
 				bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
@@ -241,15 +246,15 @@ public abstract class SlotGui extends AbstractContainerEventHandler implements W
 				bufferbuilder.vertex(j1 - 1, k - 1, 0.0D).endVertex();
 				bufferbuilder.vertex(i1 + 1, k - 1, 0.0D).endVertex();
 				tessellator.end();
-				RenderSystem.enableTexture();
+				RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			}
 
-			this.renderItem(ms, j, p_renderList_1_, k, l, p_renderList_3_, p_renderList_4_, p_renderList_5_);
+			this.renderItem(guiGraphics, j, p_renderList_1_, k, l, p_renderList_3_, p_renderList_4_, p_renderList_5_);
 		}
 
 	}
 
-	protected boolean isFocused() {
+	public boolean isFocused() {
 		return false;
 	}
 

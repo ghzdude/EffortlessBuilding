@@ -5,10 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent.Context;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashSet;
-import java.util.function.Supplier;
 
 public interface ISyncPersistentData {
 
@@ -37,19 +35,17 @@ public interface ISyncPersistentData {
 		}
 
 		@Override
-		public void handle(Supplier<Context> context) {
-			context.get()
-				.enqueueWork(() -> {
-					Entity entityByID = Minecraft.getInstance().level.getEntity(entityId);
-					CompoundTag data = entityByID.getPersistentData();
-					new HashSet<>(data.getAllKeys()).forEach(data::remove);
-					data.merge(readData);
-					if (!(entityByID instanceof ISyncPersistentData))
-						return;
-					((ISyncPersistentData) entityByID).onPersistentDataUpdated();
-				});
-			context.get()
-				.setPacketHandled(true);
+		public boolean handle(Context context) {
+			context.enqueueWork(() -> {
+				Entity entityByID = Minecraft.getInstance().level.getEntity(entityId);
+				CompoundTag data = entityByID.getPersistentData();
+				new HashSet<>(data.getAllKeys()).forEach(data::remove);
+				data.merge(readData);
+				if (!(entityByID instanceof ISyncPersistentData))
+					return;
+				((ISyncPersistentData) entityByID).onPersistentDataUpdated();
+			});
+			return true;
 		}
 
 	}

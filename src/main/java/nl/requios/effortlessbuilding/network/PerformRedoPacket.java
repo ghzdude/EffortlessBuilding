@@ -3,7 +3,6 @@ package nl.requios.effortlessbuilding.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.systems.UndoRedo;
 
 import java.util.function.Supplier;
 

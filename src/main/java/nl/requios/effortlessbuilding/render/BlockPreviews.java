@@ -5,7 +5,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -21,7 +20,6 @@ import nl.requios.effortlessbuilding.utilities.BlockSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @OnlyIn(Dist.CLIENT)
 public class BlockPreviews {
@@ -148,10 +146,10 @@ public class BlockPreviews {
 		if (EffortlessBuildingClient.BUILDER_CHAIN.getLookingAtNear() != null) return;
 
 		AABB aabb = new AABB(pos);
-		if (player.level.isLoaded(pos)) {
-			var blockState = player.level.getBlockState(pos);
+		if (player.level().isLoaded(pos)) {
+			var blockState = player.level().getBlockState(pos);
 			if (!blockState.isAir()) {
-				aabb = blockState.getShape(player.level, pos).bounds().move(pos);
+				aabb = blockState.getShape(player.level(), pos).bounds().move(pos);
 			}
 		}
 

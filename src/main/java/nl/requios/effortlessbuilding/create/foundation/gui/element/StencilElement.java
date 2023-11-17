@@ -1,27 +1,31 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.element;
 
+import org.lwjgl.opengl.GL11;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.client.Minecraft;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.gui.GuiGraphics;
 
 public abstract class StencilElement extends RenderElement {
 
 	@Override
-	public void render(PoseStack ms) {
+	public void render(GuiGraphics graphics) {
+		PoseStack ms = graphics.pose();
 		ms.pushPose();
 		transform(ms);
 		prepareStencil(ms);
-		renderStencil(ms);
+		renderStencil(graphics);
 		prepareElement(ms);
-		renderElement(ms);
+		renderElement(graphics);
 		cleanUp(ms);
 		ms.popPose();
 	}
 
-	protected abstract void renderStencil(PoseStack ms);
+	protected abstract void renderStencil(GuiGraphics graphics);
 
-	protected abstract void renderElement(PoseStack ms);
+	protected abstract void renderElement(GuiGraphics graphics);
 
 	protected void transform(PoseStack ms) {
 		ms.translate(x, y, z);

@@ -7,7 +7,6 @@ import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.buildmode.BuildModes;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.buildmode.TwoClicksBuildMode;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ public class Floor extends TwoClicksBuildMode {
 		//Then only 1 can be valid, return that one
 		Criteria selected = criteriaList.get(0);
 
-		return new BlockPos(selected.planeBound);
+		return BlockPos.containing(selected.planeBound);
 	}
 
 	public static List<BlockPos> getFloorBlocks(Player player, int x1, int y1, int z1, int x2, int y2, int z2) {

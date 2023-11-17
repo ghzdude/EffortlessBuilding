@@ -1,7 +1,6 @@
 package nl.requios.effortlessbuilding.buildmodifier;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
 

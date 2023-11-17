@@ -1,13 +1,13 @@
 package nl.requios.effortlessbuilding.create.foundation.render;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 public class SuperByteBufferCache {
 
@@ -15,12 +15,14 @@ public class SuperByteBufferCache {
 
 	public synchronized void registerCompartment(Compartment<?> compartment) {
 		caches.put(compartment, CacheBuilder.newBuilder()
+			.<Object, SuperByteBuffer>removalListener(n -> n.getValue().delete())
 			.build());
 	}
 
 	public synchronized void registerCompartment(Compartment<?> compartment, long ticksUntilExpired) {
 		caches.put(compartment, CacheBuilder.newBuilder()
 			.expireAfterAccess(ticksUntilExpired * 50, TimeUnit.MILLISECONDS)
+			.<Object, SuperByteBuffer>removalListener(n -> n.getValue().delete())
 			.build());
 	}
 

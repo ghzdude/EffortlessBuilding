@@ -1,7 +1,6 @@
 package nl.requios.effortlessbuilding.create.foundation.utility.ghost;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.create.foundation.render.SuperRenderTypeBuffer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;

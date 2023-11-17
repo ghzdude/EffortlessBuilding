@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import nl.requios.effortlessbuilding.create.foundation.networking.SimplePacketBase;
 import nl.requios.effortlessbuilding.systems.ServerBuildState;
 
 import java.util.function.Supplier;

@@ -1,11 +1,11 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.widget;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import nl.requios.effortlessbuilding.create.foundation.gui.element.RenderElement;
 import nl.requios.effortlessbuilding.create.foundation.gui.element.ScreenElement;
 import nl.requios.effortlessbuilding.create.foundation.utility.animation.LerpedFloat;
 
-import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -117,21 +117,22 @@ public class ElementWidget extends AbstractSimiWidget {
 	}
 
 	@Override
-	protected void beforeRender(@Nonnull PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		super.beforeRender(ms, mouseX, mouseY, partialTicks);
+	protected void beforeRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.beforeRender(graphics, mouseX, mouseY, partialTicks);
 		isHovered = isMouseOver(mouseX, mouseY);
 
 		float fadeValue = fade.getValue(partialTicks);
 		element.withAlpha(fadeValue);
 		if (fadeValue < 1) {
-			ms.translate((1 - fadeValue) * fadeModX, (1 - fadeValue) * fadeModY, 0);
+			graphics.pose().translate((1 - fadeValue) * fadeModX, (1 - fadeValue) * fadeModY, 0);
 		}
 	}
 
 	@Override
-	public void renderButton(@Nonnull PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		PoseStack ms = graphics.pose();
 		ms.pushPose();
-		ms.translate(x + paddingX, y + paddingY, z);
+		ms.translate(getX() + paddingX, getY() + paddingY, z);
 		float innerWidth = width - 2 * paddingX;
 		float innerHeight = height - 2 * paddingY;
 		float eX = element.getX(), eY = element.getY();
@@ -143,7 +144,7 @@ public class ElementWidget extends AbstractSimiWidget {
 			innerWidth /= xScale;
 			innerHeight /= yScale;
 		}
-		element.withBounds((int) innerWidth, (int) innerHeight).render(ms);
+		element.withBounds((int) innerWidth, (int) innerHeight).render(graphics);
 		ms.popPose();
 		if (rescaleElement) {
 			element.at(eX, eY);

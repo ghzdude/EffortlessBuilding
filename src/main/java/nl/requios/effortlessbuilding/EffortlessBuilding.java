@@ -3,12 +3,16 @@ package nl.requios.effortlessbuilding;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -35,6 +39,8 @@ import nl.requios.effortlessbuilding.systems.ServerPowerLevel;
 import nl.requios.effortlessbuilding.systems.UndoRedo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 @Mod(EffortlessBuilding.MODID)
 public class EffortlessBuilding {
@@ -78,6 +84,7 @@ public class EffortlessBuilding {
 		IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
 
 		modEventBus.addListener(EffortlessBuilding::setup);
+		modEventBus.addListener(EffortlessBuilding::addTabContents);
 
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> EffortlessBuildingClient.onConstructorClient(modEventBus, forgeEventBus));
 
@@ -88,9 +95,9 @@ public class EffortlessBuilding {
 		LOOT_MODIFIERS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
 		//Register config
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.spec);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.spec);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.spec);
+		modLoadingContext.registerConfig(ModConfig.Type.COMMON, CommonConfig.spec);
+		modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ClientConfig.spec);
+		modLoadingContext.registerConfig(ModConfig.Type.SERVER, ServerConfig.spec);
 	}
 
 	public static void setup(final FMLCommonSetupEvent event) {
@@ -99,8 +106,15 @@ public class EffortlessBuilding {
 		CompatHelper.setup();
 	}
 
+	public static void addTabContents(final BuildCreativeModeTabContentsEvent event) {
+		if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+			List<ItemStack> stacks = ITEMS.getEntries().stream().map(reg -> new ItemStack(reg.get())).toList();
+			event.acceptAll(stacks);
+		}
+	}
+
 	public static <T extends AbstractContainerMenu> MenuType<T> registerContainer(IContainerFactory<T> fact){
-		MenuType<T> type = new MenuType<T>(fact);
+		MenuType<T> type = new MenuType<T>(fact, FeatureFlags.REGISTRY.allFlags());
 		return type;
 	}
 

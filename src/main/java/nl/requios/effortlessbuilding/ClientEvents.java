@@ -20,7 +20,6 @@ import nl.requios.effortlessbuilding.buildmode.ModeOptions;
 import nl.requios.effortlessbuilding.gui.buildmode.PlayerSettingsGui;
 import nl.requios.effortlessbuilding.gui.buildmode.RadialMenu;
 import nl.requios.effortlessbuilding.gui.buildmodifier.ModifiersScreen;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(Dist.CLIENT)

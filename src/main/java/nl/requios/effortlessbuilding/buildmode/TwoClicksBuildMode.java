@@ -6,7 +6,6 @@ import net.minecraft.world.entity.player.Player;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 import nl.requios.effortlessbuilding.utilities.BlockEntry;
 import nl.requios.effortlessbuilding.utilities.BlockSet;
-import nl.requios.effortlessbuilding.systems.PowerLevel;
 
 import java.util.List;
 
