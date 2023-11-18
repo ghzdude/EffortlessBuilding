@@ -1,19 +1,12 @@
 package nl.requios.effortlessbuilding.network;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.buildmodifier.Array;
-import nl.requios.effortlessbuilding.buildmodifier.BaseModifier;
-import nl.requios.effortlessbuilding.buildmodifier.Mirror;
-import nl.requios.effortlessbuilding.buildmodifier.RadialMirror;
-import nl.requios.effortlessbuilding.create.foundation.utility.NBTHelper;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 /**

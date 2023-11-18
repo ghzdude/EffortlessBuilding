@@ -2,6 +2,7 @@ package nl.requios.effortlessbuilding.utilities;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
@@ -80,7 +81,7 @@ public class BlockEntry {
         block.newBlockState = buf.readNullable(buffer -> {
             var nbt = buf.readNbt();
             if (nbt == null) return null;
-            return NbtUtils.readBlockState(nbt);
+            return NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), nbt);
         });
         block.item = Item.byId(buf.readInt());
         return block;

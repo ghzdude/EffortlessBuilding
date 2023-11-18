@@ -32,10 +32,10 @@ public class WrappedServerWorld extends ServerLevel {
 
 	public WrappedServerWorld(ServerLevel world) {
 		super(world.getServer(), Util.backgroundExecutor(), world.getServer().storageSource,
-			(ServerLevelData) world.getLevelData(), world.dimension(),
-			new LevelStem(world.dimensionTypeRegistration(), world.getChunkSource().getGenerator()),
-			new DummyStatusListener(), world.isDebug(), world.getBiomeManager().biomeZoomSeed,
-			Collections.emptyList(), false);
+				(ServerLevelData) world.getLevelData(), world.dimension(),
+				new LevelStem(world.dimensionTypeRegistration(), world.getChunkSource().getGenerator()),
+				new DummyStatusListener(), world.isDebug(), world.getBiomeManager().biomeZoomSeed,
+				Collections.emptyList(), false, world.getRandomSequences());
 		this.world = world;
 	}
 

@@ -1,12 +1,10 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.container;
 
-import nl.requios.effortlessbuilding.create.foundation.networking.SimplePacketBase;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent.Context;
-
-import java.util.function.Supplier;
+import nl.requios.effortlessbuilding.create.foundation.networking.SimplePacketBase;
 
 public class GhostItemSubmitPacket extends SimplePacketBase {
 
@@ -30,23 +28,18 @@ public class GhostItemSubmitPacket extends SimplePacketBase {
 	}
 
 	@Override
-	public void handle(Supplier<Context> context) {
-		context.get()
-				.enqueueWork(() -> {
-					ServerPlayer player = context.get()
-							.getSender();
-					if (player == null)
-						return;
+	public boolean handle(Context context) {
+		context.enqueueWork(() -> {
+			ServerPlayer player = context.getSender();
+			if (player == null)
+				return;
 
-					if (player.containerMenu instanceof GhostItemContainer) {
-						GhostItemContainer<?> c = (GhostItemContainer<?>) player.containerMenu;
-						c.ghostInventory.setStackInSlot(slot, item);
-						c.getSlot(36 + slot).setChanged();
-					}
-
-				});
-		context.get()
-				.setPacketHandled(true);
+			if (player.containerMenu instanceof GhostItemMenu<?> menu) {
+				menu.ghostInventory.setStackInSlot(slot, item);
+				menu.getSlot(36 + slot).setChanged();
+			}
+		});
+		return true;
 	}
 
 }

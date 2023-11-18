@@ -1,6 +1,5 @@
 package nl.requios.effortlessbuilding.create.foundation.gui.container;
 
-import nl.requios.effortlessbuilding.create.foundation.utility.IInteractionChecker;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -9,19 +8,20 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.requios.effortlessbuilding.create.foundation.utility.IInteractionChecker;
 
-public abstract class ContainerBase<T> extends AbstractContainerMenu {
+public abstract class MenuBase<T> extends AbstractContainerMenu {
 
 	public Player player;
 	public Inventory playerInventory;
 	public T contentHolder;
 
-	protected ContainerBase(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+	protected MenuBase(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
 		super(type, id);
 		init(inv, createOnClient(extraData));
 	}
 
-	protected ContainerBase(MenuType<?> type, int id, Inventory inv, T contentHolder) {
+	protected MenuBase(MenuType<?> type, int id, Inventory inv, T contentHolder) {
 		super(type, id);
 		init(inv, contentHolder);
 	}

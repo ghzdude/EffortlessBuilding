@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +19,6 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
-import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 import nl.requios.effortlessbuilding.systems.BuilderChain;
 
 /***
@@ -49,9 +49,9 @@ public class RenderHandler {
 
 	@SubscribeEvent
 	public static void onRenderGuiEvent(RenderGuiEvent event) {
-		renderSubText(event.getPoseStack());
+		renderSubText(event.getGuiGraphics());
 
-		drawStacks(event.getPoseStack());
+		drawStacks(event.getGuiGraphics());
 	}
 
 	private static final ChatFormatting highlightColor = ChatFormatting.DARK_AQUA;
@@ -64,7 +64,7 @@ public class RenderHandler {
 			normalColor + "Left-click to " + highlightColor + "break, " +
 			normalColor + "Right-click to " + highlightColor + "cancel");
 
-	private static void renderSubText(PoseStack ms) {
+	private static void renderSubText(GuiGraphics guiGraphics) {
 		var state = EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState();
 		if (state == BuilderChain.BuildingState.IDLE) return;
 
@@ -74,18 +74,19 @@ public class RenderHandler {
 		int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 		var font = Minecraft.getInstance().font;
 
+		PoseStack ms = guiGraphics.pose();
 		ms.pushPose();
 		ms.translate(screenWidth / 2.0, screenHeight - 54, 0.0D);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		int l = font.width(text);
-		font.drawShadow(ms, text, (float)(-l / 2), -4.0F, 0xffffffff);
+		guiGraphics.drawString(font, text, (int)((float)(-l / 2)), -4, 0xffffffff, true);
 		RenderSystem.disableBlend();
 		ms.popPose();
 	}
 
 	//Draw item stacks at cursor, showing what will be used and what is missing
-	private static void drawStacks(PoseStack ms) {
+	private static void drawStacks(GuiGraphics guiGraphics) {
 		var state = EffortlessBuildingClient.BUILDER_CHAIN.getBuildingState();
 		if (state != BuilderChain.BuildingState.PLACING) return;
 
@@ -108,28 +109,29 @@ public class RenderHandler {
 			int missing = EffortlessBuildingClient.ITEM_USAGE_TRACKER.getMissingCount(stack.getKey());
 
 			if (total - missing > 0) {
-				drawItemStack(ms, new ItemStack(stack.getKey(), total - missing), x + i * 20, y, false);
+				drawItemStack(guiGraphics, new ItemStack(stack.getKey(), total - missing), x + i * 20, y, false);
 				i++;
 			}
 
 			if (missing > 0) {
-				drawItemStack(ms, new ItemStack(stack.getKey(), missing), x + i * 20, y, true);
+				drawItemStack(guiGraphics, new ItemStack(stack.getKey(), missing), x + i * 20, y, true);
 				i++;
 			}
 		}
 	}
 
-	private static void drawItemStack(PoseStack ms, ItemStack stack, int x, int y, boolean missing) {
-		Minecraft.getInstance().getItemRenderer().renderGuiItem(stack, x, y);
+	private static void drawItemStack(GuiGraphics guiGraphics, ItemStack stack, int x, int y, boolean missing) {
+		guiGraphics.renderItem(stack, x, y);
 
 		//draw count text, red if missing
 		//from ItemRenderer#renderGuiItemDecorations
+		PoseStack ms = guiGraphics.pose();
 		ms.pushPose();
 		Font font = Minecraft.getInstance().font;
 		String text = String.valueOf(stack.getCount());
-		ms.translate(0.0D, 0.0D, (double)(Minecraft.getInstance().getItemRenderer().blitOffset + 200.0F));
+		ms.translate(0.0D, 0.0D, 200.0F);
 		MultiBufferSource.BufferSource multibuffersource$buffersource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-		font.drawInBatch(text, (float)(x + 19 - 2 - font.width(text)), (float)(y + 6 + 3), missing ? ChatFormatting.RED.getColor() : ChatFormatting.WHITE.getColor(), true, ms.last().pose(), multibuffersource$buffersource, false, 0, 15728880);
+		font.drawInBatch(text, (float)(x + 19 - 2 - font.width(text)), (float)(y + 6 + 3), missing ? ChatFormatting.RED.getColor() : ChatFormatting.WHITE.getColor(), true, ms.last().pose(), multibuffersource$buffersource, Font.DisplayMode.NORMAL, 0, 15728880);
 		multibuffersource$buffersource.endBatch();
 		ms.popPose();
 	}

@@ -3,7 +3,6 @@ package nl.requios.effortlessbuilding.create.foundation.utility.outliner;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
 import nl.requios.effortlessbuilding.create.AllSpecialTextures;
 import nl.requios.effortlessbuilding.create.foundation.render.RenderTypes;
 import nl.requios.effortlessbuilding.create.foundation.render.SuperRenderTypeBuffer;
@@ -16,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

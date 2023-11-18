@@ -3,7 +3,6 @@ package nl.requios.effortlessbuilding.systems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -286,8 +285,8 @@ public class UndoRedo {
 		//then anything it drops
 		if (itemStack.isEmpty()) {
 			//Cannot check drops on clientside because loot tables are server only
-			if (!player.level.isClientSide) {
-				List<ItemStack> itemsDropped = Block.getDrops(blockState, (ServerLevel) player.level, BlockPos.ZERO, null);
+			if (!player.level().isClientSide) {
+				List<ItemStack> itemsDropped = Block.getDrops(blockState, (ServerLevel) player.level(), BlockPos.ZERO, null);
 				for (ItemStack itemStackDropped : itemsDropped) {
 					if (itemStackDropped.getItem() instanceof BlockItem) {
 						Block block = ((BlockItem) itemStackDropped.getItem()).getBlock();

@@ -1,39 +1,46 @@
 package nl.requios.effortlessbuilding.gui.buildmode;
 
-import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Vector4f;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraftforge.server.command.TextComponentHelper;
 import nl.requios.effortlessbuilding.ClientEvents;
 import nl.requios.effortlessbuilding.EffortlessBuildingClient;
+import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
 import nl.requios.effortlessbuilding.buildmode.ModeOptions;
+import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
+import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
 import nl.requios.effortlessbuilding.create.foundation.item.ItemDescription;
 import nl.requios.effortlessbuilding.create.foundation.item.TooltipHelper;
+import nl.requios.effortlessbuilding.create.foundation.utility.Color;
 import nl.requios.effortlessbuilding.create.foundation.utility.Components;
 import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import static nl.requios.effortlessbuilding.buildmode.ModeOptions.*;
-
-import nl.requios.effortlessbuilding.buildmode.BuildModeEnum;
-import nl.requios.effortlessbuilding.buildmode.ModeOptions.ActionEnum;
-import nl.requios.effortlessbuilding.buildmode.ModeOptions.OptionEnum;
+import static nl.requios.effortlessbuilding.buildmode.ModeOptions.getBuildSpeed;
+import static nl.requios.effortlessbuilding.buildmode.ModeOptions.getCircleStart;
+import static nl.requios.effortlessbuilding.buildmode.ModeOptions.getCubeFill;
+import static nl.requios.effortlessbuilding.buildmode.ModeOptions.getFill;
+import static nl.requios.effortlessbuilding.buildmode.ModeOptions.getLineThickness;
+import static nl.requios.effortlessbuilding.buildmode.ModeOptions.getRaisedEdge;
 
 /**
  * Initially from Chisels and Bits by AlgorithmX2
@@ -44,11 +51,11 @@ public class RadialMenu extends Screen {
 
 	public static final RadialMenu instance = new RadialMenu();
 
-	private final Vector4f radialButtonColor = new Vector4f(0f, 0f, 0f, .5f);
-	private final Vector4f sideButtonColor = new Vector4f(.5f, .5f, .5f, .5f);
-	private final Vector4f highlightColor = new Vector4f(.6f, .8f, 1f, .6f);
-	private final Vector4f selectedColor = new Vector4f(0f, .5f, 1f, .5f);
-	private final Vector4f highlightSelectedColor = new Vector4f(0.2f, .7f, 1f, .7f);
+	private final Color radialButtonColor = new Color(0f, 0f, 0f, .5f);
+	private final Color sideButtonColor = new Color(.5f, .5f, .5f, .5f);
+	private final Color highlightColor = new Color(.6f, .8f, 1f, .6f);
+	private final Color selectedColor = new Color(0f, .5f, 1f, .5f);
+	private final Color highlightSelectedColor = new Color(0.2f, .7f, 1f, .7f);
 
 	private final int whiteTextColor = 0xffffffff;
 	private final int watermarkTextColor = 0x88888888;
@@ -95,9 +102,10 @@ public class RadialMenu extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack ms, final int mouseX, final int mouseY, final float partialTicks) {
+	public void render(GuiGraphics guiGraphics, final int mouseX, final int mouseY, final float partialTicks) {
 		BuildModeEnum currentBuildMode = EffortlessBuildingClient.BUILD_MODES.getBuildMode();
 
+		PoseStack ms = guiGraphics.pose();
 		ms.pushPose();
 		ms.translate(0, 0, 200);
 
@@ -107,11 +115,11 @@ public class RadialMenu extends Screen {
 		final int startColor = (int) (visibility * 98) << 24;
 		final int endColor = (int) (visibility * 128) << 24;
 
-		fillGradient(ms, 0, 0, width, height, startColor, endColor);
+		guiGraphics.fillGradient(0, 0, width, height, startColor, endColor);
 
-		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 		RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		final Tesselator tessellator = Tesselator.getInstance();
 		final BufferBuilder buffer = tessellator.getBuilder();
 
@@ -182,11 +190,10 @@ public class RadialMenu extends Screen {
 
 		tessellator.end();
 		RenderSystem.disableBlend();
-		RenderSystem.enableTexture();
 
-		drawIcons(ms, middleX, middleY, modes, buttons);
+		drawIcons(guiGraphics, middleX, middleY, modes, buttons);
 
-		drawTexts(ms, currentBuildMode, middleX, middleY, modes, buttons, options, mouseXX, mouseYY);
+		drawTexts(guiGraphics, currentBuildMode, middleX, middleY, modes, buttons, options, mouseXX, mouseYY);
 
 		ms.popPose();
 	}
@@ -221,10 +228,10 @@ public class RadialMenu extends Screen {
 
 				final boolean isSelected = currentBuildMode.ordinal() == i;
 				final boolean isMouseInQuad = inTriangle(x1m1, y1m1, x2m2, y2m2, x2m1, y2m1, mouseXCenter, mouseYCenter)
-											  || inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mouseXCenter, mouseYCenter);
+						|| inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mouseXCenter, mouseYCenter);
 				final boolean isHighlighted = beginRadians <= mouseRadians && mouseRadians <= endRadians && isMouseInQuad;
 
-				Vector4f color = radialButtonColor;
+				Color color = radialButtonColor;
 				if (isSelected) color = selectedColor;
 				if (isHighlighted) color = highlightColor;
 				if (isSelected && isHighlighted) color = highlightSelectedColor;
@@ -234,10 +241,10 @@ public class RadialMenu extends Screen {
 					switchTo = menuRegion.mode;
 				}
 
-				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-				buffer.vertex(middleX + x2m2, middleY + y2m2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-				buffer.vertex(middleX + x1m2, middleY + y1m2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x1m1, middleY + y1m1, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+				buffer.vertex(middleX + x2m1, middleY + y2m1, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+				buffer.vertex(middleX + x2m2, middleY + y2m2, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+				buffer.vertex(middleX + x1m2, middleY + y1m2, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
 
 				//Category line
 				color = menuRegion.mode.category.color;
@@ -248,10 +255,10 @@ public class RadialMenu extends Screen {
 				final double y1m3 = Math.sin(beginRadians + fragment) * categoryLineOuterEdge;
 				final double y2m3 = Math.sin(endRadians - fragment) * categoryLineOuterEdge;
 
-				buffer.vertex(middleX + x1m1, middleY + y1m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-				buffer.vertex(middleX + x2m1, middleY + y2m1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-				buffer.vertex(middleX + x2m3, middleY + y2m3, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-				buffer.vertex(middleX + x1m3, middleY + y1m3, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+				buffer.vertex(middleX + x1m1, middleY + y1m1, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+				buffer.vertex(middleX + x2m1, middleY + y2m1, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+				buffer.vertex(middleX + x2m3, middleY + y2m3, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+				buffer.vertex(middleX + x1m3, middleY + y1m3, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
 			}
 		}
 	}
@@ -263,15 +270,15 @@ public class RadialMenu extends Screen {
 
 			boolean isSelected =
 					btn.action == getBuildSpeed() ||
-					btn.action == getFill() ||
-					btn.action == getCubeFill() ||
-					btn.action == getRaisedEdge() ||
-					btn.action == getLineThickness() ||
-					btn.action == getCircleStart() ||
-					btn.action == EffortlessBuildingClient.BUILD_SETTINGS.getReplaceModeActionEnum() ||
-					btn.action == ActionEnum.TOGGLE_PROTECT_TILE_ENTITIES && EffortlessBuildingClient.BUILD_SETTINGS.shouldProtectTileEntities();
+							btn.action == getFill() ||
+							btn.action == getCubeFill() ||
+							btn.action == getRaisedEdge() ||
+							btn.action == getLineThickness() ||
+							btn.action == getCircleStart() ||
+							btn.action == EffortlessBuildingClient.BUILD_SETTINGS.getReplaceModeActionEnum() ||
+							btn.action == ActionEnum.TOGGLE_PROTECT_TILE_ENTITIES && EffortlessBuildingClient.BUILD_SETTINGS.shouldProtectTileEntities();
 
-			Vector4f color = sideButtonColor;
+			Color color = sideButtonColor;
 			if (isSelected) color = selectedColor;
 			if (isHighlighted) color = highlightColor;
 			if (isSelected && isHighlighted) color = highlightSelectedColor;
@@ -281,27 +288,25 @@ public class RadialMenu extends Screen {
 				doAction = btn.action;
 			}
 
-			buffer.vertex(middleX + btn.x1, middleY + btn.y1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-			buffer.vertex(middleX + btn.x1, middleY + btn.y2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-			buffer.vertex(middleX + btn.x2, middleY + btn.y2, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
-			buffer.vertex(middleX + btn.x2, middleY + btn.y1, getBlitOffset()).color(color.x(), color.y(), color.z(), color.w()).endVertex();
+			buffer.vertex(middleX + btn.x1, middleY + btn.y1, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+			buffer.vertex(middleX + btn.x1, middleY + btn.y2, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+			buffer.vertex(middleX + btn.x2, middleY + btn.y2, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+			buffer.vertex(middleX + btn.x2, middleY + btn.y1, 200).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
 		}
 	}
 
-	private void drawIcons(PoseStack ms, double middleX, double middleY,
+	private void drawIcons(GuiGraphics guiGraphics, double middleX, double middleY,
 						   ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons) {
+		PoseStack ms = guiGraphics.pose();
 		ms.pushPose();
-		RenderSystem.enableTexture();
-		RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
-		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
 		//Draw buildmode icons
 		for (final MenuRegion menuRegion : modes) {
 
 			final double x = (menuRegion.x1 + menuRegion.x2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
 			final double y = (menuRegion.y1 + menuRegion.y2) * 0.5 * (ringOuterEdge * 0.55 + 0.45 * ringInnerEdge);
-			
-			menuRegion.mode.icon.render(ms, (int) (middleX + x - 8), (int) (middleY + y - 8));
+
+			menuRegion.mode.icon.render(guiGraphics, (int) (middleX + x - 8), (int) (middleY + y - 8));
 		}
 
 		//Draw action icons
@@ -310,28 +315,28 @@ public class RadialMenu extends Screen {
 			final double x = (button.x1 + button.x2) / 2 + 0.01;
 			final double y = (button.y1 + button.y2) / 2 + 0.01;
 
-			button.action.icon.render(ms, (int) (middleX + x - 8), (int) (middleY + y - 8));
+			button.action.icon.render(guiGraphics, (int) (middleX + x - 8), (int) (middleY + y - 8));
 		}
 
 		ms.popPose();
 	}
 
-	private void drawTexts(PoseStack ms, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options, int mouseX, int mouseY) {
+	private void drawTexts(GuiGraphics guiGraphics, BuildModeEnum currentBuildMode, double middleX, double middleY, ArrayList<MenuRegion> modes, ArrayList<MenuButton> buttons, OptionEnum[] options, int mouseX, int mouseY) {
 		//font.drawStringWithShadow("Actions", (int) (middleX - buttonDistance - 13) - font.getStringWidth("Actions") * 0.5f, (int) middleY - 38, 0xffffffff);
 
 		//Draw option strings
 		for (int i = 0; i < currentBuildMode.options.length; i++) {
 			OptionEnum option = options[i];
-			font.drawShadow(ms, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, optionTextColor);
+			guiGraphics.drawString(font, I18n.get(option.name), (int) (middleX + buttonDistance - 9), (int) middleY - 37 + i * 39, optionTextColor);
 		}
 
 		String credits = "Effortless Building";
-		font.drawShadow(ms, credits, width - font.width(credits) - 4, height - 10, watermarkTextColor);
+		guiGraphics.drawString(font, credits, width - font.width(credits) - 4, height - 10, watermarkTextColor);
 
 		//Draw power level info
 		String powerLevelValue = minecraft.player.isCreative() ? "Creative" : String.valueOf(EffortlessBuildingClient.POWER_LEVEL.getPowerLevel());
 		String powerLevelText = I18n.get("key.effortlessbuilding.power_level") + ": " + powerLevelValue;
-		font.drawShadow(ms, powerLevelText, width - font.width(powerLevelText) - 4, height - 22, minecraft.player.isCreative() ? watermarkTextColor : ChatFormatting.DARK_PURPLE.getColor());
+		guiGraphics.drawString(font, powerLevelText, width - font.width(powerLevelText) - 4, height - 22, minecraft.player.isCreative() ? watermarkTextColor : ChatFormatting.DARK_PURPLE.getColor());
 
 		//if hover over power level info, show tooltip
 		if (mouseX >= width - font.width(powerLevelText) - 14 && mouseX <= width && mouseY >= height - 24 && mouseY <= height) {
@@ -354,7 +359,7 @@ public class RadialMenu extends Screen {
 				tooltip.addAll(TooltipHelper.cutTextComponent(Components.translatable("key.effortlessbuilding.next_power_level_how"), ChatFormatting.GRAY, ChatFormatting.WHITE));
 			}
 
-			renderComponentTooltip(ms, tooltip, mouseX, mouseY);
+			guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
 		}
 
 
@@ -375,11 +380,11 @@ public class RadialMenu extends Screen {
 					fixed_x -= font.width(text) / 2;
 				}
 
-				font.drawShadow(ms, text, (int) middleX + fixed_x, (int) middleY + fixed_y, whiteTextColor);
+				guiGraphics.drawString(font, text, (int) middleX + fixed_x, (int) middleY + fixed_y, whiteTextColor);
 
 				//Draw description
 				text = I18n.get(menuRegion.mode.getDescriptionKey());
-				font.drawShadow(ms, text, (int) middleX - font.width(text) / 2f, (int) middleY + buildModeDescriptionHeight, descriptionTextColor);
+				guiGraphics.drawString(font, text, (int) ((int) middleX - font.width(text) / 2f), (int) middleY + buildModeDescriptionHeight, descriptionTextColor);
 			}
 		}
 
@@ -400,13 +405,14 @@ public class RadialMenu extends Screen {
 
 				//Add keybind in brackets
 				var keybind = findKeybind(button);
-				if (keybind != null) tooltip.add(Lang.translateDirect("tooltip.keybind", keybind.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.DARK_GRAY));
-				renderComponentTooltip(ms, tooltip, mouseX, mouseY);
+				if (keybind != null)
+					tooltip.add(Lang.translateDirect("tooltip.keybind", keybind.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.DARK_GRAY));
+				guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
 			}
 		}
 	}
 
-	private MutableComponent findKeybind(MenuButton button){
+	private MutableComponent findKeybind(MenuButton button) {
 
 		int keybindingIndex = -1;
 		if (button.action == ActionEnum.OPEN_MODIFIER_SETTINGS) keybindingIndex = 1;
@@ -476,7 +482,7 @@ public class RadialMenu extends Screen {
 	public static void playRadialMenuSound() {
 		final float volume = 0.1f;
 		if (volume >= 0.0001f) {
-			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK, SoundSource.MASTER, volume,
+			SimpleSoundInstance sound = new SimpleSoundInstance(SoundEvents.UI_BUTTON_CLICK.get(), SoundSource.MASTER, volume,
 					1.0f, RandomSource.create(), Minecraft.getInstance().player.blockPosition());
 			Minecraft.getInstance().getSoundManager().play(sound);
 		}

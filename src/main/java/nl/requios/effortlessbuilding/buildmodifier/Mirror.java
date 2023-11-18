@@ -2,8 +2,6 @@ package nl.requios.effortlessbuilding.buildmodifier;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +48,7 @@ public class Mirror extends BaseModifier {
 	private void performMirrorX(BlockSet blocks, BlockEntry blockEntry) {
 		//find mirror position
 		double x = position.x + (position.x - blockEntry.blockPos.getX() - 0.5);
-		BlockPos newBlockPos = new BlockPos(x, blockEntry.blockPos.getY(), blockEntry.blockPos.getZ());
+		BlockPos newBlockPos = BlockPos.containing(x, blockEntry.blockPos.getY(), blockEntry.blockPos.getZ());
 
 		if (blocks.containsKey(newBlockPos)) return;
 
@@ -66,7 +64,7 @@ public class Mirror extends BaseModifier {
 	private void performMirrorY(BlockSet blocks, BlockEntry blockEntry) {
 		//find mirror position
 		double y = position.y + (position.y - blockEntry.blockPos.getY() - 0.5);
-		BlockPos newBlockPos = new BlockPos(blockEntry.blockPos.getX(), y, blockEntry.blockPos.getZ());
+		BlockPos newBlockPos = BlockPos.containing(blockEntry.blockPos.getX(), y, blockEntry.blockPos.getZ());
 
 		if (blocks.containsKey(newBlockPos)) return;
 
@@ -81,7 +79,7 @@ public class Mirror extends BaseModifier {
 	private void performMirrorZ(BlockSet blocks, BlockEntry blockEntry) {
 		//find mirror position
 		double z = position.z + (position.z - blockEntry.blockPos.getZ() - 0.5);
-		BlockPos newBlockPos = new BlockPos(blockEntry.blockPos.getX(), blockEntry.blockPos.getY(), z);
+		BlockPos newBlockPos = BlockPos.containing(blockEntry.blockPos.getX(), blockEntry.blockPos.getY(), z);
 
 		if (blocks.containsKey(newBlockPos)) return;
 

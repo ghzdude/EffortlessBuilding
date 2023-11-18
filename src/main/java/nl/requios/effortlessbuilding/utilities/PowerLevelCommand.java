@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding.utilities;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -44,12 +43,12 @@ public class PowerLevelCommand {
 
     private static void logPowerLevel(CommandSourceStack source, Player player) {
         int powerLevel = EffortlessBuilding.SERVER_POWER_LEVEL.getPowerLevel(player);
-        source.sendSuccess(Component.translatable("effortlessbuilding.commands.powerlevel", player.getDisplayName(), powerLevel), false);
+        source.sendSuccess(() -> Component.translatable("effortlessbuilding.commands.powerlevel", player.getDisplayName(), powerLevel), false);
     }
 
     private static void setPowerLevel(CommandSourceStack source, Player player, int powerLevel) throws CommandSyntaxException {
         EffortlessBuilding.SERVER_POWER_LEVEL.setPowerLevel(player, powerLevel);
         EffortlessBuilding.SERVER_POWER_LEVEL.sendToClient(player);
-        source.sendSuccess(Component.translatable("effortlessbuilding.commands.powerlevel.success", player.getDisplayName(), powerLevel), true);
+        source.sendSuccess(() -> Component.translatable("effortlessbuilding.commands.powerlevel.success", player.getDisplayName(), powerLevel), true);
     }
 }

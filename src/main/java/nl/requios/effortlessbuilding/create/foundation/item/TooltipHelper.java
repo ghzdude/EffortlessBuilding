@@ -1,32 +1,33 @@
 package nl.requios.effortlessbuilding.create.foundation.item;
 
 import com.google.common.base.Strings;
-import com.mojang.bridge.game.Language;
-import nl.requios.effortlessbuilding.create.foundation.item.ItemDescription.Palette;
-import nl.requios.effortlessbuilding.create.foundation.utility.Components;
-import nl.requios.effortlessbuilding.create.foundation.utility.Couple;
-import nl.requios.effortlessbuilding.create.foundation.utility.FontHelper;
-import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import nl.requios.effortlessbuilding.create.foundation.item.ItemDescription.Palette;
+import nl.requios.effortlessbuilding.create.foundation.utility.Components;
+import nl.requios.effortlessbuilding.create.foundation.utility.Couple;
+import nl.requios.effortlessbuilding.create.foundation.utility.FontHelper;
+import nl.requios.effortlessbuilding.create.foundation.utility.Lang;
 
 import java.text.BreakIterator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class TooltipHelper {
 
 	public static final int maxWidthPerLine = 200;
 	public static final Map<String, ItemDescription> cachedTooltips = new HashMap<>();
-	public static Language cachedLanguage;
 	private static boolean gogglesMode;
 	private static final Map<Item, Supplier<String>> tooltipReferrals = new HashMap<>();
 
@@ -211,36 +212,6 @@ public class TooltipHelper {
 //
 //		return lines;
 //	}
-
-	private static void checkLocale() {
-		Language currentLanguage = Minecraft.getInstance()
-			.getLanguageManager()
-			.getSelected();
-		if (cachedLanguage != currentLanguage) {
-			cachedTooltips.clear();
-			cachedLanguage = currentLanguage;
-		}
-	}
-
-	public static boolean hasTooltip(ItemStack stack, Player player) {
-		checkLocale();
-
-		String key = getTooltipTranslationKey(stack);
-		if (cachedTooltips.containsKey(key))
-			return cachedTooltips.get(key) != ItemDescription.MISSING;
-		return findTooltip(stack);
-	}
-
-	public static ItemDescription getTooltip(ItemStack stack) {
-		checkLocale();
-		String key = getTooltipTranslationKey(stack);
-		if (cachedTooltips.containsKey(key)) {
-			ItemDescription itemDescription = cachedTooltips.get(key);
-			if (itemDescription != ItemDescription.MISSING)
-				return itemDescription;
-		}
-		return null;
-	}
 
 	private static boolean findTooltip(ItemStack stack) {
 		String key = getTooltipTranslationKey(stack);

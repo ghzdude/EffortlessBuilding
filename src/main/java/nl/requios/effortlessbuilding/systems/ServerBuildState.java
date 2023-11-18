@@ -2,7 +2,6 @@ package nl.requios.effortlessbuilding.systems;
 
 import net.minecraft.world.entity.player.Player;
 import nl.requios.effortlessbuilding.EffortlessBuilding;
-import nl.requios.effortlessbuilding.EffortlessBuildingClient;
 
 public class ServerBuildState {
     private static final String IS_USING_BUILD_MODE_KEY = EffortlessBuilding.MODID + ":isUsingBuildMode";

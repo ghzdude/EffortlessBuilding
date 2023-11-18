@@ -1,27 +1,18 @@
 package nl.requios.effortlessbuilding.create.foundation.render;
 
-import java.nio.ByteBuffer;
-import java.util.function.IntPredicate;
 
 import com.jozufozu.flywheel.api.vertex.ShadedVertexList;
 import com.jozufozu.flywheel.api.vertex.VertexList;
 import com.jozufozu.flywheel.backend.ShadersModHandler;
 import com.jozufozu.flywheel.core.model.ShadeSeparatedBufferedData;
 import com.jozufozu.flywheel.core.vertex.BlockVertexList;
+import com.jozufozu.flywheel.util.Color;
 import com.jozufozu.flywheel.util.DiffuseLightCalculator;
 import com.jozufozu.flywheel.util.transform.TStack;
 import com.jozufozu.flywheel.util.transform.Transform;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
-import nl.requios.effortlessbuilding.create.foundation.block.render.SpriteShiftEntry;
-import nl.requios.effortlessbuilding.create.foundation.utility.Color;
-
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -32,6 +23,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import nl.requios.effortlessbuilding.create.foundation.block.render.SpriteShiftEntry;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
+import java.nio.ByteBuffer;
+import java.util.function.IntPredicate;
 
 public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<SuperByteBuffer> {
 
@@ -96,25 +96,22 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 		if (isEmpty())
 			return;
 
-		Matrix4f modelMat = input.last()
-				.pose()
-				.copy();
+		Matrix4f modelMat = new Matrix4f(input.last()
+			.pose());
 		Matrix4f localTransforms = transforms.last()
-				.pose();
-		modelMat.multiply(localTransforms);
+			.pose();
+		modelMat.mul(localTransforms);
 
 		Matrix3f normalMat;
 		if (fullNormalTransform) {
-			normalMat = input.last()
-					.normal()
-					.copy();
+			normalMat = new Matrix3f(input.last()
+				.normal());
 			Matrix3f localNormalTransforms = transforms.last()
-					.normal();
+				.normal();
 			normalMat.mul(localNormalTransforms);
 		} else {
-			normalMat = transforms.last()
-					.normal()
-					.copy();
+			normalMat = new Matrix3f(transforms.last()
+				.normal());
 		}
 
 		if (useWorldLight) {
@@ -127,7 +124,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 
 		DiffuseLightCalculator diffuseCalculator = ForcedDiffuseState.getForcedCalculator();
 		final boolean disableDiffuseMult =
-				this.disableDiffuseMult || (ShadersModHandler.isShaderPackInUse() && diffuseCalculator == null);
+			this.disableDiffuseMult || (ShadersModHandler.isShaderPackInUse() && diffuseCalculator == null);
 		if (diffuseCalculator == null) {
 			diffuseCalculator = this.diffuseCalculator;
 			if (diffuseCalculator == null) {
@@ -142,7 +139,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 			float z = template.getZ(i);
 
 			pos.set(x, y, z, 1F);
-			pos.transform(modelMat);
+			pos.mul(modelMat);
 			builder.vertex(pos.x(), pos.y(), pos.z());
 
 			float normalX = template.getNX(i);
@@ -150,7 +147,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 			float normalZ = template.getNZ(i);
 
 			normal.set(normalX, normalY, normalZ);
-			normal.transform(normalMat);
+			normal.mul(normalMat);
 			float nx = normal.x();
 			float ny = normal.y();
 			float nz = normal.z();
@@ -192,9 +189,9 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 			int light;
 			if (useWorldLight) {
 				lightPos.set(((x - .5f) * 15 / 16f) + .5f, (y - .5f) * 15 / 16f + .5f, (z - .5f) * 15 / 16f + .5f, 1f);
-				lightPos.transform(localTransforms);
+				lightPos.mul(localTransforms);
 				if (lightTransform != null) {
-					lightPos.transform(lightTransform);
+					lightPos.mul(lightTransform);
 				}
 
 				light = getLight(Minecraft.getInstance().level, lightPos);
@@ -264,7 +261,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 	}
 
 	@Override
-	public SuperByteBuffer multiply(Quaternion quaternion) {
+	public SuperByteBuffer multiply(Quaternionf quaternion) {
 		transforms.mulPose(quaternion);
 		return this;
 	}
@@ -290,40 +287,40 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 	@Override
 	public SuperByteBuffer mulPose(Matrix4f pose) {
 		transforms.last()
-				.pose()
-				.multiply(pose);
+			.pose()
+			.mul(pose);
 		return this;
 	}
 
 	@Override
 	public SuperByteBuffer mulNormal(Matrix3f normal) {
 		transforms.last()
-				.normal()
-				.mul(normal);
+			.normal()
+			.mul(normal);
 		return this;
 	}
 
 	public SuperByteBuffer transform(PoseStack stack) {
 		transforms.last()
-				.pose()
-				.multiply(stack.last()
-						.pose());
+			.pose()
+			.mul(stack.last()
+				.pose());
 		transforms.last()
-				.normal()
-				.mul(stack.last()
-						.normal());
+			.normal()
+			.mul(stack.last()
+				.normal());
 		return this;
 	}
 
 	public SuperByteBuffer rotateCentered(Direction axis, float radians) {
 		translate(.5f, .5f, .5f).rotate(axis, radians)
-				.translate(-.5f, -.5f, -.5f);
+			.translate(-.5f, -.5f, -.5f);
 		return this;
 	}
 
-	public SuperByteBuffer rotateCentered(Quaternion q) {
+	public SuperByteBuffer rotateCentered(Quaternionf q) {
 		translate(.5f, .5f, .5f).multiply(q)
-				.translate(-.5f, -.5f, -.5f);
+			.translate(-.5f, -.5f, -.5f);
 		return this;
 	}
 
@@ -378,13 +375,13 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 	public SuperByteBuffer shiftUVScrolling(SpriteShiftEntry entry, float scrollU, float scrollV) {
 		this.spriteShiftFunc = (builder, u, v) -> {
 			float targetU = u - entry.getOriginal()
-					.getU0() + entry.getTarget()
-									.getU0()
-							+ scrollU;
+				.getU0() + entry.getTarget()
+					.getU0()
+				+ scrollU;
 			float targetV = v - entry.getOriginal()
-					.getV0() + entry.getTarget()
-									.getV0()
-							+ scrollV;
+				.getV0() + entry.getTarget()
+					.getV0()
+				+ scrollV;
 			builder.uv(targetU, targetV);
 		};
 		return this;
@@ -393,9 +390,9 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 	public SuperByteBuffer shiftUVtoSheet(SpriteShiftEntry entry, float uTarget, float vTarget, int sheetSize) {
 		this.spriteShiftFunc = (builder, u, v) -> {
 			float targetU = entry.getTarget()
-					.getU((SpriteShiftEntry.getUnInterpolatedU(entry.getOriginal(), u) / sheetSize) + uTarget * 16);
+				.getU((SpriteShiftEntry.getUnInterpolatedU(entry.getOriginal(), u) / sheetSize) + uTarget * 16);
 			float targetV = entry.getTarget()
-					.getV((SpriteShiftEntry.getUnInterpolatedV(entry.getOriginal(), v) / sheetSize) + vTarget * 16);
+				.getV((SpriteShiftEntry.getUnInterpolatedV(entry.getOriginal(), v) / sheetSize) + vTarget * 16);
 			builder.uv(targetU, targetV);
 		};
 		return this;
@@ -478,7 +475,7 @@ public class SuperByteBuffer implements Transform<SuperByteBuffer>, TStack<Super
 	}
 
 	private static int getLight(Level world, Vector4f lightPos) {
-		BlockPos pos = new BlockPos(lightPos.x(), lightPos.y(), lightPos.z());
+		BlockPos pos = BlockPos.containing(lightPos.x(), lightPos.y(), lightPos.z());
 		return WORLD_LIGHT_CACHE.computeIfAbsent(pos.asLong(), $ -> LevelRenderer.getLightColor(world, pos));
 	}
 
