@@ -197,7 +197,7 @@ public class BuilderChain {
         boolean lookingAtInteractiveObject = ClientBlockUtilities.determineIfLookingAtInteractiveObject(mc, world);
         boolean isShiftKeyDown = player.isShiftKeyDown();
 
-        if (lookingAtInteractiveObject && !isShiftKeyDown)
+        if (lookingAtInteractiveObject && !isShiftKeyDown && EffortlessBuildingClient.BUILD_SETTINGS.shouldProtectTileEntities())
             return AbilitiesState.NONE;
 
         if (!blockInHand)
