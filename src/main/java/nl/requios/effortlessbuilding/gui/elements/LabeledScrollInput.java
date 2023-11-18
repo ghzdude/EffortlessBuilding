@@ -31,8 +31,8 @@ public class LabeledScrollInput extends ScrollInput {
 
     //TODO: Check if this works
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
+    public void doRender(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        super.doRender(guiGraphics, mouseX, mouseY, partialTicks);
 
         label.setX(getX() + width / 2 - Minecraft.getInstance().font.width(label.text) / 2);
         label.setY(getY() + height / 2 - Minecraft.getInstance().font.lineHeight / 2);
