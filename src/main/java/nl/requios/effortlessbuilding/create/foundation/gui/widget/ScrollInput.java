@@ -118,6 +118,8 @@ public class ScrollInput extends AbstractSimiWidget {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+		if (!this.visible || !this.isHovered) return false; //Added
+
 		if (inverted)
 			delta *= -1;
 
@@ -147,7 +149,8 @@ public class ScrollInput extends AbstractSimiWidget {
 			onChanged();
 		}
 
-		return priorState != state;
+//		return priorState != state;
+		return true; //Changed
 	}
 
 	protected void clampState() {
