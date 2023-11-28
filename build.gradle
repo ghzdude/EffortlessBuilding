@@ -105,7 +105,7 @@ dependencies {
 
     // Example of deobfuscating a dependency
     // implementation rfg.deobf('curse.maven:had-enough-items-557549:4543375')
-    implementation rfg.deobf('curse.maven:chisels-bits-231095:2720655')
+    compileOnly('curse.maven:chisels-bits-231095:2720655')
 
     if (project.use_mixins.toBoolean()) {
         // Change your mixin refmap name here:
